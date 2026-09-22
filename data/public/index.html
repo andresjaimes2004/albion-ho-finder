@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buscador de Hideouts — Zona Negra | Albion Online</title>
+  <meta name="description" content="Busca en qué mapas de la Zona Negra tiene Hideout tu gremio de Albion Online." />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="alternate icon" href="assets/favicon-32.png" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+  <meta name="theme-color" content="#0d0c0f" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="fondo-textura" aria-hidden="true"></div>
+
+  <header class="cabecera">
+    <div class="contenedor cabecera__contenido">
+      <div class="marca">
+        <img class="marca__icono" src="assets/logo.svg" alt="" width="44" height="44" aria-hidden="true" />
+        <div>
+          <h1 class="marca__titulo">Buscador de Hideouts</h1>
+          <p class="marca__subtitulo">Zona Negra · Albion Online</p>
+        </div>
+      </div>
+      <span id="badge-temporada" class="badge-temporada" hidden></span>
+    </div>
+  </header>
+
+  <main class="contenedor principal">
+    <section class="panel-busqueda" aria-label="Buscador de gremio">
+      <label for="input-gremio" class="panel-busqueda__label">Nombre del gremio</label>
+      <div class="panel-busqueda__caja">
+        <svg class="icono-buscar" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+          <path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <input
+          id="input-gremio"
+          type="text"
+          placeholder="Ej: Gankers Letales, ARCH..."
+          autocomplete="off"
+          maxlength="60"
+        />
+      </div>
+      <p class="panel-busqueda__ayuda">
+        Escribe el nombre completo o solo una parte. Se mostrarán todos los mapas donde el gremio tenga un Hideout.
+      </p>
+    </section>
+
+    <section id="zona-resultados" class="zona-resultados" aria-live="polite">
+      <div id="estado-vacio" class="estado estado--info">
+        <span class="estado__icono">🗺️</span>
+        <p>Escribe al menos 2 caracteres para empezar a buscar.</p>
+      </div>
+
+      <div id="estado-cargando" class="estado" hidden>
+        <span class="cargando" aria-hidden="true"></span>
+        <p>Buscando en la Zona Negra...</p>
+      </div>
+
+      <div id="estado-sin-resultados" class="estado estado--advertencia" hidden>
+        <span class="estado__icono">🚫</span>
+        <p>No se encontró ningún Hideout para ese gremio.</p>
+      </div>
+
+      <div id="estado-error" class="estado estado--error" hidden>
+        <span class="estado__icono">⚠️</span>
+        <p id="estado-error__texto">Ocurrió un error al consultar los datos.</p>
+      </div>
+
+      <div id="resumen-resultados" class="resumen-resultados" hidden></div>
+      <div id="lista-mapas" class="lista-mapas"></div>
+    </section>
+  </main>
+
+  <footer class="pie">
+    <div class="contenedor">
+      <p>Datos actualizados por temporada. Albion Online y sus marcas pertenecen a Sandbox Interactive GmbH.</p>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

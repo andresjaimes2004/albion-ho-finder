@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="logoTitulo">
+  <title id="logoTitulo">Buscador de Hideouts — Zona Negra</title>
+  <defs>
+    <radialGradient id="brilloFondo" cx="50%" cy="38%" r="65%">
+      <stop offset="0%" stop-color="#3a1414" />
+      <stop offset="60%" stop-color="#17151a" />
+      <stop offset="100%" stop-color="#0d0c0f" />
+    </radialGradient>
+    <linearGradient id="oroTrazo" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e8c95c" />
+      <stop offset="100%" stop-color="#c9a227" />
+    </linearGradient>
+  </defs>
+
+  <!-- Emblema hexagonal -->
+  <path
+    d="M32 2 L58 17 V47 L32 62 L6 47 V17 Z"
+    fill="url(#brilloFondo)"
+    stroke="url(#oroTrazo)"
+    stroke-width="2.5"
+    stroke-linejoin="round"
+  />
+
+  <!-- Torreón / Hideout -->
+  <g fill="none" stroke="url(#oroTrazo)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round">
+    <!-- base del torreón -->
+    <path d="M21 41 V27 L26 21 H38 L43 27 V41 Z" fill="#0d0c0f" />
+    <!-- almenas -->
+    <path d="M21 27 h4 v-4 h4 v4 h6 v-4 h4 v4 h4" />
+    <!-- puerta -->
+    <path d="M29 41 V33 a3 3 0 0 1 6 0 V41" fill="#17151a" />
+  </g>
+
+  <!-- Lupa de búsqueda, superpuesta en la esquina inferior derecha -->
+  <g transform="translate(37 34)">
+    <circle cx="8" cy="8" r="7" fill="rgba(13,12,15,0.55)" stroke="#c94f4f" stroke-width="2.4" />
+    <line x1="13" y1="13" x2="19" y2="19" stroke="#c94f4f" stroke-width="2.6" stroke-linecap="round" />
+  </g>
+</svg>

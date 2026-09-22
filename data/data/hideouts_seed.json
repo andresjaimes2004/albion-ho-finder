@@ -1,0 +1,6693 @@
+{
+  "temporada": "S34",
+  "mapas": [
+    {
+      "mapa": "Avalanche Incline",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Velo Carmesi",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "P R E D A T O R Z",
+          "tipo": "HQ"
+        }
+      ]
+    },
+    {
+      "mapa": "Avalanche Ravine",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "The Rugrats",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "NO HOLDING",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "24-7w",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "CECOT",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "ArvizG-Company",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Battlebrae Flatland",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Free Beer",
+          "tipo": "HQ"
+        }
+      ]
+    },
+    {
+      "mapa": "Battlebrae Grassland",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Punky Punki",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "This-Promise",
+          "tipo": "P"
+        },
+        {
+          "slot": 3,
+          "gremio": "L E G E N D A R I O S",
+          "tipo": "P"
+        }
+      ]
+    },
+    {
+      "mapa": "Battlebrae Lake",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Epic Hobos",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "I Die Hard I",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "LA M4FIA",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Black Dragon Aeon",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "PLAYBOYS",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Battlebrae Meadow",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Evil SpetnaZ",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Lethal BloW",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Wifi Prestado",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "D3stroyers",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Battlebrae Peaks",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Core Vits",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Pay_For_It",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "First Fighter",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Battlebrae Plain",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "IS MY STATIC",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Cuys In The Clap",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Contingent",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Ephemerals",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Black Monastery",
+      "hideouts": []
+    },
+    {
+      "mapa": "Bleachskull Desert",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "IT s ShoW TimE",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "F Pal Que Lee",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Keybump",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "The Baspar",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Bleachskull Steppe",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "ARKADIA WORLD",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "H a x",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Braemore Lowland",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "M A N D A T O R Y",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "The Rugrats",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "GODS SON OF DRAGONS",
+          "tipo": "P"
+        },
+        {
+          "slot": 4,
+          "gremio": "Evil-Gank",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Vaelo Rojo",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "BLACK----MONEY",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "Black Rose Creed",
+          "tipo": "P"
+        }
+      ]
+    },
+    {
+      "mapa": "Braemore Upland",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "RETORNO DE LA CORONA",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "T O R O S",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "SPADE KINGDOM",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Brambleshore Hinterlands",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "EPIC EFFORTS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Valhalla Kingdom",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Citadel of Ash",
+      "hideouts": []
+    },
+    {
+      "mapa": "Daemonium Keep",
+      "hideouts": []
+    },
+    {
+      "mapa": "Darkbough Snag",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Upside",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Club de lenadores",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Upsida",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Deadpine Forest",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "The Lonely Men",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Upside",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Deathreach Priory",
+      "hideouts": []
+    },
+    {
+      "mapa": "Deathwisp Bog",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "PIVAS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Milfs in your area",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "APE MODE",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Audere est facere",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Black--Army",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Deathwisp Sink",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "PIVAS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "True Gentleman",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "desavence",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Deepwood Copse",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Gankers Letales",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "M Y R M I D O N S",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "AZTECAS_REALES",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Pocos Locos",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "24-7w",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Deepwood Dell",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Shadow-Reign",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Iflame",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Rise of Stark",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Deepwood Gorge",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "KR SEED",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "1AZEROTH1",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "N I E B I A",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Deepwood Pines",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "I M O R T A I S",
+          "tipo": "P"
+        },
+        {
+          "slot": 2,
+          "gremio": "C A M B A D A",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "PRIMATA MOD",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "LOS CHASQUIS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "HERMANDAD PJ",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "WHITE-MOON",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "DARK ATLAS",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Driftwood Glen",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "The Lonely Skibidi",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "L4 SECTA",
+          "tipo": "HQ"
+        }
+      ]
+    },
+    {
+      "mapa": "Driftwood Hollow",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Take Care",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Unbennat",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "W A I T I N G",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Driftwood Vale",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Cuys In The Clap",
+          "tipo": "HQ"
+        }
+      ]
+    },
+    {
+      "mapa": "Drownfield Course",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Lethal Warri0rs",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "NO MOLESTAR",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Let Me Gamble",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Hijos de la Anarquia",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "xX Maquina Del Mal Xx",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "ROYAL DESTROYERS",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Drownfield Fen",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "NoFreeThinkers",
+          "tipo": "HQ"
+        }
+      ]
+    },
+    {
+      "mapa": "Drownfield Mire",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Explore The World",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "One-Day",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Overprice",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "We Trade",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Espadachines Negros",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "U Are My Profit",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Drownfield Quag",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Los Caballeros Del Oni-Chan",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "1AZEROTH1",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "THE ENJAMBRE",
+          "tipo": "HQ"
+        }
+      ]
+    },
+    {
+      "mapa": "Drownfield Rut",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "M A N D A T O R Y",
+          "tipo": "HQ"
+        }
+      ]
+    },
+    {
+      "mapa": "Drownfield Sink",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Upside",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "The Lonely Men",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Commotion",
+          "tipo": "HQ"
+        }
+      ]
+    },
+    {
+      "mapa": "Drownfield Slough",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "NoFreeThinkers",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "xX Maquina Del Mal Xx",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "4pm",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "WinterLat",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Los POCHOcloss",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Drownfield Wetland",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Complejo de Pocho",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "ANNIHILATION",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Furia Nocturnx",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Raven Of Morgana",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Ephemerals",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 6,
+          "gremio": "Honey Fingers",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "ARKADIA WORLD",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 8,
+          "gremio": "Full Mistica Cero Skill",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Drybasin Oasis",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "The Real Aggression",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "X EL ULTIMO REINO X",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "FURIA DIVIN4",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Wrecking-Crew",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Hitsquad",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "U N F O R G I V E N",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "Throwing Chair",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Drybasin Riverbed",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Pura-Sangre",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Never Care",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Open-Fire",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "SnuSnu",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "SOMBRA-DA-MORTE",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "RAPPI",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "Ardeant",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Drytop Pillars",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Ethuil Barad",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Fire And Ashes",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Fallen Sacrament",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Coureur de Bois",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "21st Sinn",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "F A L A N G E",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Drytop Riverbed",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Los Hijos de Avalon",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Mafia Farmera",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "M I S T",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Montaraces",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "OEA",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Dryvein Confluence",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Last Bober Dance",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Vanity Venti",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Outrange",
+          "tipo": "HQ"
+        }
+      ]
+    },
+    {
+      "mapa": "Dryvein Cross",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "I Avalon Knights I",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "C4LL 0UT",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "xFATAL FURIx",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Blades of Avalon",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "AsMeninasSuperPoderosas",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Dryvein End",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "DARKM1GHT",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "S I G H T",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Arcosanti",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Dryvein Oasis",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "I Vicious I",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "La Guarida del Joker",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "HiDrA Reborn",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Dryvein Plain",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Lord Of Loot",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Arena Gankers",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Culto del Kraken",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Loyalty Matters",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Redness Crusaders",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Dryvein Riverbed",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "ERADICATEUR",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "LEGION_DEL_FENIX",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Dryvein Steppe",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Harvesters of the Hopesful",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "S I G H T",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Outlimits",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Mom Said No",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "One-Day",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "Obsidian Blades",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "Ignum",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Eldersleep",
+      "hideouts": []
+    },
+    {
+      "mapa": "Everwinter Crossing",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Highzen",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Shadow Of Avalon",
+          "tipo": "HQ"
+        }
+      ]
+    },
+    {
+      "mapa": "Everwinter Expanse",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "1NFIN1TY",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Gatitos Mimoshos",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Montaraces",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "Reconnection",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "OEA",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Everwinter Gap",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "X-PANZE",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Beary Tales",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Everwinter Gorge",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Laughing-Coffin",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "U Are My Profit",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "REYES DEL TIEMPO",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "Outrange",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "D E C L I N E",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "S L I C E D",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "Fire With Fire",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Everwinter Incline",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "3CM OF PLEASURE",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Da Black Lotus",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "DATE A LIVE",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "One-Day",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Treasure Tales",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "O-L-Y-M-P-U-S",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "R E Q U 1 E M",
+          "tipo": "P"
+        },
+        {
+          "slot": 8,
+          "gremio": "Valhalla Kingdom",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 9,
+          "gremio": "Contingent",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 10,
+          "gremio": "xCATACLYSMx",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Everwinter Passage",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Valhalla Kingdom",
+          "tipo": "HQ"
+        }
+      ]
+    },
+    {
+      "mapa": "Everwinter Peak",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "VENENO BLACK",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Knights of Empire",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "FULLPUSH",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Everwinter Plain",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "The Insanity",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Knight Blood",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "headbutt",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "II Aldeia II",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "T h e _-_ E x i l e d",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "Et cetera",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Everwinter Reach",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "El Punto de Partida",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Imperium Sacchari",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "La Ultima Vagancia ATR",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Atrasa Lado",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "f-BarZini",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Everwinter Shores",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "MEDIEVAL SHADOWS",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "OEA",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Eye of the Forest",
+      "hideouts": []
+    },
+    {
+      "mapa": "Farshore Bay",
+      "hideouts": []
+    },
+    {
+      "mapa": "Farshore Cape",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Amigos do Blackjack",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "DATE A LIVE",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Cavaleiros Avalonianos",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Last-Pass",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Pay_For_It",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Farshore Drylands",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "X Y R I S",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "De4d End",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Last Bober Dance",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Last-Pass",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Farshore Esker",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Cavaleiros Avalonianos",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Captain Timo",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Zukaritas",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "END-GAMER",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Lethal BloW",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Farshore Heath",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "C T",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "S W O R D X",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Farshore Lagoon",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "I Loniez I",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "MORS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "OSOS AUTISTAS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Last-Pass",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "L E G E N D A R I O S",
+          "tipo": "P"
+        }
+      ]
+    },
+    {
+      "mapa": "Firesink Caldera",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Arroz Clan",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Dopamine Dynasty",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Clearance",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "A ORIGEM",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Firesink Trench",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "ViGAME",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Bear x Paws",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Error 404 Not Found",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Proyecto Nefalem",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "I DEMACIA I",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "los titanes",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Flammog Desolation",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Faction Army",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Let Me Gamble",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "LatinWarriors",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "Mystic Tecolothy",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Flammog Fork",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Faction Army",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "PIVAS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "PERMA BEARS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "V O R A C I T Y",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "A PANELA PVE",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "NOCTEM",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Flammog Valley",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "FURIA DIVIN4",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "La Madrigayra",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Zoltrak",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Spazzin Out",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Exiled KingDoms",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Flatrock Cliffs",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "I N S O L E N T",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Hemp Rats Cartel",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Mors Certa",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Deorum Mortis",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Mute Zone",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "cosplays minions",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Flatrock Plateau",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "M B M",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "The Irish Mafia",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "I_OMNIPOTENTE_I",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "C R I M E N",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Eternity Fame",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "ILLICIT HOMMIES",
+          "tipo": "P"
+        }
+      ]
+    },
+    {
+      "mapa": "Floatshoal Bight",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "MORS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "The Celestial Lions",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Linhir",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Floatshoal Fissure",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Ghost Kingdom",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "The Jolly Rogerz",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "ArLand",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "VeryDificul",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Martelo Forte",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Floatshoal Floe",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Coletoresdemamute",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Witless Mercenaries Tavern",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "MeT4LCorp",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "VENENO T8",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "EPIC EFFORTS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "Army Bears",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "Pack Yo Bags",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 8,
+          "gremio": "ADO FANCLUB",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Frostbite Chasm",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "I M O R T A I S",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Nexus",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Eternal Knights of Shadows",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Frostbite Mountain",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "NOCHE de ALBION",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "COMARCA DE HOBBITON",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "UN NUEVO AMANECER",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "FOI FUMADO",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Anti Sociais",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "NO HOLDING",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "LA-ORDEN-DEL-COLMILLO-NEGRO",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Frostpeak Ascent",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "LORDS DAEDRAS",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "The Destruction Company",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Reimei No Seidan",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "The Guardian Lords",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Frostpeak Vista",
+      "hideouts": []
+    },
+    {
+      "mapa": "Frostseep Crevasse",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Arcana Mortis",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "P R E D A T O R Z",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Los 0cupas",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Oclock",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "K PA MI XAN",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "La Vallee Du Nord",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "Mafia Sindical",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Frostseep Ravine",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Ecos da Ruina",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "CECOT",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "VORAZ",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "R 4 V E N",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Frostspring Passage",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "boars head tavern",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "U-S-E-L-E-S-S",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "xX Maquina Del Mal Xx",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "Heretic Network",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "I Loniez I",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "THE ARCHIMAGOS",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Frostspring Volcano",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Wrecking-Crew",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "BIG_TIME",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "TKACHO Y SAFO",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "La Federacion Y",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Giantweald Copse",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Life is game",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Giantweald Dale",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "GENEI RYOD4N",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Mute Zone",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "M A S I O S A RE",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Somos Picsis",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Giantweald Edge",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Infinite Astrolis",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "x-Gankers",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "HELL KILLERS",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "TIERRA - MEDIA",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Griffins Riders",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "Shroom Squad",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "SECTUM PRIME",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Giantweald Glade",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "NO GODS NO MASTERS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "LatinWarriors",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "S K Y R 1 M",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "3CM OF PLEASURE",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Giantweald Roots",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "F A L A N G E",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Spence",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Giantweald Woods",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "One-Day",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "The Kings Codex",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Nemesis Command",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "Last Bober Dance",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Eikonic",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "Llamitas Su Su Sum",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Glacierbreak Summit",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "iCore",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "THE ASSASSINS CREED",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Sangre de Mercenarios",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Ministry Of Bandits",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Homeless home",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Glacierfall Canyon",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Hitsquad",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "It Was A Good Day",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Glacierfall Cross",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "IB E R S E R K",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "SIN PORCENTAJE",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Fallen Sacrament",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "x TELETON x",
+          "tipo": "P"
+        }
+      ]
+    },
+    {
+      "mapa": "Glacierfall Fissure",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Be Careful",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Glacierfall Pass",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "MEVECH",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Benevolent Kool Aid",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Keybump",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "El Gremio De Las Mil Manos",
+          "tipo": "P"
+        }
+      ]
+    },
+    {
+      "mapa": "Glacierfall Passage",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Velo Rojo",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Mythic Vanguard",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "I Utevo Lux I",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Glacierfall Valley",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "La Federacion Y",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "EVIL GORGONITAS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "X ZODIAC X",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Gravemound Brim",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "CHAOSFORCE",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Explocion de Sabor",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "YOU_ARE_DEAD",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Onliners",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "ETHERNAL-GLORY",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Gravemound Cliffs",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "SWORDX",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "El Indio Solari",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Highskull",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Rokosos",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "B E L L U M S",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Gravemound Hills",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Eternal Knights of Shadows",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Aesirs",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Goon Legion",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "Last Dead",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Finis Terra",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "Obsidian Blades",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 7,
+          "gremio": "L-GANK-TE",
+          "tipo": "P"
+        }
+      ]
+    },
+    {
+      "mapa": "Gravemound Knoll",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Sea-Sky-Fraternity",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "True Gentleman",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "The Real Aggression",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Gravemound Slope",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "TravelersUnion",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "VIDA LOUCA",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Mi Banana en Pijama",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Eikonic",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "H-E-L-H-E-I-M",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Greenhollow Copse",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "IT s ShoW TimE",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "SWORDX",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Free Beer",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "BRIGA D BAR",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "La Furia de Midgard",
+          "tipo": "P"
+        }
+      ]
+    },
+    {
+      "mapa": "Greenhollow Vale",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "YOU_ARE_DEAD",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Paladines de Teemo",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Divine Departure",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Grougaloragram",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "T H A L M A R",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Greenshore Bay",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "FLASH BANG",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "FURIA DIVN4",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Born To D1e",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Aponia",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "FATAL1TY",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "Hiden Assasins",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "Vulture Tyranny",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Greenshore Peninsula",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "FATAL1TY",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "HELL KILLERS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "x Black Hand x",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Fking Bald",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 5,
+          "gremio": "GREMITIUS",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 6,
+          "gremio": "Drakebound",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "Motley Crusade",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 8,
+          "gremio": "Contingent",
+          "tipo": "P"
+        }
+      ]
+    },
+    {
+      "mapa": "Highstone Grassland",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Aguapanela Encantada",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Nexus",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Rainbow Kitten",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "The Celestial Lions",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "ARKADIA WORLD",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Highstone Loch",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Take Care",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Ignum",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Highstone Meadow",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "O O P S S",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Highstone Mound",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "KOLD",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "E S P E C T R O",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "JAMAICA",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Error 404 Not Found",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "R E V O A D A",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "AsMeninasSuperPoderosas",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Highstone Plains",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Eroth",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "La RevelionLx",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "ARKADIA WORLD",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Shroom Squad",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "ARMONYYY",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Highstone Plateau",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "R E X",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Muff",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "K-I-L-L-A",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "IT s ShoW TimE",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "N A M 3 L E SS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "BLACK COYOTES",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Hightree Borderlands",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "FULL PRESS TAMAULIPAS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "FURIAN",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Caballeros del Pasado",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Hightree Cliffs",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "HORA_DE_AVENTURA",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "B U T E C O",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "BORN IN STATIC",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "Arcosanti",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Hightree Dale",
+      "hideouts": []
+    },
+    {
+      "mapa": "Hightree Enclave",
+      "hideouts": []
+    },
+    {
+      "mapa": "Hightree Glade",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Angels Of Vindication",
+          "tipo": "HQ"
+        }
+      ]
+    },
+    {
+      "mapa": "Hightree Hillock",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Spetsnaz Grail",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "WhiteLotus",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Monkey Leaders",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Hightree Isle",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Crux del Sur",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Deserted Ones",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Hightree Lake",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "II Genesis II",
+          "tipo": "HQ"
+        }
+      ]
+    },
+    {
+      "mapa": "Hightree Levee",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "FURIA DIVIN4",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Life is game",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Chronus",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "VALKARION",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Honoris",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "Br41nL4g",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Hightree Pass",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Winter Raven",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "So os Buchas",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "souls fire",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Hightree Steep",
+      "hideouts": []
+    },
+    {
+      "mapa": "Hightree Strand",
+      "hideouts": []
+    },
+    {
+      "mapa": "Iceburn Cliffs",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Ceberus-Alpha",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "D O L L Y",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "NO ENCORE",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Iceburn Firth",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Upside",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "EVIL GORGONITAS",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Iceburn Peaks",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Spence",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "THE BURNING FANG",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Iceburn Tundra",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Crux del Sur",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "D e l i c u e n t e s",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Tombguard Sentinels",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "4pm",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "No Lineales",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "H U R S T",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "Hunters-of-Glory",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Longfen Arms",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "This-Promise",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "ERECTUM",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "UN NUEVO AMANECER",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "Cassiopea",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 5,
+          "gremio": "Albionlines Crew",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 6,
+          "gremio": "Legion Of Farmers",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "T-E-S-A",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 8,
+          "gremio": "Mercenarios de Martlock",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 9,
+          "gremio": "A S T R A L I U M",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Longfen Marsh",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "We Profit",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Longfen Veins",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "TU MAMMA",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Meltwater Bog",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "PALHASSADA",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Militant",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Brotheragem",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "AO University",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Meltwater Channel",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Mafia Sindical",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "ArGentiNidad",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Aponia",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Knight Blood",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Please No Hit Me",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "Et cetera",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Meltwater Delta",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Hiyoko gakkou",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Vanguard Killers",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "T U R M O I L",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Meltwater Sump",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Crux del Sur",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "desavence",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "G3NESYS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Et  cetera",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "D E C E I T",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "MEDIEVAL SHADOWS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "ANT1GRAVITY",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Mudfoot Mounds",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "PlatinumEmpire",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Cavaleiros de Vera Cruz",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "ETHERNAL-GLORY",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "Escarveil",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 5,
+          "gremio": "No Hesitation",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 6,
+          "gremio": "Project OO",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "La Taberna Runica",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 8,
+          "gremio": "L E G E N D A R I O S",
+          "tipo": "P"
+        }
+      ]
+    },
+    {
+      "mapa": "Mudfoot Sump",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Captain Timo",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Munten Fell",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Honoris",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Death Lag",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "D3stroyers",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Munten Rise",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Wandering-Souls",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Loot or Let Die",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Twilight Avengers",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "T e G",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 5,
+          "gremio": "COROA NEGRA",
+          "tipo": "HQ"
+        }
+      ]
+    },
+    {
+      "mapa": "Munten Tundra",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "La Sombra de Lymhurt",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Medium",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Spetsnaz Grail",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Hitsquad",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Murdergulch Cross",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Spetsnaz Grail",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Ghost Kingdom",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "VK Army",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Murdergulch Divide",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "iFures",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "V4TOS LOCOS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "PLAYBOYS",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Murdergulch Gap",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "RETORNO DE LA CORONA",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "xX Imperio de las Sombras Xx",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Murdergulch Ravine",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "APE Mode",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Murdergulch Trail",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Los 0cupas",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "ENTERT4INMENT",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Mythix",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "I M O R T A I S",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "ArGentiNidad",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Northstrand Beach",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "T E K A I",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "KOALATION",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "The Comunity",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "S O L O L E V E L I N G",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "L4 SECTA",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Northstrand Dunes",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Paladinos Sagrados",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Deicidio Supremacy",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "The Comunity",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Parchsand Cliffs",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "DIABLOS",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Nexus",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Gankers Letales",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "V1ctory or Death",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "N A G A S A K I",
+          "tipo": "P"
+        },
+        {
+          "slot": 6,
+          "gremio": "Morbidly_Obese",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "Reyes del Respawn",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 8,
+          "gremio": "MissClick",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 9,
+          "gremio": "K A I R O S",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Parchsand Drought",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "TU MAMMA",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Keybump",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Contingent",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Razorrock Bank",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "RADIANT",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "The Smugglers",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Razorrock Chasm",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Outlimits",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "IS MY STATIC",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "H U R S T",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "The Lonely Men",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Razorrock Edge",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Ignum",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "The Ghost 1",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "zGameZ",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Razorrock Gulch",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "PIVAS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Guilda Zap777",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Razorrock Passage",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "IVEXI",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Cuys In The Clap",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "The Bloody Crown",
+          "tipo": "P"
+        }
+      ]
+    },
+    {
+      "mapa": "Razorrock Ravine",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "CEIFADORES-DA-ALVORADA",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "WAITING",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Razorrock Valley",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "PIVAS",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Razorrock Verge",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "FULLPUSH",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "POTA POTA POTA",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Redtree Enclave",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Aesirs",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "N I G H T C A L L",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "D A E M O N",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "CHEEKZ",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Rivercopse Crossing",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "RUSH-B",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Upsida",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Rivercopse Curve",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Mind Gap",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Rivercopse Fount",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "DARKM1GHT",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "The Black Dragons BR",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Ifomes",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Curriculum Vitae",
+          "tipo": "P"
+        }
+      ]
+    },
+    {
+      "mapa": "Rivercopse Path",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Legacy Corporation",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "The Lonely Skibidi",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Runnelvein Bog",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Linhir",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "iBurn",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Las Cabras",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "Hydra Corporations",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 5,
+          "gremio": "los arcanos de la noche eterna",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 6,
+          "gremio": "1AZEROTH1",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Runnelvein Sink",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "R E Q U 1 E M",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Catadores de Toto",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "HIROSHIMA",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Outlimits",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "R 4 M P 4 G 3",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "REYES DEL TIEMPO",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "No Straight Roads",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Runnelvein Slough",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Toy Soldier",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Sandmount Ascent",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "IT s ShoW TimE",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "DATE A LIVE",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "NO HOLDING",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "I M O R T A I S",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "M A N D A T O R Y",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Sandmount Desert",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Rokosos",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "NO HOLDING",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "OSOS AUTISTAS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "A T O M I C",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Veel Glorie",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "Last-Pass",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "BLACK NIGH",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 8,
+          "gremio": "ELIXIR OF LIFE",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Sandmount Esker",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Lendarios BR",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "V I S A G E M",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "VIDA LOUCA",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Core Cats",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "SIGTRYG",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Sandmount Strand",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Die glorreichen Sammler",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "The Boss World",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "II OUIJA II",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "UwUknights",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "DARTH FORCES",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Sandrift Coast",
+      "hideouts": []
+    },
+    {
+      "mapa": "Sandrift Dunes",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Bryllanos",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "C R I M E N",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Sturmbringers",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Sandrift Expanse",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Pochitos Salvajes",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Wanted PKS",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "SALMOS144",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "Catadores de Toto",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Marlock Survivors",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "HOPLITA",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "I Think So",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Sandrift Fringe",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "I Loniez I",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Crux Del Sur",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Eevolution",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Sandrift Prairie",
+      "hideouts": []
+    },
+    {
+      "mapa": "Sandrift Shore",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Econyx",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Royal Ratpack",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Sandrift Steppe",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Take-it-Easy",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Scuttlesink Marsh",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "S H O T G U N",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "R E Q U 1 E M",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "TheMonument",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Scuttlesink Mouth",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "The Comunity",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "MAD_DOG",
+          "tipo": "HQ"
+        }
+      ]
+    },
+    {
+      "mapa": "Scuttlesink Pools",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "S H O T G U N",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "CULTO GATUNO",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Shaleheath Hills",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "CULTO GATUNO",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Shaleheath Steep",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "ROAM GANK COMMUNITY",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "CULTO GATUNO",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "M A N D A T O R Y",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "R E Q U 1 E M",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Skullmarsh Lower",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Twilight Knights",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "FUERZAS BRUTAS",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "D A R K - C O M P A N Y",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "LEGION GR 300",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Skullmarsh Upper",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Mono Con Navaja",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "LEGION GR 300",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "No Fight No Profit",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Skylake Bridge",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "The Destruction Company",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Kairo",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "amoral",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "K PA MI XAN",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "I N S O L E N T",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "DECAPITATORS",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Skylake Hinterlands",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Gankers Letales",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Let Me Gamble",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "VENENO T8",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Skysand Plateau",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "M A I D O O",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Proscriptus",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Et cetera",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "D e l i c u e n t e s",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "LatinWarriors",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "Black Dragon Aeon",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "Bomb and Brawl",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Skysand Ridge",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "B U R N I N",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "WinterLat",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "X EL ULTIMO REINO X",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Griffins Riders",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "TEAM OF DEATH",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Slakesands Canyon",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Life is game",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Volans",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Slakesands Mesa",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "LEGION GR 300",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Nictofilia",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "S W O R D X",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Southgrove Copse",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "HiDra Reborn",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "N E X C O R E",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Make Albion Unslave Great Agai",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "DEVTA",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "R U L E R S",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Southgrove Escarp",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "S I N C E 2000",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "TakeOnMe",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "CROSS GUILD 1",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Southgrove Thicket",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "INDOMITABLE LEGION",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "POST MORTEM",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Hitsquad",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Springsump Basin",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Victory or Valhalla - NA",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Killer Ducks II",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Springsump Melt",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Marlock Survivors",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "L E G E N D A R I O S",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Drakebound",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "D e l i c u e n t e s",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Springsump Wetland",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "HOPLITA",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Bryllanos",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Black Dragon Aeon",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "A ORIGEM",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "SH4DOW G4RDEN",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "BELEGHOST",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "x Militia x",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Stonelake Fields",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Hispanica",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "GHOST_BLACK_NZ",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Cavaleiros Avalonianos",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Amigos do Blackjack",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "I Loniez I",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Stonelake Hillock",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Orden-Real",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "W A R H E A D",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "THE ARCHIMAGOS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Heretic Network",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Cavaleiros Avalonianos",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "La mula embotellada",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "ReYeS_De_PiEdRa",
+          "tipo": "HQ"
+        }
+      ]
+    },
+    {
+      "mapa": "Stonemouth Bay",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "DaOneNOnly",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Hold My Pocket",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "The Jolly Rogerz",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "III Be In Your Mom",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 5,
+          "gremio": "Culto del Kraken",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "Harvesters of the Hopeful",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Stonemouth Northbluff",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "WildCards",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Legion Brocoli",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Caballeros del Pasado",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Stonemouth Southbluff",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "MushroomOverdose",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "BOBA DA PESTE",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "MICHI BROTHERHOOOD",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Keybump",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "The Lonely Men",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "THE HOOTERS",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Sunfang Approach",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Crazy Club",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "N A G A S A K I",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "OathBreakerz",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "TimesLess Sword",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "O Quarto Andar",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "PE4KY BLINDERS",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Sunfang Cliffs",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "PIVAS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Black Sun Reapers",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Sunfang Dawn",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "N A G A S A K I",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "PLAYBOYS",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Sunfang Ravine",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "The Lonely Skibidi",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "i GAME OVER I",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "PLAYBOYS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "A S T R A L I U M",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "H U R S T",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "My Baad",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Sunfang Wasteland",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Upsida",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "N A M 3 L E S S",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "RUSH-B",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Sunkenbough Spring",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "KURO-S H3LL",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "All Seeingg",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Tyrannt",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "DARKM1GHT",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Sunkenbough Woods",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Late Fee",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "MYKA",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "S W O R D X",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Harvesters of the Hopeful",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Sunstrand Delta",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Nombre-Ya-En-Uso",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "C R I M E N",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "B A N Z A II",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Banddle City",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "MushroomOverdose",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "Evil Pig B",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Sunstrand Dunes",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "ARS OCCISIONIS",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "TIERRA - MEDIA",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Los 0cupas",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "CHAOSFORCE",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "THE ENJAMBRE",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "SOMBRAVELOZ",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "X Y R I S",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 8,
+          "gremio": "Culto del Kraken",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 9,
+          "gremio": "Kill Or Be Kill3d",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Sunstrand Quicksands",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Mythix",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "The Real Aggression",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Be Careful",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "OathBreakerz",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Sunstrand Shoal",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "T-E-S-A",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Vanguard Killers",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "The Lonely Men",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Buster Call",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "II CARPE DIEM II",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Swiftsands Basin",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Rise of Stark",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "L U I S I T A N I A",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Los Caballeros del Oni-Chan",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "ScoiaTael",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Skyrise",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "Mafia Sindical",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Swiftsands Chaparral",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "A T O M I C",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Eikonic",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Treasure Tales",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Swiftsands Plain",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Hamburg Kid",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "FollowMe",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Martelo Forte",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "The Irish Mafia",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Thirstwater Gully",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Anti Sociais",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Error 404 Not Found",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Thirstwater Steppe",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "BLACK-SHADOW",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Fallen Starts",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "The Jolly Rogerz",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "XxWakandaxX",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Honoris II",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "Honoris",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Thirstwater Waste",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "MYKA",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Los Caballeros Del Oni-Chan",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Thunderrock Ascent",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "DARKM1GHT",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Bon Bon Bum",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Upside",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Bomb1n1",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Z a n s h i n",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Thunderrock Draw",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Bon Bon Bum",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "KURO-S H3LL",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Outlimits",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Thunderrock Rapids",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Caballeros del Pasado",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Martyrdom",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Anti Hype Rus",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "THE GOLDEN COMPANI",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Honoris",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Thunderrock Upland",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Rage of Camelot",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Tark Assassins",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "EVIL GORGONITAS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "I M O R T A I S",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Timberscar Copse",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "We Trade",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Eevolution",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "I M O R T A I S",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Roses-Academy",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "F A L A F E R I A",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Timberscar Dell",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Espadachines Negros",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "II OUIJA II",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "NEW-WARRIOS",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Timberslope Bridge",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Eikonic",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Crux Del Sur",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "LatinWarriors",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Treasure Tales",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "N I G H T C A L L",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "R E H A B",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "Rise of Stark",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 8,
+          "gremio": "Jardim Do Sol",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 9,
+          "gremio": "S L I C E D",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 10,
+          "gremio": "Krozakov",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Timberslope Dell",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Fear Syndicate",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "VVolfPack",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "The New-Order",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Eikonic",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Timberslope Grove",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "PRIMATA MOD",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Pisca Alerta",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Vanguard Killers",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Quase Online",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Timbertop Dale",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Proyecto Nefalem",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "OUTLAW5",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Timbertop Escarp",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Wiping Squad",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "OEA",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Outlimits",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Federacion Jura Temp3st",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "MEDIEVAL SHADOWS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "xX The Jokers Xx",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "VENENO T8",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 8,
+          "gremio": "R A D I O",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Timbertop Wood",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "GRAN_TUMBA_DE_NAZARICK",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "sin-miedo",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Cabo Verde",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "R E H A B",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "W A R H E A D",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Twinchannel Narrows",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Fallen Sacrament",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "HORA_DE_AVENTURA",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Staatsfeinde",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "VIDA LOUCA",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "The Aegis Project",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "DATE A LIVE",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "Overprice",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 8,
+          "gremio": "The Rugrats",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 9,
+          "gremio": "ArLand",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Unhallowed Cloister",
+      "hideouts": []
+    },
+    {
+      "mapa": "Wailing Bulwark",
+      "hideouts": []
+    },
+    {
+      "mapa": "Watchwood Bluffs",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Mano de Acerro",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Sangre de Mercenarios",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "K-Pangas",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "RUINBORN",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 5,
+          "gremio": "SOLO PLAYERS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "Xyra",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "Los Osos de Albion",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 8,
+          "gremio": "ESCUADRON SUICIDA FAMA",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Watchwood Grove",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Mundo Balca",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "MLPwny",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Watchwood Lakeside",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Fleurir",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "O V E R L E V E",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Royal_Dynasty",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Los Caballeros Del Oni-Chan",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "La Federacion Y",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Watchwood Precipice",
+      "hideouts": []
+    },
+    {
+      "mapa": "Westweald Shore",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "BRIGA D BAR",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "NOXARIS",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Mafia Sindical",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "V1ctory or Death",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Velo Carmesi",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "LA-ORDEN-DEL-COLMILLO-NEGRO",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "DARK MARINES",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 8,
+          "gremio": "Barclass",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 9,
+          "gremio": "N E V A D A",
+          "tipo": "P"
+        }
+      ]
+    },
+    {
+      "mapa": "Westweald Thicket",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Nexus",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "PKS Society",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "R 4 V E N",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "N E V A D A",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Drakonty ligea",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Wetgrave Bog",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Martelo Forte",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "N O R T H - S T A R",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "BrandRisk",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Deorum Mortis",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Eevolution",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Wetgrave Marsh",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Xyra",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Hiyoko gakkou",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Los Caballeros del Oni-Chan",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Clearance",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Twenty Four",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Wetgrave Swale",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "The Celestial Lions",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "TheSpartanSQUAD",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Treasure Tales",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "TIERRA - MEDIA",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Mythix",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "VATICANUM",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Whitebank Cross",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Nanten",
+          "tipo": "HQ"
+        }
+      ]
+    },
+    {
+      "mapa": "Whitebank Descent",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Kingfisherz",
+          "tipo": "HQ"
+        }
+      ]
+    },
+    {
+      "mapa": "Whitebank Ridge",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Rise of Stark",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "AO University",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "H-E-L-H-E-I-M",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Whitebank Shore",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "The Crooks",
+          "tipo": "HQ"
+        }
+      ]
+    },
+    {
+      "mapa": "Whitebank Stream",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Treasure Tales",
+          "tipo": "P"
+        }
+      ]
+    },
+    {
+      "mapa": "Whitebank Wall",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "OneOfUsIsInvis",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "DragDeezNuts",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "DEVTA",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "Fer de Lance",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 5,
+          "gremio": "Mythix",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "Flame me Maybe",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "Da Black Lotus",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 8,
+          "gremio": "Legion Brocoli",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Whitecliff Expanse",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "THE ASSASSINS CREED",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Born From The Ashes",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Los Narcisistas",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Whitecliff Peak",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "H3rois da Tret4",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Whitepeak Ascent",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "So os Buchas",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Unlucky Cats",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Veni-vici",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Dont_Cry",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Heretic Network",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "Evil Push",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "XNoMercy",
+          "tipo": "P"
+        }
+      ]
+    },
+    {
+      "mapa": "Whitepeak Spring",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Eevolution",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Velo Rojo",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "THE ARCHIMAGOS",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "les fr valoir",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 5,
+          "gremio": "CrotosDelSur",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 6,
+          "gremio": "BELEGHOST",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 7,
+          "gremio": "Heretic Network",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 8,
+          "gremio": "SunOfGods",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 9,
+          "gremio": "Nirvana Calling",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Whitepeak Tundra",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Furia Nocturnx",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Rogue Natives",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Espadachines Negros",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Lethal Warri0rs",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "OVERSIZE V",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Whitewall Pass",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "TU MAMMA",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Keybump",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Black Ursa",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Fabrica De Bolo",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "LETHAL-GAMING",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Whitewall Ridge",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "xX The Jokers Xx",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "S W O R D X",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Pay_For_It",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Widemoor Delta",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "A Gangue Trololo",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Guardianes de Asgard",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Widemoor End",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "CRAZY FOR SPEC",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "jabali del caos",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "BESOS NEGROS",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "Tumba de la Espada",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 5,
+          "gremio": "DEFENSORES THEFORD",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 6,
+          "gremio": "New Londo-Ruins",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Widemoor Estuary",
+      "hideouts": []
+    },
+    {
+      "mapa": "Widemoor Fen",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "C A S T L E V A N I A",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Relicario del Purgatorio",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Guardianes De Asgard",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Bencheados",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Roses-Academy",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "L4 SECTA",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "Axxis_Shadow",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Widemoor Flats",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "II OUIJA II",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "BLAM",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "The Baspar",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Trippie Redd",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Legion Celestial",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "La Vallee Du Nord",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Widemoor Hills",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "CRIMIN4LES",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "les fr valoir",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "shadow f1ends",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "T O R O S",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "FURTIVITE",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "Les hommes de Sparte",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Widemoor Pool",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Inspeccion de Billeteras",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Widemoor Shore",
+      "hideouts": []
+    },
+    {
+      "mapa": "Widemoor Woods",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Theforever",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "LasT Neuron",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Operacao Troll",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Knights of Empire",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Los Enanos de Erebor",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "Upside",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Willowshade Hills",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "E F E",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "TALLADOS",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Willowshade Icemarsh",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Pisca Alerta",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "The Rugrats",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "IRMANDADE DOS RENEGADOS",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "ASTRAL BORZ",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 5,
+          "gremio": "LegionOfOne",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 6,
+          "gremio": "24-7w",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "Solaryz",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 8,
+          "gremio": "Antiguos Guerreros Aztekas",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 9,
+          "gremio": "Split Second",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 10,
+          "gremio": "La Hermandad del Espresso",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Willowshade Lake",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Toy Soldier",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Cacadores de Gankers",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "A N X X I E T Y",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "Only To Fight",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 5,
+          "gremio": "GRIMORIO DEL NUCLEO DORADO",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "Die ritter Gotz von Berliching",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Willowshade Mire",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "A Gangue Trololo",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Eminence InShadow",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Oficina Real",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "24-7w",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Willowshade Pools",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "T O R O S",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Shadow of KIng",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "C A S T L E V A N I A",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Lethal Warri0rs",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Willowshade Sink",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "Phoenix A",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 2,
+          "gremio": "Aponia",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 3,
+          "gremio": "Spetsnaz Grail",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "TIERRA - MEDIA",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "E l i x i r s",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "No Lineales",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 7,
+          "gremio": "Blades of Avalon",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 8,
+          "gremio": "Da Black Lotus",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 9,
+          "gremio": "TheMonument",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Willowshade Wetlands",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "CeridwensLittleHelpers",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Windgrass Border",
+      "hideouts": []
+    },
+    {
+      "mapa": "Windgrass Coast",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "BLAM",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Nous7Familly",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Tributos",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 4,
+          "gremio": "OVER DISASTERS",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 5,
+          "gremio": "Road Blockk",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 6,
+          "gremio": "BLACK -SHADOW",
+          "tipo": "P"
+        },
+        {
+          "slot": 7,
+          "gremio": "ELIXIR OF LIFE",
+          "tipo": "P"
+        }
+      ]
+    },
+    {
+      "mapa": "Windgrass Fields",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "SAGRA2",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "TheSpartanSQUAD",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "the black killer",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "Union of Knight",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 5,
+          "gremio": "Public Display of Assault",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    },
+    {
+      "mapa": "Windgrass Gully",
+      "hideouts": []
+    },
+    {
+      "mapa": "Windgrass Precipice",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "DARTH FORCES",
+          "tipo": "P"
+        }
+      ]
+    },
+    {
+      "mapa": "Windgrass Rill",
+      "hideouts": []
+    },
+    {
+      "mapa": "Windgrass Terrace",
+      "hideouts": [
+        {
+          "slot": 1,
+          "gremio": "H a x",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 2,
+          "gremio": "Last Dead",
+          "tipo": "HQ"
+        },
+        {
+          "slot": 3,
+          "gremio": "Obsidian Blades",
+          "tipo": "ESTANDAR"
+        },
+        {
+          "slot": 4,
+          "gremio": "MLPwny",
+          "tipo": "ESTANDAR"
+        }
+      ]
+    }
+  ]
+}
