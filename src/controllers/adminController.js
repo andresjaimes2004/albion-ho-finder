@@ -58,6 +58,20 @@ const renombrarMapa = manejar((req, res) => {
   res.json({ ok: true, mapa });
 });
 
+const subirImagenMapa = manejar((req, res) => {
+  const imagen = servicio.guardarImagenMapa(idUsuario(req), req.params.id, req.body);
+  res.json({ ok: true, imagen });
+});
+
+const ajustarImagenMapa = manejar((req, res) => {
+  const imagen = servicio.ajustarImagenMapa(idUsuario(req), req.params.id, req.body || {});
+  res.json({ ok: true, imagen });
+});
+
+const borrarImagenMapa = manejar((req, res) => {
+  res.json({ ok: true, ...servicio.borrarImagenMapa(idUsuario(req), req.params.id) });
+});
+
 // ------------------------------------------------------------- hideouts ---
 
 const crearHideout = manejar((req, res) => {
@@ -135,6 +149,9 @@ module.exports = {
   subirLogo,
   borrarLogo,
   renombrarMapa,
+  subirImagenMapa,
+  ajustarImagenMapa,
+  borrarImagenMapa,
   crearHideout,
   actualizarHideout,
   posicionarHideout,

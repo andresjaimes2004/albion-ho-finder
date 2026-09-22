@@ -37,7 +37,7 @@ export function limpiar(nodo) {
  * se mueve exactamente lo que se arrastra y el zoom respeta el punto bajo
  * el cursor, sin importar el tamaño del contenedor.
  */
-export function habilitarNavegacion(svg, { minEscala = 0.5, maxEscala = 16 } = {}) {
+export function habilitarNavegacion(svg, { minEscala = 0.5, maxEscala = 16, alCambiar = null } = {}) {
   const estado = {
     escala: 1,
     x: 0,
@@ -59,6 +59,7 @@ export function habilitarNavegacion(svg, { minEscala = 0.5, maxEscala = 16 } = {
       'transform',
       `translate(${estado.x} ${estado.y}) scale(${estado.escala})`
     );
+    if (alCambiar) alCambiar(estado);
   }
 
   svg.addEventListener(
@@ -83,7 +84,26 @@ export function habilitarNavegacion(svg, { minEscala = 0.5, maxEscala = 16 } = {
     { passive: false }
   );
 
+  // Un arrastre no debe terminar en "clic": ni abrir un mapa ni marcar
+  // la ubicación de un hideout por accidente.
+  let inicio = null;
+  let huboArrastre = false;
+
+  svg.addEventListener(
+    'click',
+    (evento) => {
+      if (huboArrastre) {
+        evento.stopPropagation();
+        evento.preventDefault();
+        huboArrastre = false;
+      }
+    },
+    true
+  );
+
   svg.addEventListener('pointerdown', (evento) => {
+    inicio = { x: evento.clientX, y: evento.clientY };
+    huboArrastre = false;
     if (evento.target.closest('[data-interactivo]')) return;
     const punto = aUnidades(evento.clientX, evento.clientY);
     if (!punto) return;
@@ -93,6 +113,9 @@ export function habilitarNavegacion(svg, { minEscala = 0.5, maxEscala = 16 } = {
   });
 
   svg.addEventListener('pointermove', (evento) => {
+    if (inicio && Math.hypot(evento.clientX - inicio.x, evento.clientY - inicio.y) > 5) {
+      huboArrastre = true;
+    }
     if (!estado.arrastrando) return;
     const punto = aUnidades(evento.clientX, evento.clientY);
     if (!punto) return;
@@ -103,6 +126,7 @@ export function habilitarNavegacion(svg, { minEscala = 0.5, maxEscala = 16 } = {
   });
 
   const soltar = () => {
+    inicio = null;
     estado.arrastrando = false;
     svg.classList.remove('arrastrando');
   };

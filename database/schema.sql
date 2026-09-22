@@ -144,3 +144,25 @@ CREATE TABLE IF NOT EXISTS auditoria (
 );
 
 CREATE INDEX IF NOT EXISTS idx_auditoria_fecha ON auditoria (creado_en DESC);
+
+-- ============================================================================
+-- v3: imagen de fondo propia por mapa
+-- ============================================================================
+
+-- Imagen que un administrador sube para un mapa concreto (por ejemplo, una
+-- captura del minimapa del juego). Se guarda como BLOB para no escribir
+-- archivos en disco, y se acompaña del ajuste que la alinea con la
+-- geometría real del mapa: escala, desplazamiento y rotación.
+CREATE TABLE IF NOT EXISTS mapas_imagen (
+    mapa_id         INTEGER PRIMARY KEY REFERENCES mapas(id) ON DELETE CASCADE,
+    mime            TEXT    NOT NULL,
+    datos           BLOB    NOT NULL,
+    bytes           INTEGER NOT NULL,
+    escala          REAL    NOT NULL DEFAULT 1,
+    desplazamiento_x REAL   NOT NULL DEFAULT 0,
+    desplazamiento_y REAL   NOT NULL DEFAULT 0,
+    rotacion        INTEGER NOT NULL DEFAULT 0
+                    CHECK (rotacion IN (0, 90, 180, 270)),
+    usuario_id      INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+    actualizado_en  TEXT    NOT NULL DEFAULT (datetime('now'))
+);

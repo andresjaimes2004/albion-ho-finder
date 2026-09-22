@@ -130,6 +130,74 @@ class AdminService {
     return actualizado;
   }
 
+  // -------------------------------------------- imagen de fondo del mapa ---
+
+  _mapaExistente(id) {
+    const mapaId = entero(id, 'id', { min: 1 });
+    const mapa = this.mapas.obtenerPorId(mapaId);
+    if (!mapa) throw new ErrorValidacion('El mapa indicado no existe.');
+    return mapa;
+  }
+
+  /**
+   * Sube (o reemplaza) la imagen de fondo de un mapa. Igual que con los
+   * logos, el tipo se valida por la firma binaria del archivo, nunca por
+   * lo que declare el navegador.
+   */
+  guardarImagenMapa(usuarioId, id, buffer) {
+    const mapa = this._mapaExistente(id);
+
+    if (!Buffer.isBuffer(buffer) || buffer.length === 0) {
+      throw new ErrorValidacion('No se recibió ninguna imagen.');
+    }
+    if (buffer.length > config.limites.imagenMapaBytes) {
+      throw new ErrorValidacion('La imagen supera el tamaño máximo de 4 MB.');
+    }
+
+    const mime = detectarTipo(buffer);
+    if (!mime || !config.logo.tiposPermitidos.includes(mime)) {
+      throw new ErrorValidacion('Formato no admitido. Usa PNG, JPG o WebP.');
+    }
+
+    const meta = this.mapas.guardarImagen(mapa.id, { mime, datos: buffer, usuarioId });
+    this._auditar(usuarioId, 'IMAGEN', 'mapa', mapa.id, { mime, bytes: buffer.length });
+    return meta;
+  }
+
+  /**
+   * Ajuste que alinea la imagen subida con la geometría real del mapa.
+   * Los desplazamientos están en las mismas unidades que la vista del mapa
+   * (metros del juego girados 45°), la escala es un factor y la rotación
+   * solo admite cuartos de vuelta.
+   */
+  ajustarImagenMapa(usuarioId, id, { escala, dx, dy, rotacion }) {
+    const mapa = this._mapaExistente(id);
+    if (!this.mapas.obtenerImagenMeta(mapa.id)) {
+      throw new ErrorValidacion('Ese mapa todavía no tiene una imagen subida.');
+    }
+
+    const ajuste = {
+      escala: decimal(escala, 'escala', { min: 0.2, max: 5 }),
+      dx: decimal(dx, 'dx', { min: -2000, max: 2000 }),
+      dy: decimal(dy, 'dy', { min: -2000, max: 2000 }),
+      rotacion: entero(rotacion, 'rotacion', { min: 0, max: 270 }),
+    };
+    if (![0, 90, 180, 270].includes(ajuste.rotacion)) {
+      throw new ErrorValidacion('La rotación solo admite 0, 90, 180 o 270 grados.');
+    }
+
+    const meta = this.mapas.guardarAjusteImagen(mapa.id, ajuste);
+    this._auditar(usuarioId, 'AJUSTE_IMAGEN', 'mapa', mapa.id, ajuste);
+    return meta;
+  }
+
+  borrarImagenMapa(usuarioId, id) {
+    const mapa = this._mapaExistente(id);
+    this.mapas.borrarImagen(mapa.id);
+    this._auditar(usuarioId, 'IMAGEN_BORRADA', 'mapa', mapa.id, null);
+    return { id: mapa.id };
+  }
+
   // ----------------------------------------------------------- hideouts ---
 
   crearHideout(usuarioId, { mapa, gremio, slot, tipo }) {

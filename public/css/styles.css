@@ -564,59 +564,72 @@ body {
 .lienzo.arrastrando { cursor: grabbing; }
 .lienzo.svg--marcando { cursor: crosshair; }
 
-/* Mapa mundial */
-.mundo__aristas line { stroke: #3a3340; }
-.mundo__nodo circle {
-  fill: #6d5f3f;
-  stroke: #0d0c0f;
+/* Mapa mundial (sobre el mapa del juego) */
+.mundo__fondo image { image-rendering: auto; }
+.mundo__aristas line { stroke: rgba(20, 16, 12, 0.55); }
+.mundo__nodo rect {
+  fill: rgba(16, 14, 18, 0.82);
+  stroke: rgba(236, 231, 224, 0.55);
   transition: fill 0.15s ease;
 }
-.mundo__nodo:hover circle { fill: var(--color-oro-claro); }
-.mundo__nodo--destacado circle { fill: var(--color-carmesi-claro); stroke: var(--color-oro-claro); }
+.mundo__nodo--ocupado rect { fill: #121014; stroke: var(--color-oro); }
+.mundo__nodo:hover rect,
+.mundo__nodo:focus-visible rect { fill: var(--color-oro-claro); }
+.mundo__nodo--destacado rect { fill: var(--color-carmesi-claro); stroke: #fff4c8; }
 .mundo__etiqueta {
-  fill: var(--color-texto-suave);
-  font-size: 9px;
+  /* El tamaño y el grosor del contorno los fija el JS en unidades del mapa. */
+  fill: #fff7e6;
   font-family: var(--fuente-texto);
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: rgba(10, 8, 12, 0.9);
   opacity: 0;
   pointer-events: none;
 }
 .mundo__nodo:hover .mundo__etiqueta,
+.mundo__nodo:focus-visible .mundo__etiqueta,
 .mundo__nodo--destacado .mundo__etiqueta { opacity: 1; }
+.mapa-mundial__atribucion { font-size: 0.72rem; margin-top: 2px; }
 
 /* Mapa de un cluster */
-.mapa__terreno { fill: #191520; stroke: #46394d; stroke-width: 3; }
+.mapa__terreno { fill: #191520; }
+.mapa__borde { fill: none; stroke: rgba(232, 201, 92, 0.8); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.mapa__mascara { fill: rgba(9, 8, 11, 0.62); pointer-events: none; }
 .mapa__rejilla line { stroke: rgba(255, 255, 255, 0.04); stroke-width: 1.5; }
-.mapa__caminos line { stroke: #8a7c5a; stroke-width: 6; stroke-linecap: round; opacity: 0.55; }
+.mapa__caminos line { stroke: #8a7c5a; stroke-width: 3; stroke-linecap: round; opacity: 0.7; vector-effect: non-scaling-stroke; }
+.mapa__caminos--sobre-fondo line { stroke: #ffe28a; stroke-width: 2.5; opacity: 0.85; stroke-dasharray: 6 5; }
+.mapa__territorio--sutil polygon { fill: rgba(201, 162, 39, 0.05); stroke-opacity: 0.7; }
 
-.mapa__territorio rect { fill: rgba(201, 162, 39, 0.08); stroke: var(--color-oro); stroke-width: 2; stroke-dasharray: 8 6; }
+.mapa__territorio polygon { fill: rgba(201, 162, 39, 0.08); stroke: var(--color-oro); stroke-width: 1.5; stroke-dasharray: 5 4; vector-effect: non-scaling-stroke; }
 .mapa__territorio circle { fill: var(--color-oro); }
-.mapa__territorio--castle rect { stroke: var(--color-carmesi-claro); }
+.mapa__territorio--castle polygon { stroke: var(--color-carmesi-claro); }
 
 .mapa__etiqueta {
   /* Las etiquetas no deben interceptar clics: al marcar la ubicación de
      un hideout, el clic tiene que llegar al mapa que hay debajo. */
   pointer-events: none;
+  /* Tamaño y contorno los fija el JS: el texto se dibuja en píxeles. */
   fill: var(--color-texto-suave);
-  font-size: 15px;
   font-family: var(--fuente-texto);
   paint-order: stroke;
   stroke: #0d0c0f;
-  stroke-width: 3px;
 }
 
-.mapa__etiqueta--salida { fill: var(--color-oro-claro); }
+.mapa__etiqueta--salida { fill: var(--color-oro-claro); font-weight: 600; }
+.mapa__etiqueta--pin { fill: #fff; font-weight: 600; }
+.mapa__rotulo .mapa__etiqueta { fill: #f3e3b0; }
 
 .mapa__salida { cursor: pointer; }
-.mapa__salida circle { fill: rgba(201, 162, 39, 0.16); stroke: var(--color-oro); stroke-width: 2.5; }
+.mapa__salida circle { fill: rgba(20, 16, 12, 0.55); stroke: var(--color-oro); stroke-width: 2; }
 .mapa__salida-centro { fill: var(--color-oro) !important; }
 .mapa__salida:hover circle { fill: rgba(232, 201, 92, 0.35); }
 
 .mapa__pin { cursor: pointer; }
-.mapa__pin-cuerpo { fill: var(--color-exito); stroke: #0d0c0f; stroke-width: 2; }
+.mapa__pin-cuerpo { fill: var(--color-exito); stroke: #0d0c0f; stroke-width: 1.5; }
 .mapa__pin-centro { fill: #0d0c0f; }
 .mapa__pin--hq .mapa__pin-cuerpo { fill: var(--color-oro); }
 .mapa__pin--personal .mapa__pin-cuerpo { fill: #5b8fd9; }
-.mapa__pin--destacado .mapa__pin-cuerpo { stroke: var(--color-carmesi-claro); stroke-width: 4; }
+.mapa__pin--destacado .mapa__pin-cuerpo { stroke: #fff4c8; stroke-width: 2.5; }
 
 /* -------------------------------------------------- ventanas flotantes --- */
 
@@ -874,3 +887,71 @@ body {
   .lienzo--mapa { height: 380px; }
   .lienzo { height: 340px; }
 }
+
+/* ------------------------------------------------------ fondo del mapa --- */
+
+.selector-fondo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.selector-fondo__opciones {
+  display: inline-flex;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+  overflow: hidden;
+}
+
+.selector-fondo__boton {
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--color-borde);
+  color: var(--color-texto-suave);
+  font: inherit;
+  font-size: 0.82rem;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.selector-fondo__boton:last-child { border-right: none; }
+.selector-fondo__boton[aria-pressed="true"] { background: rgba(201, 162, 39, 0.18); color: var(--color-oro-claro); }
+.selector-fondo__boton:disabled { opacity: 0.4; cursor: not-allowed; }
+.selector-fondo__boton:focus-visible { outline: 2px solid var(--color-oro-claro); outline-offset: -2px; }
+
+.selector-fondo__caminos {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--color-texto-suave);
+}
+
+.lienzo--mapa { background: #0b0a0d; }
+#mapa-mundial__svg { background: #46545c; }
+
+.ajuste-imagen { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--color-borde); }
+.ajuste-imagen h4 { margin: 0 0 6px; font-size: 0.9rem; font-family: var(--fuente-titulos); }
+.ajuste-imagen__archivo { font-size: 0.8rem; color: var(--color-texto-suave); max-width: 100%; }
+.ajuste-imagen__controles { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; }
+.ajuste-imagen__fila {
+  display: grid;
+  grid-template-columns: 72px 1fr 48px;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--color-texto-suave);
+}
+.ajuste-imagen__fila select {
+  grid-column: 2 / 4;
+  background: var(--color-fondo);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+  color: var(--color-texto);
+  padding: 4px 8px;
+  font: inherit;
+}
+.ajuste-imagen__fila output { text-align: right; font-variant-numeric: tabular-nums; }

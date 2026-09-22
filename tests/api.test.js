@@ -374,6 +374,129 @@ test('rechaza como logo un archivo que no es una imagen real', async () => {
   assert.equal(tipoNoPermitido.estado, 415);
 });
 
+// ------------------------------------------------- imagen de fondo del mapa --
+
+const PNG_1X1 = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+  'base64'
+);
+
+async function clienteAdmin() {
+  const cliente = crearCliente();
+  await cliente.peticion('/api/auth/login', {
+    metodo: 'POST',
+    datos: { usuario: 'jefe', clave: 'ClaveSegura99' },
+  });
+  return cliente;
+}
+
+test('la CSP solo abre las imágenes a la wiki oficial de Albion', async () => {
+  const cliente = crearCliente();
+  const { cabeceras } = await cliente.peticion('/api/salud');
+  const csp = cabeceras.get('content-security-policy');
+
+  assert.match(csp, /img-src 'self' data: https:\/\/wiki\.albiononline\.com(;|$)/);
+  assert.match(csp, /script-src 'self'(;|$)/);
+});
+
+test('el administrador sube, ajusta y quita la imagen de fondo de un mapa', async () => {
+  const cliente = await clienteAdmin();
+  const detalle = await cliente.peticion('/api/mapas/Deepwood%20Copse');
+  const id = detalle.json.mapa.id;
+  assert.equal(detalle.json.imagen, null);
+
+  const subida = await cliente.escribir(`/api/admin/mapas/${id}/imagen`, {
+    metodo: 'PUT',
+    cabeceras: { 'content-type': 'image/png' },
+    cuerpo: PNG_1X1,
+  });
+  assert.equal(subida.estado, 200);
+  assert.equal(subida.json.imagen.mime, 'image/png');
+
+  const conImagen = await cliente.peticion('/api/mapas/Deepwood%20Copse');
+  assert.match(conImagen.json.imagen.url, /^\/api\/mapas\/Deepwood%20Copse\/imagen\?v=/);
+  assert.equal(conImagen.json.imagen.escala, 1);
+
+  const servida = await fetch(`${base}/api/mapas/Deepwood%20Copse/imagen`);
+  assert.equal(servida.status, 200);
+  assert.equal(servida.headers.get('content-type'), 'image/png');
+  assert.equal(servida.headers.get('x-content-type-options'), 'nosniff');
+  assert.deepEqual(Buffer.from(await servida.arrayBuffer()), PNG_1X1);
+
+  const ajuste = await cliente.escribir(`/api/admin/mapas/${id}/imagen/ajuste`, {
+    metodo: 'PUT',
+    datos: { escala: 1.25, dx: -40, dy: 12.5, rotacion: 90 },
+  });
+  assert.equal(ajuste.estado, 200);
+  assert.equal(ajuste.json.imagen.rotacion, 90);
+
+  const ajustado = await cliente.peticion('/api/mapas/Deepwood%20Copse');
+  assert.equal(ajustado.json.imagen.escala, 1.25);
+  assert.equal(ajustado.json.imagen.dx, -40);
+
+  const borrada = await cliente.escribir(`/api/admin/mapas/${id}/imagen`, { metodo: 'DELETE' });
+  assert.equal(borrada.estado, 200);
+
+  const sinImagen = await cliente.peticion('/api/mapas/Deepwood%20Copse');
+  assert.equal(sinImagen.json.imagen, null);
+  const noEncontrada = await fetch(`${base}/api/mapas/Deepwood%20Copse/imagen`);
+  assert.equal(noEncontrada.status, 404);
+});
+
+test('el ajuste de la imagen rechaza valores fuera de rango', async () => {
+  const cliente = await clienteAdmin();
+  const id = (await cliente.peticion('/api/mapas/Deepwood%20Copse')).json.mapa.id;
+
+  await cliente.escribir(`/api/admin/mapas/${id}/imagen`, {
+    metodo: 'PUT',
+    cabeceras: { 'content-type': 'image/png' },
+    cuerpo: PNG_1X1,
+  });
+
+  for (const datos of [
+    { escala: 50, dx: 0, dy: 0, rotacion: 0 },
+    { escala: 1, dx: 99999, dy: 0, rotacion: 0 },
+    { escala: 1, dx: 0, dy: 0, rotacion: 45 },
+    { escala: 'uno', dx: 0, dy: 0, rotacion: 0 },
+  ]) {
+    const respuesta = await cliente.escribir(`/api/admin/mapas/${id}/imagen/ajuste`, {
+      metodo: 'PUT',
+      datos,
+    });
+    assert.equal(respuesta.estado, 400, `se aceptó ${JSON.stringify(datos)}`);
+  }
+
+  await cliente.escribir(`/api/admin/mapas/${id}/imagen`, { metodo: 'DELETE' });
+});
+
+test('la imagen del mapa valida el tipo real del archivo y exige ser admin', async () => {
+  const admin = await clienteAdmin();
+  const id = (await admin.peticion('/api/mapas/Deepwood%20Copse')).json.mapa.id;
+
+  const disfrazada = await admin.escribir(`/api/admin/mapas/${id}/imagen`, {
+    metodo: 'PUT',
+    cabeceras: { 'content-type': 'image/png' },
+    cuerpo: Buffer.from('<script>alert(1)</script> no soy una imagen'),
+  });
+  assert.equal(disfrazada.estado, 400);
+
+  // Otro "navegador" (user-agent distinto) para no chocar con el límite
+  // de intentos de autenticación que ya consumieron las pruebas anteriores.
+  const usuario = crearCliente();
+  const registro = await usuario.peticion('/api/auth/registro', {
+    metodo: 'POST',
+    cabeceras: { 'user-agent': 'navegador-de-prueba-imagen' },
+    datos: { usuario: 'miron', clave: 'ClaveSegura99' },
+  });
+  assert.equal(registro.estado, 201);
+  const sinPermiso = await usuario.escribir(`/api/admin/mapas/${id}/imagen`, {
+    metodo: 'PUT',
+    cabeceras: { 'content-type': 'image/png' },
+    cuerpo: PNG_1X1,
+  });
+  assert.equal(sinPermiso.estado, 403);
+});
+
 // ---------------------------------------------------------------- estáticos --
 
 test('no se puede salir de la carpeta pública (path traversal)', async () => {

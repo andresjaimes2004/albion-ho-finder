@@ -22,6 +22,7 @@ function parsearJson(texto, porDefecto) {
 function aGeo(fila) {
   if (!fila) return null;
   return {
+    id: fila.mapa_id,
     nombre: fila.nombre,
     clusterId: fila.cluster_id,
     tipo: fila.tipo,
@@ -176,6 +177,69 @@ class MapaRepository extends BaseRepository {
 
   contarGeo() {
     return this.db.prepare('SELECT COUNT(*) AS total FROM mapas_geo').get().total;
+  }
+
+  // ------------------------------------------------------ imagen propia ---
+
+  /** Metadatos de la imagen subida para un mapa (sin los bytes). */
+  obtenerImagenMeta(mapaId) {
+    const fila = this.db
+      .prepare(
+        `SELECT mime, bytes, escala, desplazamiento_x AS dx, desplazamiento_y AS dy,
+                rotacion, actualizado_en AS actualizadoEn
+         FROM mapas_imagen WHERE mapa_id = $mapaId`
+      )
+      .get({ $mapaId: mapaId });
+    return fila || null;
+  }
+
+  obtenerImagenDatos(mapaId) {
+    return this.db
+      .prepare('SELECT mime, datos FROM mapas_imagen WHERE mapa_id = $mapaId')
+      .get({ $mapaId: mapaId });
+  }
+
+  /**
+   * Guarda (o reemplaza) la imagen de un mapa. Al reemplazar la imagen se
+   * reinicia el ajuste, porque el de la imagen anterior ya no aplica.
+   */
+  guardarImagen(mapaId, { mime, datos, usuarioId }) {
+    this.db
+      .prepare(
+        `INSERT INTO mapas_imagen (mapa_id, mime, datos, bytes, usuario_id, actualizado_en)
+         VALUES ($mapaId, $mime, $datos, $bytes, $usuario, datetime('now'))
+         ON CONFLICT (mapa_id) DO UPDATE SET
+            mime = excluded.mime,
+            datos = excluded.datos,
+            bytes = excluded.bytes,
+            usuario_id = excluded.usuario_id,
+            escala = 1,
+            desplazamiento_x = 0,
+            desplazamiento_y = 0,
+            rotacion = 0,
+            actualizado_en = datetime('now')`
+      )
+      .run({ $mapaId: mapaId, $mime: mime, $datos: datos, $bytes: datos.length, $usuario: usuarioId });
+    return this.obtenerImagenMeta(mapaId);
+  }
+
+  guardarAjusteImagen(mapaId, { escala, dx, dy, rotacion }) {
+    this.db
+      .prepare(
+        `UPDATE mapas_imagen SET
+            escala = $escala,
+            desplazamiento_x = $dx,
+            desplazamiento_y = $dy,
+            rotacion = $rotacion,
+            actualizado_en = datetime('now')
+         WHERE mapa_id = $mapaId`
+      )
+      .run({ $mapaId: mapaId, $escala: escala, $dx: dx, $dy: dy, $rotacion: rotacion });
+    return this.obtenerImagenMeta(mapaId);
+  }
+
+  borrarImagen(mapaId) {
+    this.db.prepare('DELETE FROM mapas_imagen WHERE mapa_id = $mapaId').run({ $mapaId: mapaId });
   }
 }
 

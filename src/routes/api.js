@@ -36,6 +36,7 @@ router.use(limitarGeneral);
 router.get('/buscar', buscador.buscarGremio);
 router.get('/mapas', mapas.mundo);
 router.get('/mapas/:nombre', mapas.detalle);
+router.get('/mapas/:nombre/imagen', mapas.imagen);
 router.get('/gremios/:id/logo', admin.servirLogo);
 
 router.get('/salud', (req, res) => {
@@ -79,6 +80,13 @@ rutasAdmin.put(
 rutasAdmin.delete('/gremios/:id/logo', admin.borrarLogo);
 
 rutasAdmin.put('/mapas/:id/nombre', admin.renombrarMapa);
+rutasAdmin.put(
+  '/mapas/:id/imagen',
+  binario({ tipos: config.logo.tiposPermitidos, limite: config.limites.imagenMapaBytes }),
+  admin.subirImagenMapa
+);
+rutasAdmin.put('/mapas/:id/imagen/ajuste', admin.ajustarImagenMapa);
+rutasAdmin.delete('/mapas/:id/imagen', admin.borrarImagenMapa);
 
 rutasAdmin.post('/hideouts', admin.crearHideout);
 rutasAdmin.put('/hideouts/:id', admin.actualizarHideout);

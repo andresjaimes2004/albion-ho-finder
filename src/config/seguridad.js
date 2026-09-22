@@ -38,9 +38,14 @@ module.exports = {
   limites: {
     jsonBytes: '32kb',
     logoBytes: 1024 * 1024, // 1 MB
+    imagenMapaBytes: 4 * 1024 * 1024, // 4 MB
     peticionesPorMinuto: 120,
     peticionesEscrituraPorMinuto: 30,
   },
+
+  // Único origen externo del que la web carga imágenes: las teselas del
+  // mapa del juego que publica la wiki oficial de Albion Online.
+  origenTeselas: 'https://wiki.albiononline.com',
 
   logo: {
     // Tipos permitidos; se verifica la firma binaria del archivo, no la

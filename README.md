@@ -7,6 +7,40 @@ con el slot y el tipo (HQ, personal o estándar).
 
 ## Cambios recientes
 
+### v3 — Mapa del juego como fondo
+
+- **Mapa mundial con el mapa real del juego:** el fondo del mapa de la Zona
+  Negra es ahora el mismo mapa del juego que muestra albiononline2d, en
+  teselas de la **wiki oficial de Albion Online** (wiki.albiononline.com,
+  de Sandbox Interactive). Se cargan por nivel de detalle (zoom 2 a 7) y
+  solo las que están a la vista; el proyecto no guarda copias.
+- **Calibración verificada, no supuesta:** la conversión de las posiciones
+  de los dumps al sistema de teselas replica la fórmula de la propia wiki y
+  se contrastó con las coordenadas que publica para 14 mapas (desvío
+  residual < 0,1 px a zoom 0, corregido). La orientación de cada mapa
+  individual (giro de −45°) sale de los 740 pares de salidas entre mapas
+  vecinos (coseno medio 0,895; ninguna otra orientación pasa de 0,64).
+- **Ventana de cada mapa en diamante,** con la orientación del juego y tres
+  fondos a elegir: *Mapa oficial* (recorte de esa zona del mapa del
+  juego), *Imagen propia* (subida por un administrador) y *Sin fondo*.
+  Fuera del diamante el mapa se oscurece para dar contexto sin distraer.
+- **Imagen propia por mapa:** un administrador puede subir, por ejemplo,
+  una captura del minimapa (PNG/JPG/WebP, máx. 4 MB, tipo verificado por
+  firma binaria) y ajustarla con escala, desplazamiento y rotación, con
+  vista previa en vivo. Se guarda en la base de datos (`mapas_imagen`).
+- **Marcadores legibles a cualquier zoom:** salidas, pines y rótulos se
+  dibujan en píxeles de pantalla y no tapan el terreno al acercar.
+- **Correcciones:** la ventana del mapa ya no acumula manejadores de zoom
+  cada vez que se abre, y arrastrar el mapa ya no cuenta como clic (no
+  abre mapas ni marca ubicaciones por accidente).
+
+**Límites honestos:** el mapa mundial del juego es una ilustración, así
+que la superposición de caminos y salidas sobre el recorte oficial es
+aproximada (por eso los caminos de los datos están apagados por defecto).
+La imagen exacta del minimapa que usa albiononline2d sale del cliente del
+juego y no está publicada en ninguna fuente oficial; para tenerla, un
+administrador puede subirla por mapa.
+
 ### v2 — Mapa interactivo, cuentas y administración
 
 - **Mapa interactivo de la Zona Negra:** los 276 mapas se dibujan en su
@@ -179,7 +213,7 @@ npm run dev
 npm test
 ```
 
-37 pruebas sobre bases de datos SQLite temporales y aisladas, en tres
+41 pruebas sobre bases de datos SQLite temporales y aisladas, en tres
 frentes:
 
 - **Búsqueda:** coincidencia exacta, insensible a mayúsculas, por substring
@@ -191,6 +225,8 @@ frentes:
 - **API completa:** se levanta el servidor real y se comprueban sesiones,
   cookies `HttpOnly`/`SameSite`, CSRF, permisos por rol, historial privado,
   validación de la posición del hideout contra los límites reales del mapa,
+  subida/ajuste/borrado de la imagen de fondo por mapa (con tipo real y
+  rangos validados), CSP limitada a la wiki oficial,
   path traversal, límite de tamaño del cuerpo y respuestas 404 en JSON.
 
 ## Endpoints de la API
@@ -199,7 +235,9 @@ Públicos:
 
 - `GET /api/buscar?gremio=texto` → mapas y hideouts donde aparece el gremio.
 - `GET /api/mapas` → mapa mundial: los 276 clusters y sus conexiones.
-- `GET /api/mapas/:nombre` → detalle geográfico de un mapa + sus hideouts.
+- `GET /api/mapas/:nombre` → detalle geográfico de un mapa + sus hideouts
+  (+ datos de su imagen propia, si tiene).
+- `GET /api/mapas/:nombre/imagen` → imagen de fondo propia del mapa.
 - `GET /api/gremios/:id/logo` → logo del gremio (servido desde la BD).
 - `GET /api/salud` → chequeo de salud de la base de datos.
 
@@ -215,6 +253,7 @@ Administración (rol `ADMIN` + token CSRF):
 - `GET /api/admin/gremios`, `PUT /api/admin/gremios/:id/nombre`,
   `PUT /api/admin/gremios/:id/notas`, `PUT|DELETE /api/admin/gremios/:id/logo`
 - `PUT /api/admin/mapas/:id/nombre`
+- `PUT|DELETE /api/admin/mapas/:id/imagen`, `PUT /api/admin/mapas/:id/imagen/ajuste`
 - `POST /api/admin/hideouts`, `PUT /api/admin/hideouts/:id`,
   `PUT /api/admin/hideouts/:id/posicion`, `DELETE /api/admin/hideouts/:id`
 - `GET /api/admin/usuarios`, `PUT /api/admin/usuarios/:id/estado`,
@@ -236,6 +275,9 @@ Administración (rol `ADMIN` + token CSRF):
   producción). En la base solo se guarda su SHA-256.
 - **CSRF:** patrón double submit — toda escritura exige la cabecera
   `X-CSRF-Token` que debe coincidir con la sesión.
+- **Orígenes externos:** la CSP solo permite imágenes de este sitio y de
+  `https://wiki.albiononline.com` (teselas del mapa); scripts, estilos y
+  conexiones siguen restringidos al propio sitio.
 - **XSS:** CSP estricta (`script-src 'self'`, sin `unsafe-inline`) y todo el
   contenido dinámico se inserta con `textContent`/`createElement`, nunca con
   `innerHTML`.
@@ -328,4 +370,8 @@ npm start   # o usa pm2 / systemd para mantenerlo corriendo
 ## Notas
 
 - Albion Online y sus marcas pertenecen a Sandbox Interactive GmbH; esta
-  herramienta es un proyecto de comunidad, sin afiliación oficial.
+  herramienta es un proyecto de comunidad, sin afiliación oficial. Las
+  teselas del mapa se cargan desde la wiki oficial con atribución visible;
+  si Sandbox Interactive pidiera no usarlas, basta con quitar ese dominio
+  de la CSP: el fondo oficial queda vacío y el resto del mapa (nodos,
+  salidas, hideouts e imágenes propias) sigue funcionando igual.

@@ -94,6 +94,12 @@ export const api = {
       peticion(`/api/admin/gremios/${id}/logo`, { metodo: 'PUT', binario: archivo }),
     borrarLogo: (id) => peticion(`/api/admin/gremios/${id}/logo`, { metodo: 'DELETE' }),
 
+    subirImagenMapa: (id, archivo) =>
+      peticion(`/api/admin/mapas/${id}/imagen`, { metodo: 'PUT', binario: archivo }),
+    ajustarImagenMapa: (id, ajuste) =>
+      peticion(`/api/admin/mapas/${id}/imagen/ajuste`, { metodo: 'PUT', datos: ajuste }),
+    borrarImagenMapa: (id) => peticion(`/api/admin/mapas/${id}/imagen`, { metodo: 'DELETE' }),
+
     crearHideout: (datos) => peticion('/api/admin/hideouts', { metodo: 'POST', datos }),
     actualizarHideout: (id, datos) =>
       peticion(`/api/admin/hideouts/${id}`, { metodo: 'PUT', datos }),

@@ -61,6 +61,13 @@ class MapaService {
     };
   }
 
+  /** Bytes de la imagen propia de un mapa, o null si no tiene. */
+  imagen(nombreMapa) {
+    const mapa = this.mapas.obtenerPorNombre(nombreMapa);
+    if (!mapa) return null;
+    return this.mapas.obtenerImagenDatos(mapa.id) || null;
+  }
+
   detalle(nombreMapa) {
     const geo = this.mapas.obtenerGeoPorNombre(nombreMapa);
     if (!geo) {
@@ -70,10 +77,25 @@ class MapaService {
     const temporada = this.temporadas.obtenerActiva();
     const hideouts = temporada ? this.hideouts.listarPorMapa(nombreMapa, temporada.id) : [];
 
+    const meta = this.mapas.obtenerImagenMeta(geo.id);
+    const imagen = meta
+      ? {
+          // La fecha de actualización viaja en la URL para que el navegador
+          // no muestre una versión vieja en caché tras reemplazarla.
+          url: `/api/mapas/${encodeURIComponent(geo.nombre)}/imagen?v=${encodeURIComponent(meta.actualizadoEn)}`,
+          escala: meta.escala,
+          dx: meta.dx,
+          dy: meta.dy,
+          rotacion: meta.rotacion,
+          actualizadoEn: meta.actualizadoEn,
+        }
+      : null;
+
     return {
       ok: true,
       temporada: temporada ? temporada.codigo : null,
       mapa: geo,
+      imagen,
       hideouts: hideouts.map((h) => h.toJSON()),
       totalHideouts: hideouts.length,
       ubicados: hideouts.filter((h) => h.ubicado).length,

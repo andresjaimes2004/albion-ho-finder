@@ -27,7 +27,8 @@ const CSP = [
   "script-src 'self'",
   "style-src 'self' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
-  "img-src 'self' data:",
+  // Las teselas del mapa del juego se cargan desde la wiki oficial.
+  "img-src 'self' data: https://wiki.albiononline.com",
   "connect-src 'self'",
 ].join('; ');
 
