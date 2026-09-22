@@ -3,6 +3,7 @@
 const path = require('path');
 const fs = require('fs');
 const { DatabaseSync } = require('node:sqlite');
+const ejecutarMigraciones = require('./migraciones');
 
 /**
  * Database
@@ -36,6 +37,9 @@ class DatabaseConnection {
       const schema = fs.readFileSync(schemaPath, 'utf-8');
       this.connection.exec(schema);
     }
+
+    // Añade columnas nuevas a bases de datos creadas con versiones previas.
+    ejecutarMigraciones(this.connection);
 
     DatabaseConnection._instance = this;
   }

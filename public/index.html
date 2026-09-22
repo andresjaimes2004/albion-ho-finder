@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Buscador de Hideouts — Zona Negra | Albion Online</title>
-  <meta name="description" content="Busca en qué mapas de la Zona Negra tiene Hideout tu gremio de Albion Online." />
+  <meta name="description" content="Busca en qué mapas de la Zona Negra tiene Hideout tu gremio de Albion Online y míralo sobre el mapa interactivo." />
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
   <link rel="alternate icon" href="assets/favicon-32.png" type="image/png" />
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
@@ -26,7 +26,10 @@
           <p class="marca__subtitulo">Zona Negra · Albion Online</p>
         </div>
       </div>
-      <span id="badge-temporada" class="badge-temporada" hidden></span>
+      <div class="cabecera__derecha">
+        <span id="badge-temporada" class="badge-temporada" hidden></span>
+        <div id="cuenta" class="cuenta"></div>
+      </div>
     </div>
   </header>
 
@@ -47,8 +50,32 @@
         />
       </div>
       <p class="panel-busqueda__ayuda">
-        Escribe el nombre completo o solo una parte. Se mostrarán todos los mapas donde el gremio tenga un Hideout.
+        Escribe el nombre completo o solo una parte. Toca cualquier mapa del resultado para abrirlo en detalle.
       </p>
+      <button id="alternar-mapa" type="button" class="boton boton--sutil" aria-expanded="false">
+        Ver mapa de la Zona Negra
+      </button>
+    </section>
+
+    <section id="historial" class="panel-historial" hidden>
+      <div class="panel-historial__cabecera">
+        <h2>Tus últimas búsquedas</h2>
+        <button id="historial-limpiar" type="button" class="boton boton--pequeno boton--sutil">Limpiar</button>
+      </div>
+      <ul id="historial-lista" class="historial"></ul>
+    </section>
+
+    <section id="mapa-mundial" class="mapa-mundial" hidden aria-label="Mapa interactivo de la Zona Negra">
+      <div class="mapa-mundial__cabecera">
+        <h2>Mapa de la Zona Negra</h2>
+        <p id="mapa-mundial__leyenda" class="mapa-mundial__leyenda"></p>
+      </div>
+      <p id="mapa-mundial__estado" class="estado estado--info" hidden></p>
+      <svg id="mapa-mundial__svg" class="lienzo" role="img" aria-label="Mapa de clusters de la Zona Negra"></svg>
+      <p class="mapa-mundial__pie">
+        Arrastra para moverte y usa la rueda para acercar. Los mapas resaltados son los del gremio buscado.
+      </p>
+      <p id="mapa-mundial__atribucion" class="mapa-mundial__pie mapa-mundial__atribucion"></p>
     </section>
 
     <section id="zona-resultados" class="zona-resultados" aria-live="polite">
@@ -75,14 +102,97 @@
       <div id="resumen-resultados" class="resumen-resultados" hidden></div>
       <div id="lista-mapas" class="lista-mapas"></div>
     </section>
+
+    <section id="panel-admin" class="panel-admin" hidden aria-label="Panel de administración">
+      <div class="panel-admin__cabecera">
+        <h2>Administración</h2>
+        <button id="admin-recargar" type="button" class="boton boton--pequeno boton--sutil">Recargar</button>
+      </div>
+      <p id="admin-mensaje" class="panel-admin__mensaje" aria-live="polite"></p>
+
+      <div id="admin-resumen" class="admin-resumen"></div>
+
+      <h3>Gremios</h3>
+      <input id="admin-buscar-gremio" type="search" placeholder="Buscar gremio para editar..." maxlength="60" />
+      <ul id="admin-gremios" class="admin-lista"></ul>
+
+      <h3>Usuarios</h3>
+      <ul id="admin-usuarios" class="admin-lista"></ul>
+
+      <h3>Últimos cambios</h3>
+      <ul id="admin-auditoria" class="admin-lista admin-lista--compacta"></ul>
+    </section>
   </main>
 
   <footer class="pie">
     <div class="contenedor">
-      <p>Datos actualizados por temporada. Albion Online y sus marcas pertenecen a Sandbox Interactive GmbH.</p>
+      <p>Datos actualizados por temporada. Geografía de los mapas tomada de los dumps públicos del cliente del juego. Albion Online y sus marcas pertenecen a Sandbox Interactive GmbH.</p>
     </div>
   </footer>
 
-  <script src="js/app.js"></script>
+  <!-- Ventana flotante: detalle del mapa -->
+  <dialog id="ventana-mapa" class="ventana" aria-label="Detalle del mapa">
+    <div class="ventana__contenido">
+      <header class="ventana__cabecera">
+        <div>
+          <h2 id="ventana-mapa__titulo"></h2>
+          <div id="ventana-mapa__insignias" class="ventana__insignias"></div>
+        </div>
+        <div class="ventana__controles">
+          <button id="ventana-mapa__reiniciar" type="button" class="boton boton--pequeno boton--sutil">Centrar</button>
+          <button id="ventana-mapa__cerrar" type="button" class="boton boton--icono" aria-label="Cerrar">✕</button>
+        </div>
+      </header>
+
+      <p id="ventana-mapa__aviso" class="estado estado--info" hidden></p>
+
+      <div class="ventana__cuerpo">
+        <div class="ventana__lienzo">
+          <div id="ventana-mapa__fondos" class="selector-fondo"></div>
+          <svg id="ventana-mapa__svg" class="lienzo lienzo--mapa" role="img" aria-label="Mapa del cluster"></svg>
+          <ul class="leyenda">
+            <li><span class="punto punto--hq"></span> HQ</li>
+            <li><span class="punto punto--personal"></span> Personal</li>
+            <li><span class="punto punto--estandar"></span> Hideout</li>
+            <li><span class="punto punto--salida"></span> Salida a mapa vecino</li>
+          </ul>
+        </div>
+        <aside class="ventana__panel">
+          <h3>Hideouts en este mapa</h3>
+          <ul id="ventana-mapa__hideouts" class="lista-hideouts-detalle"></ul>
+          <div id="ventana-mapa__admin" class="ventana__admin" hidden></div>
+        </aside>
+      </div>
+
+      <footer class="ventana__pie">
+        <p id="ventana-mapa__pie"></p>
+      </footer>
+    </div>
+  </dialog>
+
+  <!-- Ventana flotante: cuenta -->
+  <dialog id="ventana-cuenta" class="ventana ventana--estrecha" aria-label="Cuenta">
+    <div class="ventana__contenido">
+      <header class="ventana__cabecera">
+        <h2 id="ventana-cuenta__titulo">Iniciar sesión</h2>
+        <button id="ventana-cuenta__cerrar" type="button" class="boton boton--icono" aria-label="Cerrar">✕</button>
+      </header>
+
+      <form id="formulario-cuenta" class="formulario">
+        <label for="cuenta-usuario">Usuario</label>
+        <input id="cuenta-usuario" name="usuario" type="text" autocomplete="username" required minlength="3" maxlength="32" />
+
+        <label for="cuenta-clave">Contraseña</label>
+        <input id="cuenta-clave" name="clave" type="password" autocomplete="current-password" required minlength="10" maxlength="128" />
+
+        <p id="cuenta-mensaje" class="formulario__mensaje" aria-live="polite"></p>
+
+        <button id="cuenta-enviar" type="submit" class="boton">Entrar</button>
+        <button id="cuenta-alternar" type="button" class="boton boton--sutil">¿No tienes cuenta? Regístrate</button>
+      </form>
+    </div>
+  </dialog>
+
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>
