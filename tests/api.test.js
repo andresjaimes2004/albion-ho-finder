@@ -1,0 +1,413 @@
+'use strict';
+
+/**
+ * Pruebas de la API HTTP completa: se levanta el servidor real sobre un
+ * puerto efímero con una base de datos temporal y se prueban sesiones,
+ * CSRF, permisos, historial y el detalle de los mapas.
+ *
+ * Ejecutar con: npm test
+ */
+
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+
+const DB_TEMPORAL = path.join(os.tmpdir(), `albion-api-${Date.now()}.db`);
+process.env.DB_PATH = DB_TEMPORAL;
+process.env.NODE_ENV = 'test';
+
+const crearApp = require('../src/app');
+const MapaRepository = require('../src/repositories/MapaRepository');
+const GremioRepository = require('../src/repositories/GremioRepository');
+const HideoutRepository = require('../src/repositories/HideoutRepository');
+const TemporadaRepository = require('../src/repositories/TemporadaRepository');
+const AuthService = require('../src/services/AuthService');
+
+let servidor;
+let base;
+
+const GEO_PRUEBA = {
+  id: '9001',
+  nombre: 'Deepwood Copse',
+  tipo: 'OPENPVP_BLACK_2',
+  tier: 6,
+  bioma: 'FR',
+  faccion: 'KPR',
+  cuadrante: 'Q1',
+  mundo: [10, 20],
+  limites: { min: [-100, -100], max: [100, 100] },
+  salidas: [{ pos: [90, 10], destinoId: '9002', destino: 'Battlebrae Lake', tipo: 'Primary' }],
+  caminos: { nodos: [[0, 0], [10, 10]], enlaces: [[0, 1]] },
+  territorios: [],
+};
+
+/** Cliente HTTP mínimo que recuerda las cookies, como haría un navegador. */
+function crearCliente() {
+  const galleta = new Map();
+
+  return {
+    get cookies() {
+      return galleta;
+    },
+    async peticion(ruta, { metodo = 'GET', datos, cabeceras = {}, cuerpo } = {}) {
+      const opciones = { method: metodo, headers: { ...cabeceras } };
+
+      if (galleta.size) {
+        opciones.headers.cookie = [...galleta.entries()].map(([k, v]) => `${k}=${v}`).join('; ');
+      }
+      if (datos !== undefined) {
+        opciones.headers['content-type'] = 'application/json';
+        opciones.body = JSON.stringify(datos);
+      }
+      if (cuerpo !== undefined) opciones.body = cuerpo;
+
+      const respuesta = await fetch(`${base}${ruta}`, opciones);
+
+      for (const [nombre, valor] of respuesta.headers) {
+        if (nombre.toLowerCase() !== 'set-cookie') continue;
+        for (const cookie of valor.split(/,(?=[^;]+=)/)) {
+          const [par] = cookie.split(';');
+          const indice = par.indexOf('=');
+          galleta.set(par.slice(0, indice).trim(), decodeURIComponent(par.slice(indice + 1).trim()));
+        }
+      }
+
+      let json = null;
+      const tipo = respuesta.headers.get('content-type') || '';
+      if (tipo.includes('application/json')) json = await respuesta.json();
+      else await respuesta.text();
+
+      return { estado: respuesta.status, json, cabeceras: respuesta.headers };
+    },
+    /** Igual que peticion, pero añadiendo el token CSRF de la sesión. */
+    async escribir(ruta, opciones = {}) {
+      return this.peticion(ruta, {
+        ...opciones,
+        cabeceras: { ...(opciones.cabeceras || {}), 'x-csrf-token': galleta.get('ho_csrf') || '' },
+      });
+    },
+  };
+}
+
+test.before(async () => {
+  const temporadaRepo = new TemporadaRepository();
+  const mapaRepo = new MapaRepository();
+  const gremioRepo = new GremioRepository();
+  const hideoutRepo = new HideoutRepository();
+
+  const temporada = temporadaRepo.crear('S-API', { activar: true });
+  const mapa = mapaRepo.obtenerOCrear('Deepwood Copse');
+  mapaRepo.guardarGeo(mapa.id, GEO_PRUEBA);
+
+  const gremio = gremioRepo.obtenerOCrear('Gankers Letales');
+  hideoutRepo.insertarLote(temporada.id, mapa.id, [{ gremioId: gremio.id, slot: 1, tipo: 'HQ' }]);
+
+  new AuthService().registrar({ usuario: 'jefe', clave: 'ClaveSegura99', rol: 'ADMIN' });
+
+  const app = crearApp();
+  servidor = app.crearServidor();
+  await new Promise((resolver) => servidor.listen(0, '127.0.0.1', resolver));
+  base = `http://127.0.0.1:${servidor.address().port}`;
+});
+
+test.after(async () => {
+  await new Promise((resolver) => servidor.close(resolver));
+  for (const sufijo of ['', '-wal', '-shm']) {
+    fs.rmSync(`${DB_TEMPORAL}${sufijo}`, { force: true });
+  }
+});
+
+// ------------------------------------------------------------------ público --
+
+test('la búsqueda pública responde con los mapas del gremio', async () => {
+  const cliente = crearCliente();
+  const { estado, json } = await cliente.peticion('/api/buscar?gremio=Gankers');
+
+  assert.equal(estado, 200);
+  assert.equal(json.ok, true);
+  assert.equal(json.totalMapas, 1);
+  assert.equal(json.resultados[0].geo.tier, 6);
+});
+
+test('el detalle del mapa entrega la geografía real y sus hideouts', async () => {
+  const cliente = crearCliente();
+  const { json } = await cliente.peticion('/api/mapas/Deepwood%20Copse');
+
+  assert.equal(json.ok, true);
+  assert.equal(json.mapa.salidas[0].destino, 'Battlebrae Lake');
+  assert.equal(json.mapa.caminos.enlaces.length, 1);
+  assert.equal(json.hideouts.length, 1);
+  assert.equal(json.hideouts[0].pos, null);
+});
+
+test('un mapa inexistente responde 404 sin filtrar detalles internos', async () => {
+  const cliente = crearCliente();
+  const { estado, json } = await cliente.peticion('/api/mapas/No%20Existe');
+
+  assert.equal(estado, 404);
+  assert.equal(json.ok, false);
+  assert.equal(/sqlite|SELECT|\/home/i.test(json.mensaje), false);
+});
+
+test('la API responde con cabeceras de seguridad', async () => {
+  const cliente = crearCliente();
+  const { cabeceras } = await cliente.peticion('/api/salud');
+
+  assert.match(cabeceras.get('content-security-policy'), /script-src 'self'/);
+  assert.equal(cabeceras.get('x-content-type-options'), 'nosniff');
+  assert.equal(cabeceras.get('x-frame-options'), 'DENY');
+});
+
+// ------------------------------------------------------------------ cuentas --
+
+test('registro, sesión y cierre de sesión funcionan de extremo a extremo', async () => {
+  const cliente = crearCliente();
+
+  const registro = await cliente.peticion('/api/auth/registro', {
+    metodo: 'POST',
+    datos: { usuario: 'jugador1', clave: 'ClaveSegura99' },
+  });
+  assert.equal(registro.estado, 201);
+  assert.equal(registro.json.usuario.rol, 'USUARIO');
+
+  const sesion = await cliente.peticion('/api/auth/sesion');
+  assert.equal(sesion.json.autenticado, true);
+
+  const salida = await cliente.escribir('/api/auth/logout', { metodo: 'POST' });
+  assert.equal(salida.estado, 200);
+
+  const despues = await cliente.peticion('/api/auth/sesion');
+  assert.equal(despues.json.autenticado, false);
+});
+
+test('la cookie de sesión es httpOnly y SameSite=Strict', async () => {
+  const cliente = crearCliente();
+  const { cabeceras } = await cliente.peticion('/api/auth/login', {
+    metodo: 'POST',
+    datos: { usuario: 'jefe', clave: 'ClaveSegura99' },
+  });
+
+  const cookies = cabeceras.getSetCookie ? cabeceras.getSetCookie() : [cabeceras.get('set-cookie')];
+  const sesion = cookies.find((c) => c.startsWith('ho_sesion='));
+
+  assert.match(sesion, /HttpOnly/);
+  assert.match(sesion, /SameSite=Strict/);
+});
+
+test('el registro rechaza contraseñas débiles y usuarios inválidos', async () => {
+  const cliente = crearCliente();
+
+  const debil = await cliente.peticion('/api/auth/registro', {
+    metodo: 'POST',
+    datos: { usuario: 'pepito', clave: '123' },
+  });
+  assert.equal(debil.estado, 400);
+
+  const raro = await cliente.peticion('/api/auth/registro', {
+    metodo: 'POST',
+    datos: { usuario: '<script>x</script>', clave: 'ClaveSegura99' },
+  });
+  assert.equal(raro.estado, 400);
+});
+
+test('el login incorrecto no revela si el usuario existe', async () => {
+  const cliente = crearCliente();
+
+  const inexistente = await cliente.peticion('/api/auth/login', {
+    metodo: 'POST',
+    datos: { usuario: 'nadie-aqui', clave: 'ClaveSegura99' },
+  });
+  const claveMala = await cliente.peticion('/api/auth/login', {
+    metodo: 'POST',
+    datos: { usuario: 'jefe', clave: 'OtraClave123' },
+  });
+
+  assert.equal(inexistente.json.mensaje, claveMala.json.mensaje);
+});
+
+// ---------------------------------------------------------------- historial --
+
+test('el historial guarda las búsquedas del usuario autenticado', async () => {
+  const cliente = crearCliente();
+  await cliente.peticion('/api/auth/registro', {
+    metodo: 'POST',
+    datos: { usuario: 'historiador', clave: 'ClaveSegura99' },
+  });
+
+  await cliente.peticion('/api/buscar?gremio=Gankers');
+  await cliente.peticion('/api/buscar?gremio=Letales');
+
+  const { json } = await cliente.peticion('/api/historial');
+  assert.equal(json.historial.length, 2);
+  assert.equal(json.historial[0].termino, 'Letales');
+
+  const limpio = await cliente.escribir('/api/historial', { metodo: 'DELETE' });
+  assert.equal(limpio.json.historial.length, 0);
+});
+
+test('el historial es privado: sin sesión no se puede consultar', async () => {
+  const cliente = crearCliente();
+  const { estado } = await cliente.peticion('/api/historial');
+  assert.equal(estado, 401);
+});
+
+// -------------------------------------------------------------------- CSRF --
+
+test('una escritura sin token CSRF es rechazada', async () => {
+  const cliente = crearCliente();
+  await cliente.peticion('/api/auth/login', {
+    metodo: 'POST',
+    datos: { usuario: 'jefe', clave: 'ClaveSegura99' },
+  });
+
+  const sinToken = await cliente.peticion('/api/admin/hideouts/1/posicion', {
+    metodo: 'PUT',
+    datos: { x: 10, y: 10 },
+  });
+  assert.equal(sinToken.estado, 403);
+
+  const conToken = await cliente.escribir('/api/admin/hideouts/1/posicion', {
+    metodo: 'PUT',
+    datos: { x: 10, y: 10 },
+  });
+  assert.equal(conToken.estado, 200);
+  assert.deepEqual(conToken.json.hideout.pos, [10, 10]);
+});
+
+// ------------------------------------------------------------------- admin --
+
+test('un usuario normal no puede entrar al panel de administración', async () => {
+  const cliente = crearCliente();
+  await cliente.peticion('/api/auth/registro', {
+    metodo: 'POST',
+    datos: { usuario: 'curioso', clave: 'ClaveSegura99' },
+  });
+
+  const resumen = await cliente.peticion('/api/admin/resumen');
+  assert.equal(resumen.estado, 403);
+
+  const escritura = await cliente.escribir('/api/admin/hideouts/1/posicion', {
+    metodo: 'PUT',
+    datos: { x: 0, y: 0 },
+  });
+  assert.equal(escritura.estado, 403);
+});
+
+test('sin sesión el panel de administración responde 401', async () => {
+  const cliente = crearCliente();
+  const { estado } = await cliente.peticion('/api/admin/usuarios');
+  assert.equal(estado, 401);
+});
+
+test('la posición del hideout se valida contra los límites reales del mapa', async () => {
+  const cliente = crearCliente();
+  await cliente.peticion('/api/auth/login', {
+    metodo: 'POST',
+    datos: { usuario: 'jefe', clave: 'ClaveSegura99' },
+  });
+
+  const fuera = await cliente.escribir('/api/admin/hideouts/1/posicion', {
+    metodo: 'PUT',
+    datos: { x: 99999, y: 0 },
+  });
+  assert.equal(fuera.estado, 400);
+  assert.match(fuera.json.mensaje, /entre/);
+
+  const dentro = await cliente.escribir('/api/admin/hideouts/1/posicion', {
+    metodo: 'PUT',
+    datos: { x: -50.5, y: 75 },
+  });
+  assert.equal(dentro.estado, 200);
+  assert.deepEqual(dentro.json.hideout.pos, [-50.5, 75]);
+});
+
+test('el administrador puede renombrar un gremio y queda auditado', async () => {
+  const cliente = crearCliente();
+  await cliente.peticion('/api/auth/login', {
+    metodo: 'POST',
+    datos: { usuario: 'jefe', clave: 'ClaveSegura99' },
+  });
+
+  const gremios = await cliente.peticion('/api/admin/gremios?q=Gankers');
+  const id = gremios.json.gremios[0].id;
+
+  const renombrado = await cliente.escribir(`/api/admin/gremios/${id}/nombre`, {
+    metodo: 'PUT',
+    datos: { nombre: 'Gankers Letales II' },
+  });
+  assert.equal(renombrado.estado, 200);
+
+  const auditoria = await cliente.peticion('/api/admin/auditoria');
+  assert.equal(auditoria.json.auditoria[0].accion, 'RENOMBRAR');
+
+  // Se deja como estaba para no afectar a otras pruebas.
+  await cliente.escribir(`/api/admin/gremios/${id}/nombre`, {
+    metodo: 'PUT',
+    datos: { nombre: 'Gankers Letales' },
+  });
+});
+
+test('rechaza como logo un archivo que no es una imagen real', async () => {
+  const cliente = crearCliente();
+  await cliente.peticion('/api/auth/login', {
+    metodo: 'POST',
+    datos: { usuario: 'jefe', clave: 'ClaveSegura99' },
+  });
+
+  const gremios = await cliente.peticion('/api/admin/gremios?q=Gankers');
+  const id = gremios.json.gremios[0].id;
+
+  const falso = await cliente.escribir(`/api/admin/gremios/${id}/logo`, {
+    metodo: 'PUT',
+    cabeceras: { 'content-type': 'image/png' },
+    cuerpo: Buffer.from('<?php system($_GET["c"]); ?>'),
+  });
+  assert.equal(falso.estado, 400);
+
+  const tipoNoPermitido = await cliente.escribir(`/api/admin/gremios/${id}/logo`, {
+    metodo: 'PUT',
+    cabeceras: { 'content-type': 'image/svg+xml' },
+    cuerpo: Buffer.from('<svg onload="alert(1)"></svg>'),
+  });
+  assert.equal(tipoNoPermitido.estado, 415);
+});
+
+// ---------------------------------------------------------------- estáticos --
+
+test('no se puede salir de la carpeta pública (path traversal)', async () => {
+  const cliente = crearCliente();
+
+  for (const ruta of [
+    '/../../../../etc/passwd',
+    '/css/../../../../etc/passwd',
+    '/%2e%2e/%2e%2e/etc/passwd',
+  ]) {
+    const respuesta = await fetch(`${base}${ruta}`);
+    const texto = await respuesta.text();
+    assert.equal(texto.includes('root:'), false, `fuga con ${ruta}`);
+  }
+
+  const paginaPrincipal = await cliente.peticion('/');
+  assert.equal(paginaPrincipal.estado, 200);
+});
+
+test('un cuerpo JSON demasiado grande se rechaza con 413', async () => {
+  const cliente = crearCliente();
+  const { estado } = await cliente.peticion('/api/auth/login', {
+    metodo: 'POST',
+    cabeceras: { 'content-type': 'application/json' },
+    cuerpo: JSON.stringify({ usuario: 'x'.repeat(200000), clave: 'y' }),
+  });
+
+  assert.equal(estado, 413);
+});
+
+test('una ruta desconocida de la API responde JSON, no la página web', async () => {
+  const cliente = crearCliente();
+  const { estado, json } = await cliente.peticion('/api/no-existe');
+
+  assert.equal(estado, 404);
+  assert.equal(json.ok, false);
+});

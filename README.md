@@ -7,6 +7,40 @@ con el slot y el tipo (HQ, personal o estándar).
 
 ## Cambios recientes
 
+### v2 — Mapa interactivo, cuentas y administración
+
+- **Mapa interactivo de la Zona Negra:** los 276 mapas se dibujan en su
+  posición real del mapa mundial, unidos por sus conexiones reales. Los
+  mapas donde el gremio buscado tiene Hideout quedan resaltados.
+- **Ventana flotante por mapa:** al tocar un mapa del resultado (o un nodo
+  del mapa mundial) se abre un modal con el mapa dibujado a escala: red de
+  caminos, salidas hacia cada mapa vecino (se puede saltar a ellos), los
+  territorios con su monolito, y los hideouts registrados.
+- **Datos geográficos verificados:** provienen de `cluster/world.json` de
+  los dumps públicos del cliente del juego (repositorio `ao-data/ao-bin-dumps`).
+  Los 276 mapas del Excel original coinciden 1 a 1 con clusters
+  `OPENPVP_BLACK_*` reales. Se guardan en `data/mapas_geo.json` y se cargan
+  a la tabla `mapas_geo`.
+- **Ubicación del Hideout dentro del mapa:** el juego **no** publica esa
+  coordenada (los hideouts son construcciones de jugadores y el "slot" del
+  Excel es un orden propio, no una posición). Por eso no se inventa: un
+  administrador la marca haciendo clic sobre el mapa real y queda guardada.
+  Los que nadie ha ubicado se muestran como "sin ubicar".
+- **Cuentas de usuario:** registro e inicio de sesión con usuario y
+  contraseña; cada usuario ve sus últimas 20 búsquedas y puede repetirlas
+  con un clic o borrarlas.
+- **Panel de administración en la web:** renombrar gremios, subir o quitar
+  su logo, editar notas, crear/editar/eliminar hideouts, marcar su posición,
+  renombrar mapas, gestionar usuarios (rol y estado) y ver la bitácora de
+  cambios.
+- **Cero dependencias en tiempo de ejecución:** se reemplazaron Express,
+  Helmet, compression y dotenv por un núcleo HTTP propio sobre el módulo
+  `http` nativo (enrutador con parámetros, middlewares, gzip, estáticos,
+  cabeceras de seguridad y carga de `.env`). `npm install` ya no hace falta
+  para desplegar y no hay paquetes de terceros que parchear.
+
+### v1
+
 - **Corrección de un bug visual:** los distintos estados de la búsqueda
   (vacío, cargando, sin resultados, error, resultados) se mostraban todos
   al mismo tiempo, superpuestos. La causa era una regla CSS propia
@@ -29,9 +63,10 @@ con el slot y el tipo (HQ, personal o estándar).
 Stack simple y de bajo mantenimiento, pensado para desplegarse en cualquier
 hosting de Node.js sin pasos extra:
 
-- **Backend:** Node.js + Express, en capas (rutas → controlador → servicio →
-  repositorios), aplicando el patrón Repository y principios de POO
-  (encapsulamiento, herencia en `BaseRepository`, responsabilidad única).
+- **Backend:** Node.js sin frameworks ni dependencias, en capas (rutas →
+  controlador → servicio → repositorios), aplicando el patrón Repository y
+  principios de POO (encapsulamiento, herencia en `BaseRepository`,
+  responsabilidad única). El núcleo HTTP propio vive en `src/http/`.
 - **Base de datos:** SQLite **relacional y normalizada** (3FN), accedida con
   el módulo nativo `node:sqlite` de Node 22 — sin dependencias binarias que
   compilar en el hosting.
@@ -40,7 +75,12 @@ hosting de Node.js sin pasos extra:
   - `gremios` (cada gremio se guarda una sola vez, con nombre normalizado
     indexado para búsquedas rápidas)
   - `hideouts` (tabla relacional: qué gremio ocupa qué slot, de qué mapa,
-    en qué temporada)
+    en qué temporada, y su posición marcada dentro del mapa)
+  - `mapas_geo` (geografía oficial de cada cluster: posición en el mapa
+    mundial, límites, salidas, caminos y territorios)
+  - `usuarios`, `sesiones`, `intentos_login` (cuentas y control de acceso)
+  - `busquedas` (historial privado por usuario)
+  - `auditoria` (bitácora de los cambios hechos desde el panel admin)
 - **Frontend:** HTML + CSS + JavaScript "vanilla" (sin frameworks), un solo
   input de búsqueda con debounce, responsive y con paleta visual inspirada
   en la Zona Negra de Albion Online.
@@ -54,35 +94,72 @@ hosting de Node.js sin pasos extra:
   sistema de archivos al reiniciar o "dormir" el servicio).
 
 ```
-├── server.js                  Punto de entrada
+├── server.js                       Punto de entrada
 ├── src/
-│   ├── app.js                 Configuración de Express (middlewares, rutas)
-│   ├── bootstrap.js           Auto-siembra la BD si está vacía al arrancar
-│   ├── config/database.js     Conexión SQLite (patrón Singleton)
-│   ├── models/Hideout.js      Entidad de dominio
-│   ├── repositories/          Acceso a datos (patrón Repository)
-│   ├── services/              Lógica de negocio (búsqueda y agrupación)
-│   ├── controllers/           Controladores HTTP
-│   └── routes/api.js          Definición de endpoints
-├── database/schema.sql        Esquema relacional
-├── data/hideouts_seed.json    Datos de la temporada S34 (extraídos del Excel)
+│   ├── app.js                      Composición de la app (middlewares, rutas)
+│   ├── bootstrap.js                Auto-siembra BD, geografía y cuenta admin
+│   ├── http/                       Núcleo HTTP propio (Router, contexto,
+│   │                               cuerpo, estáticos)
+│   ├── config/                     Conexión SQLite, migraciones, seguridad, .env
+│   ├── security/                   Contraseñas (scrypt), tokens, validación,
+│   │                               detección real de imágenes
+│   ├── middlewares/                Cookies, sesión, CSRF, límite de peticiones,
+│   │                               cabeceras de seguridad
+│   ├── models/Hideout.js           Entidad de dominio
+│   ├── repositories/               Acceso a datos (patrón Repository)
+│   ├── services/                   Lógica de negocio (búsqueda, mapas, auth, admin)
+│   ├── controllers/                Controladores HTTP
+│   └── routes/api.js               Definición de endpoints
+├── database/schema.sql             Esquema relacional
+├── data/hideouts_seed.json         Datos de la temporada S34 (del Excel)
+├── data/mapas_geo.json             Geografía oficial de los 276 mapas
 ├── scripts/
-│   ├── importarSeed.js        Carga inicial desde el JSON
-│   └── importarExcel.js       Importa un Excel nuevo como temporada nueva
-├── public/                    Frontend (HTML/CSS/JS)
-└── tests/                     Pruebas automatizadas
+│   ├── importarSeed.js             Carga inicial desde el JSON
+│   ├── importarExcel.js            Importa un Excel nuevo como temporada nueva
+│   ├── importarGeo.js              Carga data/mapas_geo.json a la BD
+│   └── generarGeoDesdeDumps.js     Regenera mapas_geo.json desde los dumps
+├── public/                         Frontend (HTML/CSS/JS por módulos)
+└── tests/                          Pruebas automatizadas
 ```
 
 ## Requisitos
 
 - Node.js **22.5 o superior** (usa el módulo nativo `node:sqlite`).
+- Sin dependencias de npm para ejecutar (`xlsx` es opcional, solo para
+  importar un Excel nuevo).
+
+## Actualizar la geografía de los mapas
+
+`data/mapas_geo.json` ya viene generado. Para regenerarlo tras un parche
+del juego, clona los dumps oficiales y ejecuta:
+
+```bash
+git clone --depth 1 https://github.com/ao-data/ao-bin-dumps
+node scripts/generarGeoDesdeDumps.js ao-bin-dumps/cluster/world.json
+npm run db:geo
+```
 
 ## Uso local
 
 ```bash
-npm install
 npm start            # http://localhost:3000 — siembra la BD automáticamente
 ```
+
+No hace falta `npm install`: la aplicación no tiene dependencias en tiempo
+de ejecución (solo el script opcional de importar Excel necesita `xlsx`).
+
+### Cuenta de administrador
+
+Al arrancar por primera vez se crea una cuenta con rol `ADMIN`. Puedes
+fijarla con variables de entorno:
+
+```bash
+ADMIN_USUARIO=andres ADMIN_CLAVE='una-clave-larga-2026' npm start
+```
+
+Si no las defines, se crea el usuario `admin` con una **contraseña aleatoria
+que se imprime una sola vez en el log del servidor**. No hay credenciales
+por defecto en el código ni en el repositorio.
 
 Si prefieres sembrar la base de datos manualmente antes de arrancar:
 
@@ -102,16 +179,77 @@ npm run dev
 npm test
 ```
 
-Valida, contra una base de datos SQLite temporal y aislada, que la
-búsqueda: encuentra coincidencias exactas, es insensible a mayúsculas,
-busca por substring (igual que la fórmula `SEARCH()` del Excel original),
-agrupa correctamente por mapa, rechaza búsquedas demasiado cortas y
-responde vacío cuando el gremio no existe.
+37 pruebas sobre bases de datos SQLite temporales y aisladas, en tres
+frentes:
+
+- **Búsqueda:** coincidencia exacta, insensible a mayúsculas, por substring
+  (igual que la fórmula `SEARCH()` del Excel), agrupación por mapa,
+  búsquedas demasiado cortas y gremios inexistentes.
+- **Seguridad:** hashing y verificación de contraseñas, validación de
+  entradas, detección real del tipo de imagen y una batería de intentos de
+  inyección SQL (búsquedas y login).
+- **API completa:** se levanta el servidor real y se comprueban sesiones,
+  cookies `HttpOnly`/`SameSite`, CSRF, permisos por rol, historial privado,
+  validación de la posición del hideout contra los límites reales del mapa,
+  path traversal, límite de tamaño del cuerpo y respuestas 404 en JSON.
 
 ## Endpoints de la API
 
+Públicos:
+
 - `GET /api/buscar?gremio=texto` → mapas y hideouts donde aparece el gremio.
+- `GET /api/mapas` → mapa mundial: los 276 clusters y sus conexiones.
+- `GET /api/mapas/:nombre` → detalle geográfico de un mapa + sus hideouts.
+- `GET /api/gremios/:id/logo` → logo del gremio (servido desde la BD).
 - `GET /api/salud` → chequeo de salud de la base de datos.
+
+Sesión:
+
+- `POST /api/auth/registro`, `POST /api/auth/login`, `POST /api/auth/logout`
+- `GET /api/auth/sesion`, `POST /api/auth/clave`
+- `GET /api/historial`, `DELETE /api/historial`
+
+Administración (rol `ADMIN` + token CSRF):
+
+- `GET /api/admin/resumen`, `GET /api/admin/auditoria`
+- `GET /api/admin/gremios`, `PUT /api/admin/gremios/:id/nombre`,
+  `PUT /api/admin/gremios/:id/notas`, `PUT|DELETE /api/admin/gremios/:id/logo`
+- `PUT /api/admin/mapas/:id/nombre`
+- `POST /api/admin/hideouts`, `PUT /api/admin/hideouts/:id`,
+  `PUT /api/admin/hideouts/:id/posicion`, `DELETE /api/admin/hideouts/:id`
+- `GET /api/admin/usuarios`, `PUT /api/admin/usuarios/:id/estado`,
+  `PUT /api/admin/usuarios/:id/rol`
+
+## Seguridad
+
+- **Inyección SQL:** el 100% de las consultas usa sentencias preparadas con
+  parámetros nombrados (`node:sqlite`); ningún valor del usuario se
+  concatena al SQL. Los comodines `%` y `_` de `LIKE` se escapan para que
+  se busquen como texto literal. Hay pruebas automatizadas con payloads
+  clásicos (`' OR '1'='1`, `'; DROP TABLE hideouts;--`, `UNION SELECT`...).
+- **Contraseñas:** hash `scrypt` con sal única por usuario; nunca se
+  guardan ni se devuelven en claro. El login tarda lo mismo si el usuario
+  no existe que si la clave es incorrecta (no se pueden enumerar cuentas) y
+  se bloquea tras 5 fallos en 15 minutos.
+- **Sesiones:** viven en el servidor; el navegador solo recibe un token
+  opaco en una cookie `HttpOnly` + `SameSite=Strict` (+ `Secure` en
+  producción). En la base solo se guarda su SHA-256.
+- **CSRF:** patrón double submit — toda escritura exige la cabecera
+  `X-CSRF-Token` que debe coincidir con la sesión.
+- **XSS:** CSP estricta (`script-src 'self'`, sin `unsafe-inline`) y todo el
+  contenido dinámico se inserta con `textContent`/`createElement`, nunca con
+  `innerHTML`.
+- **Nada sensible en el frontend:** la API devuelve solo lo que la pantalla
+  necesita; los hashes, las sesiones y los datos de otros usuarios nunca
+  salen del servidor. Ocultar botones no es la protección: cada endpoint
+  del panel revalida el rol.
+- **Subida de imágenes:** se valida la firma binaria real del archivo (PNG,
+  JPG o WebP; el SVG queda excluido por permitir scripts), con tope de 1 MB,
+  y se sirve con `Content-Type` fijado por el servidor y `nosniff`.
+- **Otros:** límite de peticiones por minuto, cuerpo JSON máximo de 32 kB,
+  protección contra *path traversal* en los archivos estáticos, cabeceras
+  `X-Frame-Options`, `Referrer-Policy` y HSTS en producción, y bitácora de
+  auditoría de cada cambio administrativo.
 
 ## Actualizar los datos en una nueva temporada
 
@@ -137,7 +275,7 @@ gratuitos con disco efímero.
 
 1. Sube este proyecto a un repositorio en GitHub/GitLab.
 2. En Render, crea un **Web Service** nuevo apuntando al repositorio.
-3. **Build command:** `npm install`
+3. **Build command:** `npm install` (o vacío: no hay dependencias)
 4. **Start command:** `npm start`
 5. Selecciona el plan **Free**.
 

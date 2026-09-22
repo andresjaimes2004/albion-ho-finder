@@ -10,7 +10,6 @@
  */
 
 const path = require('path');
-const XLSX = require('xlsx');
 
 const MapaRepository = require('../src/repositories/MapaRepository');
 const GremioRepository = require('../src/repositories/GremioRepository');
@@ -20,14 +19,32 @@ const TemporadaRepository = require('../src/repositories/TemporadaRepository');
 const HOJA_DATOS = 'Mapas BZ';
 const REGEX_TIPO = /\((HQ|P)\)\s*$/;
 
+/**
+ * `xlsx` es la única dependencia externa que queda y solo hace falta para
+ * este script de importación puntual, no para servir la web. Se carga de
+ * forma perezosa: si no está instalada, el resto de la aplicación sigue
+ * funcionando y aquí se explica cómo instalarla.
+ */
+function cargarXLSX() {
+  try {
+    // eslint-disable-next-line global-require
+    return require('xlsx');
+  } catch (error) {
+    throw new Error(
+      'Para importar un Excel hace falta el paquete "xlsx". Instálalo con: npm install xlsx'
+    );
+  }
+}
+
 function extraerFilas(rutaArchivo) {
+  const XLSX = cargarXLSX();
   const libro = XLSX.readFile(rutaArchivo);
   const hoja = libro.Sheets[HOJA_DATOS];
   if (!hoja) {
     throw new Error(`El archivo no contiene una hoja llamada "${HOJA_DATOS}".`);
   }
 
-  const filas = XLSX.utils.sheet_to_json(hoja, { header: 1, defval: null });
+  const filas = cargarXLSX().utils.sheet_to_json(hoja, { header: 1, defval: null });
   const [, ...datos] = filas; // se descarta el encabezado
 
   return datos
