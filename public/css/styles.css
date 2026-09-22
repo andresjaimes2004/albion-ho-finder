@@ -36,6 +36,15 @@
   box-sizing: border-box;
 }
 
+/* Cualquier elemento con el atributo [hidden] debe desaparecer siempre,
+   sin importar qué otra clase (display:flex, display:block, etc.) tenga
+   aplicada. Sin esta regla, una clase como ".estado { display:flex }"
+   le gana en cascada a la regla nativa del navegador para [hidden] y el
+   elemento queda visible aunque JS le haya puesto hidden = true. */
+[hidden] {
+  display: none !important;
+}
+
 html, body {
   margin: 0;
   padding: 0;
@@ -92,9 +101,10 @@ body {
 }
 
 .marca__icono {
-  font-size: 1.8rem;
-  color: var(--color-oro);
-  filter: drop-shadow(0 0 6px rgba(201, 162, 39, 0.4));
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 6px rgba(201, 162, 39, 0.35));
 }
 
 .marca__titulo {
@@ -343,10 +353,24 @@ body {
 @media (max-width: 560px) {
   .cabecera__contenido {
     flex-wrap: wrap;
+    padding: 14px 16px;
+  }
+
+  .marca__icono {
+    width: 36px;
+    height: 36px;
   }
 
   .marca__titulo {
     font-size: 1.1rem;
+  }
+
+  .marca__subtitulo {
+    font-size: 0.72rem;
+  }
+
+  .principal {
+    padding: 24px 16px 48px;
   }
 
   .panel-busqueda {
@@ -361,5 +385,29 @@ body {
     margin-left: 0;
     order: 3;
     width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .marca {
+    gap: 10px;
+  }
+
+  .marca__icono {
+    width: 30px;
+    height: 30px;
+  }
+
+  .marca__titulo {
+    font-size: 0.98rem;
+  }
+
+  .badge-temporada {
+    font-size: 0.7rem;
+    padding: 4px 10px;
+  }
+
+  .resumen-resultados {
+    gap: 6px 12px;
   }
 }

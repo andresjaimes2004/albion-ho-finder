@@ -5,6 +5,25 @@ el usuario escribe el nombre (completo o parcial) de un gremio y la página
 devuelve todos los mapas de Zona Negra donde ese gremio tiene un Hideout,
 con el slot y el tipo (HQ, personal o estándar).
 
+## Cambios recientes
+
+- **Corrección de un bug visual:** los distintos estados de la búsqueda
+  (vacío, cargando, sin resultados, error, resultados) se mostraban todos
+  al mismo tiempo, superpuestos. La causa era una regla CSS propia
+  (`.estado { display: flex }`) que le ganaba en cascada a la regla nativa
+  del navegador para el atributo `hidden`. Se agregó `[hidden] { display:
+  none !important; }` en `public/css/styles.css` para que `hidden` siempre
+  se respete, sin importar qué otra clase tenga el elemento.
+- **Responsive reforzado:** se ajustaron tamaños de logo, tipografía y
+  espaciados en dos puntos de quiebre (`560px` y `380px`) para que se vea
+  bien en celulares angostos, tablets y escritorio.
+- **Logo nuevo:** se diseñó un emblema (torreón + lupa, en la paleta oro/
+  carmesí del sitio) en `public/assets/logo.svg`, usado en la cabecera de
+  la página, y una versión optimizada para tamaños pequeños en
+  `public/assets/favicon.svg` (con `favicon-32.png` y
+  `apple-touch-icon.png` como respaldo para navegadores sin soporte de
+  favicon SVG).
+
 ## Arquitectura
 
 Stack simple y de bajo mantenimiento, pensado para desplegarse en cualquier
