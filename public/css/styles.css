@@ -955,3 +955,308 @@ body {
   font: inherit;
 }
 .ajuste-imagen__fila output { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ------------------------------------------------------------- pestañas --- */
+
+.pestanas {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.pestanas__boton {
+  appearance: none;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  padding: 10px 14px;
+  color: var(--color-texto-suave);
+  font-family: var(--fuente-titulos);
+  font-size: 0.98rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pestanas__boton:hover { color: var(--color-texto); }
+.pestanas__boton[aria-selected="true"] { color: var(--color-oro-claro); border-bottom-color: var(--color-oro); }
+.pestanas__boton:focus-visible { outline: 2px solid var(--color-oro-claro); outline-offset: -2px; }
+
+/* ---------------------------------------------------- caminos de Avalon --- */
+
+.caminos-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-bottom: 16px;
+}
+
+.caminos-cabecera__titulo {
+  font-family: var(--fuente-titulos);
+  color: var(--color-oro-claro);
+  font-size: 1.15rem;
+  margin: 0;
+}
+
+.caminos-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8rem;
+  color: var(--color-texto-suave);
+}
+
+.caminos-estado__punto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-exito);
+  box-shadow: 0 0 6px var(--color-exito);
+  flex-shrink: 0;
+}
+
+.caminos-estado--viejo .caminos-estado__punto { background: var(--color-advertencia); box-shadow: none; }
+.caminos-estado--viejo { color: var(--color-advertencia); }
+.caminos-estado--error .caminos-estado__punto { background: var(--color-error); box-shadow: none; }
+.caminos-estado--error { color: var(--color-error); }
+
+.entrada-busqueda {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--color-texto);
+  font-size: 1rem;
+  font-family: var(--fuente-texto);
+}
+
+.entrada-busqueda::placeholder { color: var(--color-texto-tenue); }
+
+.caminos-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin-top: 14px;
+}
+
+.caminos-filtros select {
+  background: var(--color-fondo);
+  color: var(--color-texto);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 0.88rem;
+}
+
+.caminos-filtros select:focus-visible { outline: 2px solid var(--color-oro-claro); outline-offset: 1px; }
+
+.casilla {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.88rem;
+  color: var(--color-texto-suave);
+  cursor: pointer;
+}
+
+.casilla input { accent-color: var(--color-oro); width: 16px; height: 16px; }
+
+.caminos-lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 10px;
+}
+
+.tarjeta-camino {
+  appearance: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  background: var(--color-fondo-tarjeta);
+  border: 1px solid var(--color-borde-suave);
+  border-left: 3px solid var(--color-borde);
+  border-radius: var(--radio);
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.1s ease;
+}
+
+.tarjeta-camino:hover { border-color: var(--color-oro); }
+.tarjeta-camino:focus-visible { outline: 2px solid var(--color-oro-claro); outline-offset: 2px; }
+.tarjeta-camino--activa { border-left-color: var(--color-exito); }
+.tarjeta-camino--zonaNegra { border-left-color: var(--color-carmesi); }
+.tarjeta-camino--zonaNegra.tarjeta-camino--activa { border-left-color: var(--color-exito); }
+
+.tarjeta-camino__cabeza {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tarjeta-camino__nombre {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.tarjeta-camino__conexiones {
+  font-size: 0.74rem;
+  color: var(--color-texto-tenue);
+  white-space: nowrap;
+}
+
+.tarjeta-camino__conexiones--si { color: var(--color-exito); font-weight: 600; }
+
+.tarjeta-camino__meta {
+  font-size: 0.78rem;
+  color: var(--color-texto-suave);
+}
+
+.caminos-mas { display: block; margin: 16px auto 0; }
+
+.caminos-atribucion {
+  margin: 28px 0 0;
+  font-size: 0.78rem;
+  color: var(--color-texto-tenue);
+}
+
+.caminos-atribucion a { color: var(--color-oro); }
+
+.caminos-detalle {
+  background: var(--color-fondo-panel);
+  border: 1px solid var(--color-oro);
+  border-radius: var(--radio-lg);
+  padding: 18px 20px;
+  margin-bottom: 22px;
+  box-shadow: var(--sombra);
+}
+
+.caminos-detalle__cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.caminos-detalle__titulo {
+  font-family: var(--fuente-titulos);
+  color: var(--color-oro-claro);
+  font-size: 1.2rem;
+  margin: 0 0 6px;
+  overflow-wrap: anywhere;
+}
+
+.caminos-detalle__cuerpo {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 20px;
+  margin-top: 14px;
+}
+
+.caminos-detalle__bloque h4 {
+  margin: 0 0 10px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-texto-suave);
+}
+
+.caminos-detalle__vacio {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--color-texto-tenue);
+}
+
+.lista-conexiones {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.conexion {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  background: var(--color-fondo-tarjeta);
+  border: 1px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  padding: 9px 12px;
+}
+
+.conexion__sentido {
+  color: var(--color-oro);
+  font-weight: 700;
+  width: 1em;
+  text-align: center;
+}
+
+.conexion__destino {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 140px;
+}
+
+.conexion__nombre {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-texto);
+  text-align: left;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+button.conexion__nombre:hover { color: var(--color-oro-claro); text-decoration: underline; }
+.conexion__nombre--oculto { color: var(--color-texto-tenue); font-style: italic; cursor: default; }
+.conexion__meta { font-size: 0.76rem; color: var(--color-texto-tenue); }
+
+.conexion__tiempo {
+  font-size: 0.84rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-exito);
+  white-space: nowrap;
+}
+
+.conexion__tiempo--pronto { color: var(--color-advertencia); }
+.conexion__tiempo--urgente { color: var(--color-error); font-weight: 600; }
+.conexion__tiempo--cerrada { color: var(--color-texto-tenue); text-decoration: line-through; }
+.conexion__tiempo--desconocido { color: var(--color-texto-tenue); }
+
+.caminos-datos {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 14px;
+  margin: 0;
+  font-size: 0.86rem;
+}
+
+.caminos-datos dt { color: var(--color-texto-suave); }
+.caminos-datos dd { margin: 0; }
+
+@media (max-width: 700px) {
+  .caminos-detalle__cuerpo { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px) {
+  .caminos-detalle { padding: 14px; }
+  .pestanas__boton { padding: 9px 10px; font-size: 0.9rem; }
+  .caminos-filtros select { flex: 1; min-width: 0; }
+}
