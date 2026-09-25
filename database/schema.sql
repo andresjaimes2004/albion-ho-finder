@@ -187,3 +187,26 @@ CREATE TABLE IF NOT EXISTS conexiones_reportadas (
 );
 
 CREATE INDEX IF NOT EXISTS idx_conexiones_reportadas_cierre ON conexiones_reportadas (cierra_en);
+
+-- Rutas: conexiones encadenadas en orden (p. ej. mapa de Zona Negra →
+-- camino 1 → camino 2 → mapa final). `zonas` guarda la secuencia de nombres
+-- (JSON) y `total_tramos` cuántos tramos tenía al crearse: si se purga una de
+-- sus conexiones, la ruta queda incompleta y deja de mostrarse.
+CREATE TABLE IF NOT EXISTS rutas_reportadas (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    zonas         TEXT    NOT NULL,
+    total_tramos  INTEGER NOT NULL CHECK (total_tramos >= 2),
+    usuario_id    INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+    creado_en     TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Tramo `orden` (0, 1, 2...) de una ruta: une zonas[orden] con zonas[orden+1].
+-- Una misma conexión puede formar parte de varias rutas.
+CREATE TABLE IF NOT EXISTS rutas_tramos (
+    ruta_id      INTEGER NOT NULL REFERENCES rutas_reportadas(id) ON DELETE CASCADE,
+    orden        INTEGER NOT NULL,
+    conexion_id  INTEGER NOT NULL REFERENCES conexiones_reportadas(id) ON DELETE CASCADE,
+    PRIMARY KEY (ruta_id, orden)
+);
+
+CREATE INDEX IF NOT EXISTS idx_rutas_tramos_conexion ON rutas_tramos (conexion_id);

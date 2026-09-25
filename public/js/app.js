@@ -7,13 +7,15 @@ import { PanelSesion } from './sesion.js';
 import { PanelAdmin } from './admin.js';
 import { PanelCaminos } from './tracking.js';
 import { PanelRegistro } from './registroCaminos.js';
+import { crear, crearReloj, crearTarjetaRuta, iniciarRelojes } from './rutas.js';
 
 /**
  * app.js
  * ----------------------------------------------------------------------
  * Controlador de la interfaz (POO, sin frameworks): encapsula referencias
  * al DOM y el estado de la búsqueda, y coordina los módulos de mapa,
- * sesión, administración y caminos de Avalon.
+ * sesión, administración y caminos de Avalon. En cada mapa del resultado
+ * muestra las rutas y conexiones de Avalon registradas que lo tocan.
  *
  * Todo el contenido dinámico se inserta con textContent/createElement
  * (nunca innerHTML con datos de la API) para evitar XSS con nombres de
@@ -72,6 +74,9 @@ class BuscadorUI {
         this._ejecutarBusqueda(termino);
       },
     });
+
+    iniciarRelojes();
+    this.tarjetasPorMapa = new Map();
 
     this._bindEventos();
     this._bindPestanas();
@@ -171,6 +176,7 @@ class BuscadorUI {
       }
 
       this._renderizarResultados(datos);
+      this._cargarRutas(datos.resultados.map((r) => r.mapa), this.controladorActual.signal);
       this.mapaMundial.destacar(datos.resultados.map((r) => r.mapa));
       this.panelSesion.refrescarHistorial();
     } catch (error) {
@@ -196,6 +202,7 @@ class BuscadorUI {
     );
 
     this.listaMapas.replaceChildren();
+    this.tarjetasPorMapa.clear();
     for (const grupo of datos.resultados) {
       this.listaMapas.appendChild(this._crearTarjetaMapa(grupo));
     }
@@ -253,7 +260,98 @@ class BuscadorUI {
     }
 
     tarjeta.appendChild(lista);
+    this.tarjetasPorMapa.set(grupo.mapa, tarjeta);
     return tarjeta;
+  }
+
+  // ------------------------------------------------ rutas de Avalon --
+
+  /** Rutas del gremio y conexiones vigentes de los mapas del resultado. */
+  async _cargarRutas(nombres, senal) {
+    if (!nombres.length) return;
+    let datos;
+    try {
+      datos = await api.rutasDeMapas(nombres, senal);
+    } catch (error) {
+      return; // es un complemento: sin rutas, el resultado sigue sirviendo
+    }
+    if (senal.aborted) return;
+
+    for (const [nombre, info] of Object.entries(datos.mapas)) {
+      const tarjeta = this.tarjetasPorMapa.get(nombre);
+      if (!tarjeta) continue;
+      const previa = tarjeta.querySelector('.rutas-hideout');
+      if (previa) previa.remove();
+      tarjeta.appendChild(this._crearSeccionRutas(nombre, info));
+    }
+  }
+
+  _crearSeccionRutas(nombre, { rutas, conexiones }) {
+    const seccion = crear('div', 'rutas-hideout');
+    const partes = [];
+    if (rutas.length) partes.push(`${rutas.length} ruta${rutas.length === 1 ? '' : 's'}`);
+    if (conexiones.length) partes.push(`${conexiones.length} conexi${conexiones.length === 1 ? 'ón' : 'ones'}`);
+
+    const alternar = crear('button', 'rutas-hideout__alternar', `Avalon: ${partes.join(' · ')}`);
+    alternar.type = 'button';
+    alternar.setAttribute('aria-expanded', 'false');
+
+    const panel = crear('div', 'rutas-hideout__panel');
+    panel.hidden = true;
+    alternar.addEventListener('click', () => {
+      panel.hidden = !panel.hidden;
+      alternar.setAttribute('aria-expanded', String(!panel.hidden));
+      if (!panel.hidden && !panel.childElementCount) this._rellenarPanelRutas(panel, nombre, rutas, conexiones);
+    });
+
+    seccion.append(alternar, panel);
+    return seccion;
+  }
+
+  _rellenarPanelRutas(panel, nombre, rutas, conexiones) {
+    for (const ruta of rutas) {
+      panel.appendChild(
+        crearTarjetaRuta(ruta, {
+          usuario: this.usuario,
+          resaltar: nombre,
+          alElegirZona: (zona) => this._irACaminos(zona),
+          alBorrar: async (r) => {
+            await api.borrarRuta(r.id);
+            this._repetirBusqueda();
+          },
+        })
+      );
+    }
+
+    if (conexiones.length) {
+      panel.appendChild(crear('p', 'rutas-hideout__subtitulo', 'Conexiones directas de este mapa'));
+      const lista = crear('ul', 'rutas-hideout__conexiones');
+      for (const c of conexiones) {
+        const item = crear('li');
+        const meta = [c.hacia.tier ? `T${c.hacia.tier}` : null, c.hacia.etiqueta].filter(Boolean).join(' · ');
+        item.append(
+          crear('span', 'rutas-hideout__sentido', c.sentido === 'salida' ? '→' : '←'),
+          crear('span', 'rutas-hideout__destino', c.hacia.nombre || 'Mapa desconocido'),
+          crear('span', 'rutas-hideout__meta', meta),
+          c.cierraEn ? crearReloj(c.cierraEn) : crear('span', 'rutas-hideout__meta', 'sin hora de cierre'),
+          crear('span', `conexion__fuente conexion__fuente--${c.fuente}`, c.fuente === 'gremio' ? 'gremio' : 'smugden')
+        );
+        lista.appendChild(item);
+      }
+      panel.appendChild(lista);
+    }
+
+    const ver = crear('button', 'boton boton--pequeno boton--sutil', 'Ver en Caminos de Avalon');
+    ver.type = 'button';
+    ver.addEventListener('click', () => this._irACaminos(nombre));
+    panel.appendChild(ver);
+  }
+
+  /** Cambia a la pestaña de caminos con la ficha de un mapa abierta. */
+  _irACaminos(nombre) {
+    history.replaceState(null, '', '#caminos');
+    this._mostrarVista('caminos');
+    this.panelCaminos.abrirDetalle(nombre);
   }
 
   _crearItemHideout(hideout) {

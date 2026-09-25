@@ -582,3 +582,18 @@ test('la lista de zonas oficiales es pública y cacheable', async () => {
   assert.ok(json.zonas.some((z) => z.nombre === 'Meltwater Sump' && z.grupo === 'zonaNegra'));
   assert.match(cabeceras.get('cache-control'), /max-age/);
 });
+
+test('la consulta de rutas por mapa valida la lista de mapas', async () => {
+  const cliente = crearCliente();
+  const bien = await cliente.peticion('/api/tracking/rutas?mapas=' + encodeURIComponent('Deepwood Copse,Martlock'));
+  assert.equal(bien.estado, 200);
+  assert.equal(bien.json.ok, true);
+  assert.equal(typeof bien.json.mapas, 'object');
+
+  const sinMapas = await cliente.peticion('/api/tracking/rutas');
+  assert.equal(sinMapas.estado, 400);
+
+  const demasiados = Array.from({ length: 51 }, (_, i) => `Mapa ${i}`).join(',');
+  const excedida = await cliente.peticion('/api/tracking/rutas?mapas=' + encodeURIComponent(demasiados));
+  assert.equal(excedida.estado, 400);
+});

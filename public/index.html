@@ -187,6 +187,7 @@
               <li>En el juego, abre el mapa del camino y <strong>pasa el cursor por encima de un portal</strong>.</li>
               <li>Saca la captura con <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> (pantalla completa o solo esa zona, incluyendo el recuadro del portal).</li>
               <li>Vuelve aquí y pégala con <kbd>Ctrl</kbd>+<kbd>V</kbd>. Una captura por portal; puedes pegar varias seguidas.</li>
+              <li>Para una <strong>ruta</strong> (Zona Negra → camino → … → mapa final), pega un portal de cada tramo, en cualquier orden: se encadenan solos.</li>
             </ol>
 
             <div id="registro-zona" class="registro__zona" tabindex="0">
@@ -200,6 +201,7 @@
 
             <p id="registro-estado" class="registro__estado" aria-live="polite"></p>
             <ul id="registro-lista" class="registro__lista"></ul>
+            <div id="registro-rutas" class="registro__rutas" hidden aria-live="polite"></div>
 
             <div id="registro-acciones" class="registro__acciones" hidden>
               <button id="registro-guardar" type="button" class="boton">Guardar conexiones</button>
@@ -212,6 +214,7 @@
       </section>
 
       <section id="caminos-detalle" class="caminos-detalle" hidden aria-live="polite"></section>
+      <section id="caminos-rutas" class="caminos-rutas" hidden aria-label="Rutas del gremio"></section>
 
       <div id="caminos-cargando" class="estado">
         <span class="cargando" aria-hidden="true"></span>

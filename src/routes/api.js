@@ -41,9 +41,11 @@ router.get('/mapas/:nombre/imagen', mapas.imagen);
 router.get('/gremios/:id/logo', admin.servirLogo);
 router.get('/tracking', tracking.resumen);
 router.get('/tracking/zonas', tracking.zonas);
+router.get('/tracking/rutas', tracking.rutasDeMapas);
 router.get('/tracking/:nombre', tracking.detalle);
 router.post('/tracking/reportes', exigirAutenticacion, tracking.registrar);
 router.delete('/tracking/reportes/:id', exigirAutenticacion, tracking.eliminar);
+router.delete('/tracking/rutas/:id', exigirAutenticacion, tracking.eliminarRuta);
 
 router.get('/salud', (req, res) => {
   try {

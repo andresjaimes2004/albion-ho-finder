@@ -7,6 +7,26 @@ con el slot y el tipo (HQ, personal o estándar).
 
 ## Cambios recientes
 
+### v6 — Rutas de Avalon y hideouts conectados
+
+- **Rutas:** varias conexiones encadenadas en orden, por ejemplo
+  mapa de Zona Negra → camino 1 → camino 2 → … → mapa final (o solo
+  Zona Negra → camino → mapa final). Cada tramo conserva su propio tiempo
+  de cierre; la ruta se muestra mientras todos sigan abiertos.
+- **Registro encadenado:** en el panel de capturas se pega un portal de
+  cada tramo, en cualquier orden. Los tramos que comparten zonas (en
+  cualquier sentido: los portales son de ida y vuelta) se proponen como una
+  ruta ordenada desde la Zona Negra; se puede invertir o guardar por
+  separado. Si hay bifurcaciones o ciclos no se adivina.
+- **Hideouts conectados:** al buscar un gremio, cada mapa con hideout que
+  aparezca en una ruta o tenga conexiones vigentes muestra "Avalon: N rutas
+  · M conexiones"; al desplegarlo se ve la ruta con ese mapa resaltado y se
+  puede saltar a su ficha en Caminos de Avalon.
+- **Caminos de Avalon:** lista "Rutas del gremio" y, en la ficha de cada
+  mapa, las rutas que pasan por él. Quien registró la ruta o un
+  administrador puede borrarla (se borran también los tramos que no usa
+  ninguna otra ruta).
+
 ### v5 — Registrar conexiones desde capturas del juego
 
 - **Panel "Registrar conexiones desde capturas"** en la pestaña Caminos de
@@ -308,10 +328,14 @@ Públicos:
 - `GET /api/tracking/:nombre` → un camino o mapa: datos oficiales y sus
   conexiones vigentes (entradas y salidas, con hora de cierre).
 - `GET /api/tracking/zonas` → zonas oficiales a las que puede llevar un portal.
+- `GET /api/tracking/rutas?mapas=A,B` → rutas del gremio y conexiones vigentes
+  de esos mapas (hasta 50), para la vista de hideouts.
 
 Con sesión (+ token CSRF):
 
-- `POST /api/tracking/reportes` → registrar conexiones `{ conexiones: [{ origen, destino, minutos }] }`.
+- `POST /api/tracking/reportes` → registrar conexiones `{ conexiones: [{ origen, destino, minutos }], rutas: [[0, 1, 2]] }`
+  (cada ruta es la lista, en orden, de posiciones dentro de `conexiones`).
+- `DELETE /api/tracking/rutas/:id` → borrar una ruta (autor o administrador).
 - `DELETE /api/tracking/reportes/:id` → borrar una (autor o administrador).
 - `GET /api/salud` → chequeo de salud de la base de datos.
 

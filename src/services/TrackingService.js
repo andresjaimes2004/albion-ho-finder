@@ -5,6 +5,7 @@ const fs = require('fs');
 
 const MapaRepository = require('../repositories/MapaRepository');
 const ConexionReportadaRepository = require('../repositories/ConexionReportadaRepository');
+const RutaReportadaRepository = require('../repositories/RutaReportadaRepository');
 const { cargarZonas, ETIQUETAS_GRUPO } = require('./zonas');
 
 /**
@@ -24,7 +25,9 @@ const { cargarZonas, ETIQUETAS_GRUPO } = require('./zonas');
  *
  *  - Conexiones del gremio: las que registran los propios usuarios desde
  *    capturas del juego (ver ReportesCaminosService). Si smugden informa
- *    la misma conexión, se muestra solo la del gremio.
+ *    la misma conexión, se muestra solo la del gremio. Varias de ellas
+ *    pueden formar una ruta en orden (Zona Negra → camino → … → destino);
+ *    una ruta se muestra mientras todos sus tramos sigan abiertos.
  *
  * La API externa se consulta SOLO desde el servidor y con una caché
  * compartida (por defecto 30 s): da igual cuántos usuarios tengan la
@@ -125,6 +128,7 @@ class TrackingService {
     obtenerEnVivo = obtenerDeSmugden,
     mapaRepository = new MapaRepository(),
     reportesRepository = new ConexionReportadaRepository(),
+    rutasRepository = new RutaReportadaRepository(),
     zonas = cargarZonas(),
     ttlMs = 30_000,
     ahora = () => Date.now(),
@@ -133,6 +137,7 @@ class TrackingService {
     this.obtenerEnVivo = obtenerEnVivo;
     this.mapas = mapaRepository;
     this.reportes = reportesRepository;
+    this.rutasRepo = rutasRepository;
     this.zonaPorNombre = new Map(zonas.map((z) => [normalizar(z.nombre), z]));
     this.ttlMs = ttlMs;
     this.ahora = ahora;
@@ -192,9 +197,9 @@ class TrackingService {
     const ahora = this.ahora();
     const indiceZonaNegra = this._indiceZonaNegra();
 
-    const delGremio = this.reportes
-      .listarVigentes(new Date(ahora).toISOString())
-      .map((r) => this._conexionReportada(r, indiceZonaNegra));
+    const reportadas = this.reportes.listarVigentes(new Date(ahora).toISOString());
+    const delGremio = reportadas.map((r) => this._conexionReportada(r, indiceZonaNegra));
+    const rutas = this._rutasVigentes(reportadas, indiceZonaNegra);
 
     const conexiones = [...delGremio];
     for (const cruda of datos.crudas) {
@@ -208,15 +213,59 @@ class TrackingService {
 
     return {
       conexiones,
+      rutas,
       estado: {
         fuente: 'ava.smugden.com',
         consultadoEn: new Date(datos.consultadoEn).toISOString(),
         actualizadoEn: datos.actualizadoEn ? new Date(datos.actualizadoEn).toISOString() : null,
         activas: conexiones.length,
         delGremio: delGremio.length,
+        rutas: rutas.length,
         error: datos.error,
       },
     };
+  }
+
+  /**
+   * Rutas del gremio con todos sus tramos abiertos. Cada tramo lleva su
+   * propio cierre; la ruta cierra cuando cierra el primero.
+   */
+  _rutasVigentes(reportadas, indiceZonaNegra) {
+    const porId = new Map(reportadas.map((r) => [r.id, r]));
+    const rutas = [];
+    for (const ruta of this.rutasRepo.listarCompletas()) {
+      const tramos = ruta.conexionIds.map((id) => porId.get(id));
+      if (tramos.some((t) => !t)) continue;
+      const cierres = tramos.map((t) => Date.parse(t.cierraEn));
+      rutas.push({
+        id: ruta.id,
+        zonas: ruta.zonas.map((nombre) => this._extremo(null, nombre, null, indiceZonaNegra)),
+        tramos: tramos.map((t, k) => ({ reporteId: t.id, cierraEn: cierres[k] })),
+        cierraEn: Math.min(...cierres),
+        reportadoPor: ruta.usuario || null,
+        reportadoPorId: ruta.usuarioId,
+      });
+    }
+    return rutas.sort((a, b) => b.cierraEn - a.cierraEn);
+  }
+
+  /** Conexiones vigentes que tocan una zona, vistas desde ella. */
+  _conexionesDe(clave, conexiones) {
+    return conexiones
+      .filter((c) => c.origen.clave === clave || c.destino.clave === clave)
+      .map((c) => {
+        const esOrigen = c.origen.clave === clave;
+        return {
+          id: c.id,
+          fuente: c.fuente,
+          reporteId: c.reporteId,
+          reportadoPor: c.reportadoPor,
+          reportadoPorId: c.reportadoPorId,
+          hacia: esOrigen ? c.destino : c.origen,
+          sentido: esOrigen ? 'salida' : 'entrada',
+          cierraEn: c.cierraEn,
+        };
+      });
   }
 
   _normalizarConexion(cruda, consultadoEn, indiceZonaNegra) {
@@ -319,7 +368,7 @@ class TrackingService {
 
   /** Catálogo completo + todas las conexiones vigentes. */
   async resumen() {
-    const { conexiones, estado } = await this._conexionesVigentes();
+    const { conexiones, rutas, estado } = await this._conexionesVigentes();
 
     const conteo = new Map();
     for (const c of conexiones) {
@@ -350,6 +399,7 @@ class TrackingService {
         conexiones: conteo.get(normalizar(m.nombre)) || 0,
       })),
       conexiones,
+      rutas,
     };
   }
 
@@ -359,27 +409,14 @@ class TrackingService {
    */
   async detalle(nombreMapa) {
     const clave = normalizar(nombreMapa);
-    const { conexiones, estado } = await this._conexionesVigentes();
+    const { conexiones, rutas: todas, estado } = await this._conexionesVigentes();
 
-    const propias = conexiones
-      .filter((c) => c.origen.clave === clave || c.destino.clave === clave)
-      .map((c) => {
-        const esOrigen = c.origen.clave === clave;
-        return {
-          id: c.id,
-          fuente: c.fuente,
-          reporteId: c.reporteId,
-          reportadoPor: c.reportadoPor,
-          reportadoPorId: c.reportadoPorId,
-          hacia: esOrigen ? c.destino : c.origen,
-          sentido: esOrigen ? 'salida' : 'entrada',
-          cierraEn: c.cierraEn,
-        };
-      });
+    const propias = this._conexionesDe(clave, conexiones);
+    const rutas = todas.filter((r) => r.zonas.some((z) => z.clave === clave));
 
     const camino = this.caminoPorNombre.get(clave);
     if (camino) {
-      return { ok: true, estado, mapa: { nombre: camino.nombre, clase: 'avalon', camino }, conexiones: propias };
+      return { ok: true, estado, mapa: { nombre: camino.nombre, clase: 'avalon', camino }, conexiones: propias, rutas };
     }
 
     const zonaNegra = this._indiceZonaNegra().porNombre.get(clave);
@@ -389,6 +426,7 @@ class TrackingService {
         estado,
         mapa: { nombre: zonaNegra.nombre, clase: 'zonaNegra', tier: zonaNegra.tier, cuadrante: zonaNegra.cuadrante },
         conexiones: propias,
+        rutas,
       };
     }
 
@@ -403,10 +441,30 @@ class TrackingService {
         estado,
         mapa: { nombre: extremo.nombre || extremo.idCluster || nombreMapa, clase: 'otro' },
         conexiones: propias,
+        rutas,
       };
     }
 
     return { ok: false, mensaje: 'No se encontró ningún camino de Avalon ni mapa con ese nombre.' };
+  }
+
+  /**
+   * Para la vista de hideouts: de cada mapa pedido, las rutas del gremio
+   * que pasan por él y sus conexiones directas vigentes. Solo aparecen
+   * los mapas que tienen algo.
+   */
+  async paraMapas(nombres) {
+    const { conexiones, rutas, estado } = await this._conexionesVigentes();
+    const mapas = {};
+    for (const nombre of nombres) {
+      const clave = normalizar(nombre);
+      const rutasDelMapa = rutas.filter((r) => r.zonas.some((z) => z.clave === clave));
+      const conexionesDelMapa = this._conexionesDe(clave, conexiones);
+      if (rutasDelMapa.length || conexionesDelMapa.length) {
+        mapas[nombre] = { rutas: rutasDelMapa, conexiones: conexionesDelMapa };
+      }
+    }
+    return { ok: true, estado, mapas };
   }
 }
 

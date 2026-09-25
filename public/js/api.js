@@ -75,9 +75,12 @@ export const api = {
   detalleTracking: (nombre, senal) =>
     peticion(`/api/tracking/${encodeURIComponent(nombre)}`, { senal }),
   zonas: () => peticion('/api/tracking/zonas'),
-  reportarConexiones: (conexiones) =>
-    peticion('/api/tracking/reportes', { metodo: 'POST', datos: { conexiones } }),
+  reportarConexiones: (conexiones, rutas = []) =>
+    peticion('/api/tracking/reportes', { metodo: 'POST', datos: { conexiones, rutas } }),
   borrarReporte: (id) => peticion(`/api/tracking/reportes/${id}`, { metodo: 'DELETE' }),
+  borrarRuta: (id) => peticion(`/api/tracking/rutas/${id}`, { metodo: 'DELETE' }),
+  rutasDeMapas: (nombres, senal) =>
+    peticion(`/api/tracking/rutas?mapas=${encodeURIComponent(nombres.join(','))}`, { senal }),
 
   sesion: () => peticion('/api/auth/sesion'),
   login: (usuario, clave) =>
