@@ -141,3 +141,40 @@ test('interpreta una captura completa y descarta tiempos imposibles', () => {
   assert.equal(imposible.minutos, null);
   assert.equal(imposible.origen, null);
 });
+
+// ----------------------------------------------------------- encadenar --
+
+test('encadena tramos en cualquier orden y sentido, empezando por la Zona Negra', async () => {
+  const { agruparEnRutas, invertirRuta, claveRuta } = await cargar('encadenar.js');
+  const grupos = { 'Deepwood Copse': 'zonaNegra', Martlock: 'ciudad' };
+  const grupoDe = (z) => grupos[z] || 'avalon';
+
+  const tramos = [
+    { origen: 'Ava2', destino: 'Ava1' },
+    { origen: 'Ava1', destino: 'Deepwood Copse' },
+    null, // fila aún sin datos
+    { origen: 'Martlock', destino: 'Ava2' },
+    { origen: 'Suelto1', destino: 'Suelto2' },
+  ];
+  const { rutas, sueltos } = agruparEnRutas(tramos, grupoDe);
+  assert.equal(rutas.length, 1);
+  assert.deepEqual(rutas[0].zonas, ['Deepwood Copse', 'Ava1', 'Ava2', 'Martlock']);
+  assert.deepEqual(rutas[0].indices, [1, 0, 3]);
+  assert.deepEqual(sueltos, [2, 4]);
+
+  // Ruta corta: Zona Negra → camino → mapa final.
+  const corta = agruparEnRutas([{ origen: 'Ava1', destino: 'Martlock' }, { origen: 'Deepwood Copse', destino: 'Ava1' }], grupoDe);
+  assert.deepEqual(corta.rutas[0].zonas, ['Deepwood Copse', 'Ava1', 'Martlock']);
+
+  assert.deepEqual(invertirRuta(rutas[0]).zonas, ['Martlock', 'Ava2', 'Ava1', 'Deepwood Copse']);
+  assert.equal(claveRuta(rutas[0].zonas), claveRuta(invertirRuta(rutas[0]).zonas));
+});
+
+test('no adivina rutas con bifurcaciones o ciclos: esos tramos quedan sueltos', async () => {
+  const { agruparEnRutas } = await cargar('encadenar.js');
+  const ciclo = [{ origen: 'A', destino: 'B' }, { origen: 'B', destino: 'C' }, { origen: 'C', destino: 'A' }];
+  const bifurcacion = [{ origen: 'A', destino: 'B' }, { origen: 'B', destino: 'C' }, { origen: 'B', destino: 'D' }];
+  assert.deepEqual(agruparEnRutas(ciclo), { rutas: [], sueltos: [0, 1, 2] });
+  assert.deepEqual(agruparEnRutas(bifurcacion), { rutas: [], sueltos: [0, 1, 2] });
+  assert.deepEqual(agruparEnRutas([{ origen: 'A', destino: 'B' }]).rutas, [], 'un solo tramo no es una ruta');
+});

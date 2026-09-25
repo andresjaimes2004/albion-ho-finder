@@ -1486,3 +1486,221 @@ kbd {
       'estado estado';
   }
 }
+
+/* ------------------------------------------------ relojes compartidos --- */
+
+.reloj {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-exito);
+  white-space: nowrap;
+}
+
+.reloj--pronto { color: var(--color-advertencia); }
+.reloj--urgente { color: var(--color-error); font-weight: 600; }
+.reloj--cerrado { color: var(--color-texto-tenue); text-decoration: line-through; }
+
+/* ---------------------------------------------------------------- rutas --- */
+
+.caminos-rutas {
+  background: var(--color-fondo-panel);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  padding: 16px 20px;
+  margin-bottom: 22px;
+}
+
+.bloque-rutas { margin-bottom: 14px; }
+
+.lista-rutas {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ruta {
+  background: var(--color-fondo-tarjeta);
+  border: 1px solid var(--color-borde-suave);
+  border-left: 3px solid var(--color-oro);
+  border-radius: var(--radio);
+  padding: 10px 12px;
+}
+
+.ruta__cabecera {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-bottom: 8px;
+}
+
+.ruta__titulo {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.ruta__tramos {
+  font-size: 0.76rem;
+  color: var(--color-texto-tenue);
+}
+
+.ruta__cierre { font-size: 0.84rem; margin-left: auto; }
+
+.ruta__pasos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.ruta__zona {
+  display: flex;
+  flex-direction: column;
+  padding: 5px 9px;
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  background: var(--color-fondo);
+  min-width: 0;
+}
+
+.ruta__zona--resaltada {
+  border-color: var(--color-oro);
+  box-shadow: 0 0 0 2px rgba(201, 162, 39, 0.18);
+}
+
+.ruta__nombre {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--color-texto);
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+button.ruta__nombre { cursor: pointer; }
+button.ruta__nombre:hover { color: var(--color-oro-claro); text-decoration: underline; }
+.ruta__meta { font-size: 0.72rem; color: var(--color-texto-tenue); }
+
+.ruta__tramo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.74rem;
+}
+
+.ruta__tramo::before {
+  content: '→';
+  color: var(--color-oro);
+  font-weight: 700;
+}
+
+/* ------------------------------------------ rutas en el registro --- */
+
+.registro__en-ruta {
+  grid-area: estado;
+  justify-self: end;
+  font-size: 0.74rem;
+  color: var(--color-oro-claro);
+}
+
+.registro__rutas {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.registro__ruta {
+  border: 1px solid var(--color-oro);
+  border-radius: var(--radio);
+  padding: 10px 12px;
+  background: rgba(201, 162, 39, 0.05);
+}
+
+.registro__ruta--separada {
+  border-color: var(--color-borde);
+  background: none;
+  opacity: 0.8;
+}
+
+.registro__ruta-titulo { margin: 0; font-size: 0.86rem; }
+.registro__ruta-zonas {
+  margin: 4px 0 8px;
+  font-size: 0.86rem;
+  color: var(--color-texto-suave);
+  overflow-wrap: anywhere;
+}
+.registro__ruta-acciones { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* --------------------------------------- rutas en la vista de hideouts --- */
+
+.rutas-hideout {
+  margin-top: 10px;
+  border-top: 1px solid var(--color-borde-suave);
+  padding-top: 10px;
+}
+
+.rutas-hideout__alternar {
+  appearance: none;
+  border: 1px solid var(--color-oro);
+  background: rgba(201, 162, 39, 0.08);
+  color: var(--color-oro-claro);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.rutas-hideout__alternar::after { content: ' ▾'; }
+.rutas-hideout__alternar[aria-expanded='true']::after { content: ' ▴'; }
+.rutas-hideout__alternar:focus-visible { outline: 2px solid var(--color-oro-claro); outline-offset: 2px; }
+
+.rutas-hideout__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.rutas-hideout__subtitulo {
+  margin: 4px 0 0;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-texto-suave);
+}
+
+.rutas-hideout__conexiones {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.84rem;
+}
+
+.rutas-hideout__conexiones li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+.rutas-hideout__sentido { color: var(--color-oro); font-weight: 700; }
+.rutas-hideout__destino { font-weight: 600; }
+.rutas-hideout__meta { font-size: 0.74rem; color: var(--color-texto-tenue); }
+.rutas-hideout__panel > .boton { align-self: flex-start; }
+
+@media (max-width: 560px) {
+  .caminos-rutas { padding: 14px; }
+  .ruta__cierre { margin-left: 0; }
+}

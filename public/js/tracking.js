@@ -1,6 +1,7 @@
 'use strict';
 
 import api from './api.js';
+import { crear, crearReloj, crearTarjetaRuta } from './rutas.js';
 
 /**
  * tracking.js
@@ -33,23 +34,6 @@ function normalizar(texto) {
   return String(texto || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
 }
 
-function crear(etiqueta, clase, texto) {
-  const el = document.createElement(etiqueta);
-  if (clase) el.className = clase;
-  if (texto !== undefined && texto !== null) el.textContent = texto;
-  return el;
-}
-
-/** "2h 13m", "12m 05s", "cerrada". */
-function formatearRestante(ms) {
-  if (ms <= 0) return 'cerrada';
-  const total = Math.floor(ms / 1000);
-  const horas = Math.floor(total / 3600);
-  const minutos = Math.floor((total % 3600) / 60);
-  const segundos = total % 60;
-  if (horas > 0) return `${horas}h ${String(minutos).padStart(2, '0')}m`;
-  return `${minutos}m ${String(segundos).padStart(2, '0')}s`;
-}
 
 function haceCuanto(iso) {
   const ms = Date.now() - Date.parse(iso);
@@ -84,7 +68,6 @@ export class PanelCaminos {
     this.mapaAbierto = null;
     this.controladorDetalle = null;
     this.temporizadorRefresco = null;
-    this.temporizadorReloj = null;
     this.activo = false;
 
     this._bindEventos();
@@ -136,14 +119,12 @@ export class PanelCaminos {
     this.temporizadorRefresco = setInterval(() => {
       if (!document.hidden) this.refrescar();
     }, INTERVALO_REFRESCO_MS);
-    this.temporizadorReloj = setInterval(() => this._actualizarRelojes(), 1000);
   }
 
   /** Se llama al ocultar la sección: no se consulta nada en segundo plano. */
   desactivar() {
     this.activo = false;
     clearInterval(this.temporizadorRefresco);
-    clearInterval(this.temporizadorReloj);
   }
 
   async refrescar() {
@@ -153,6 +134,7 @@ export class PanelCaminos {
       this._renderizarEstado();
       this._renderizarSugerencias();
       this._renderizarLista();
+      this._renderizarRutas();
       if (this.mapaAbierto) this.abrirDetalle(this.mapaAbierto, { silencioso: true });
     } catch (error) {
       if (!this.datos) {
@@ -385,7 +367,7 @@ export class PanelCaminos {
   }
 
   _renderizarDetalle(datos) {
-    const { mapa, conexiones } = datos;
+    const { mapa, conexiones, rutas = [] } = datos;
     const camino = mapa.camino;
 
     const insignias = [];
@@ -402,6 +384,8 @@ export class PanelCaminos {
       ver.addEventListener('click', () => this.abrirMapa(mapa.nombre));
       partes.push(ver);
     }
+
+    if (rutas.length) partes.push(this._crearBloqueRutas(rutas, { resaltar: mapa.nombre }));
 
     const cuerpo = crear('div', 'caminos-detalle__cuerpo');
     cuerpo.append(this._crearBloqueConexiones(conexiones));
@@ -459,14 +443,11 @@ export class PanelCaminos {
     const meta = [hacia.tier ? `T${hacia.tier}` : null, hacia.etiqueta].filter(Boolean).join(' · ');
     if (meta) destino.append(crear('span', 'conexion__meta', meta));
 
-    const tiempo = crear('span', 'conexion__tiempo');
+    let tiempo;
     if (conexion.cierraEn) {
-      tiempo.dataset.cierra = String(conexion.cierraEn);
-      tiempo.title = `Cierra a las ${new Date(conexion.cierraEn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-      this._pintarReloj(tiempo, Date.now());
+      tiempo = crearReloj(conexion.cierraEn, { clase: 'reloj conexion__tiempo' });
     } else {
-      tiempo.textContent = 'sin hora de cierre';
-      tiempo.classList.add('conexion__tiempo--desconocido');
+      tiempo = crear('span', 'conexion__tiempo conexion__tiempo--desconocido', 'sin hora de cierre');
     }
 
     item.append(destino, tiempo, this._crearFuente(conexion));
@@ -542,19 +523,39 @@ export class PanelCaminos {
     return bloque;
   }
 
-  // --------------------------------------------------------------- relojes --
+  // ----------------------------------------------------------------- rutas --
 
-  _actualizarRelojes() {
-    const ahora = Date.now();
-    for (const el of this.detalle.querySelectorAll('[data-cierra]')) this._pintarReloj(el, ahora);
+  /** Lista general "Rutas del gremio" (todas las vigentes). */
+  _renderizarRutas() {
+    const contenedor = document.getElementById('caminos-rutas');
+    const rutas = (this.datos && this.datos.rutas) || [];
+    contenedor.hidden = !rutas.length;
+    if (!rutas.length) {
+      contenedor.replaceChildren();
+      return;
+    }
+    contenedor.replaceChildren(this._crearBloqueRutas(rutas, { titulo: 'Rutas del gremio' }));
   }
 
-  _pintarReloj(el, ahora) {
-    const restante = Number(el.dataset.cierra) - ahora;
-    el.textContent = restante > 0 ? `cierra en ${formatearRestante(restante)}` : 'cerrada';
-    el.classList.toggle('conexion__tiempo--urgente', restante > 0 && restante < 30 * 60_000);
-    el.classList.toggle('conexion__tiempo--pronto', restante >= 30 * 60_000 && restante < 60 * 60_000);
-    el.classList.toggle('conexion__tiempo--cerrada', restante <= 0);
+  _crearBloqueRutas(rutas, { titulo = 'Rutas que pasan por aquí', resaltar = null } = {}) {
+    const bloque = crear('div', 'caminos-detalle__bloque bloque-rutas');
+    bloque.append(crear('h4', null, `${titulo} (${rutas.length})`));
+    const lista = crear('div', 'lista-rutas');
+    for (const ruta of rutas) {
+      lista.append(
+        crearTarjetaRuta(ruta, {
+          usuario: this.usuario,
+          resaltar,
+          alElegirZona: (nombre) => this.abrirDetalle(nombre),
+          alBorrar: async (r) => {
+            await api.borrarRuta(r.id);
+            await this.refrescar();
+          },
+        })
+      );
+    }
+    bloque.append(lista);
+    return bloque;
   }
 }
 

@@ -2,6 +2,7 @@
 
 import api from './api.js';
 import { crearIndiceZonas, buscarZona, MAX_MINUTOS } from './capturas/lectura.js';
+import { agruparEnRutas, invertirRuta, claveRuta } from './capturas/encadenar.js';
 
 /**
  * registroCaminos.js
@@ -16,6 +17,10 @@ import { crearIndiceZonas, buscarZona, MAX_MINUTOS } from './capturas/lectura.js
  *
  * El tiempo leído es el restante en el momento de la captura; al guardar
  * se descuenta lo que haya pasado desde entonces.
+ *
+ * Las filas que se encadenan (el destino de una es el origen de otra, en
+ * cualquier sentido) se proponen como una ruta; el usuario puede
+ * invertirla o guardar los tramos por separado.
  * ----------------------------------------------------------------------
  */
 
@@ -38,6 +43,9 @@ export class PanelRegistro {
     this.zonas = null;
     this.indice = null;
     this.ultimoOrigen = null;
+    // Decisiones del usuario sobre cada ruta detectada (por clave de zonas).
+    this.preferencias = new Map();
+    this.rutasDetectadas = [];
 
     this.alternar = document.getElementById('registro-alternar');
     this.cuerpo = document.getElementById('registro-cuerpo');
@@ -50,6 +58,7 @@ export class PanelRegistro {
     this.acciones = document.getElementById('registro-acciones');
     this.guardar = document.getElementById('registro-guardar');
     this.sugerencias = document.getElementById('registro-zonas');
+    this.contenedorRutas = document.getElementById('registro-rutas');
 
     this._bindEventos();
     this._renderizarSesion();
@@ -100,6 +109,7 @@ export class PanelRegistro {
     this.guardar.addEventListener('click', () => this._guardar());
     document.getElementById('registro-vaciar').addEventListener('click', () => {
       this.filas = [];
+      this.preferencias.clear();
       this.lista.replaceChildren();
       this._actualizarAcciones();
       this.estado.textContent = '';
@@ -205,6 +215,8 @@ export class PanelRegistro {
     const vista = crear('div', 'registro__vista');
     const campos = crear('div', 'registro__campos');
     const estado = crear('p', 'registro__fila-estado');
+    const etiquetaRuta = crear('span', 'registro__en-ruta');
+    etiquetaRuta.hidden = true;
 
     const campo = (etiqueta, input) => {
       const envoltura = crear('label', 'registro__campo');
@@ -241,13 +253,17 @@ export class PanelRegistro {
     quitar.setAttribute('aria-label', 'Quitar esta captura');
 
     campos.append(campo('Origen', origen), campo('Destino', destino), campo('Cierra en', tiempo));
-    item.append(vista, campos, quitar, estado);
+    item.append(vista, campos, quitar, estado, etiquetaRuta);
     this.lista.append(item);
 
     const fila = {
       item,
       capturadaEn,
       estadoActual: 'leyendo',
+      marcarRuta: (texto) => {
+        etiquetaRuta.hidden = !texto;
+        etiquetaRuta.textContent = texto || '';
+      },
       poner: (tipo, texto) => {
         fila.estadoActual = tipo;
         estado.textContent = texto;
@@ -308,7 +324,64 @@ export class PanelRegistro {
     return parecida && parecida.confianza >= CONFIANZA_SEGURA ? parecida.zona.nombre : null;
   }
 
+  // ------------------------------------------------------------- rutas --
+
+  /** Recalcula qué filas forman rutas y las muestra para confirmar. */
+  _actualizarRutas() {
+    const tramos = this.filas.map((f) => (f.estadoActual !== 'leyendo' ? f.datos() : null));
+    const grupoDe = (zona) => {
+      const z = this.porNombre && this.porNombre.get(zona.toLowerCase());
+      return z ? z.grupo : undefined;
+    };
+    const { rutas } = agruparEnRutas(tramos, grupoDe);
+
+    this.rutasDetectadas = rutas.map((ruta) => {
+      const clave = claveRuta(ruta.zonas);
+      const pref = this.preferencias.get(clave) || {};
+      return { ...(pref.invertida ? invertirRuta(ruta) : ruta), clave, separada: Boolean(pref.separada) };
+    });
+
+    for (const fila of this.filas) fila.marcarRuta(null);
+    this.rutasDetectadas.forEach((ruta, n) => {
+      if (ruta.separada) return;
+      ruta.indices.forEach((i, k) => this.filas[i].marcarRuta(`Ruta ${n + 1} · tramo ${k + 1} de ${ruta.indices.length}`));
+    });
+
+    this.contenedorRutas.hidden = !this.rutasDetectadas.length;
+    this.contenedorRutas.replaceChildren(...this.rutasDetectadas.map((ruta, n) => this._crearAvisoRuta(ruta, n)));
+  }
+
+  _crearAvisoRuta(ruta, n) {
+    const caja = crear('div', `registro__ruta${ruta.separada ? ' registro__ruta--separada' : ''}`);
+    const titulo = crear('p', 'registro__ruta-titulo');
+    titulo.append(
+      crear('strong', null, `Ruta ${n + 1}`),
+      ` · ${ruta.indices.length} tramos${ruta.separada ? ' (se guardarán por separado)' : ''}`
+    );
+    const recorrido = crear('p', 'registro__ruta-zonas', ruta.zonas.join(' → '));
+
+    const acciones = crear('div', 'registro__ruta-acciones');
+    const invertir = crear('button', 'boton boton--pequeno boton--sutil', 'Invertir sentido');
+    invertir.type = 'button';
+    invertir.disabled = ruta.separada;
+    invertir.addEventListener('click', () => this._cambiarPreferencia(ruta.clave, 'invertida'));
+    const separar = crear('button', 'boton boton--pequeno boton--sutil', ruta.separada ? 'Agrupar como ruta' : 'Guardar tramos por separado');
+    separar.type = 'button';
+    separar.addEventListener('click', () => this._cambiarPreferencia(ruta.clave, 'separada'));
+    acciones.append(invertir, separar);
+
+    caja.append(titulo, recorrido, acciones);
+    return caja;
+  }
+
+  _cambiarPreferencia(clave, campo) {
+    const actual = this.preferencias.get(clave) || {};
+    this.preferencias.set(clave, { ...actual, [campo]: !actual[campo] });
+    this._actualizarAcciones();
+  }
+
   _actualizarAcciones() {
+    this._actualizarRutas();
     const listas = this.filas.filter((f) => f.estadoActual !== 'leyendo' && f.valida()).length;
     const leyendo = this.filas.some((f) => f.estadoActual === 'leyendo');
     this.acciones.hidden = !this.filas.length;
@@ -322,15 +395,22 @@ export class PanelRegistro {
     const listas = this.filas.filter((f) => f.valida());
     if (!listas.length) return;
 
+    // Las rutas se envían como listas de posiciones dentro de `conexiones`.
+    const posicion = new Map(listas.map((f, i) => [this.filas.indexOf(f), i]));
+    const rutas = this.rutasDetectadas
+      .filter((ruta) => !ruta.separada && ruta.indices.every((i) => posicion.has(i)))
+      .map((ruta) => ruta.indices.map((i) => posicion.get(i)));
+
     this.guardar.disabled = true;
     this.estado.textContent = 'Guardando…';
     try {
-      const r = await api.reportarConexiones(listas.map((f) => f.datos()));
+      const r = await api.reportarConexiones(listas.map((f) => f.datos()), rutas);
       for (const fila of listas) fila.item.remove();
       this.filas = this.filas.filter((f) => !listas.includes(f));
       const partes = [];
       if (r.creadas) partes.push(`${r.creadas} nueva${r.creadas === 1 ? '' : 's'}`);
       if (r.actualizadas) partes.push(`${r.actualizadas} actualizada${r.actualizadas === 1 ? '' : 's'}`);
+      if (r.rutas && r.rutas.length) partes.push(`${r.rutas.length} ruta${r.rutas.length === 1 ? '' : 's'}`);
       this.estado.textContent = `Guardado: ${partes.join(' y ')}. ¡Gracias!`;
       if (this.alGuardar) this.alGuardar();
     } catch (error) {

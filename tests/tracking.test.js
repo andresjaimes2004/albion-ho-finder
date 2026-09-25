@@ -197,7 +197,7 @@ test.before(() => {
 });
 
 function limpiarReportes() {
-  require('../src/config/database').getConnection().exec('DELETE FROM conexiones_reportadas');
+  require('../src/config/database').getConnection().exec('DELETE FROM rutas_reportadas; DELETE FROM conexiones_reportadas;');
 }
 
 function servicioReportes(reloj = () => AHORA) {
@@ -297,4 +297,95 @@ test('las conexiones del gremio se mezclan con smugden sin duplicarse', async ()
   // Pasado el cierre, deja de mostrarse.
   const { servicio: despues } = crearServicio([], { zonas: ZONAS, ahora: () => AHORA + 120 * 60_000 });
   assert.equal((await despues.resumen()).estado.delGremio, 0);
+});
+
+// ---------------------------------------------------------------- rutas --
+
+const RUTA = [
+  // Tramos en cualquier sentido: el servicio los orienta según la ruta.
+  { origen: 'Ouyos-Aoeuam', destino: 'Deepwood Copse', minutos: 120 },
+  { origen: 'Ouyos-Aoeuam', destino: 'Cases-Ugumlos', minutos: 45 },
+  { origen: 'Martlock', destino: 'Cases-Ugumlos', minutos: 300 },
+];
+
+test('registra una ruta encadenada y orienta sus tramos', () => {
+  limpiarReportes();
+  const r = servicioReportes().registrar(autor.id, RUTA, [[0, 1, 2]]);
+
+  assert.equal(r.creadas, 3);
+  assert.equal(r.rutas.length, 1);
+  assert.deepEqual(r.rutas[0].zonas, ['Deepwood Copse', 'Ouyos-Aoeuam', 'Cases-Ugumlos', 'Martlock']);
+  assert.deepEqual(r.rutas[0].conexionIds, r.conexiones.map((c) => c.id));
+  assert.equal(r.rutas[0].usuario, 'explorador');
+});
+
+test('rechaza rutas que no se encadenan o repiten zonas, sin guardar nada', () => {
+  limpiarReportes();
+  const s = servicioReportes();
+  const casos = [
+    [[0, 2], /no continúa desde/],
+    [[0], /al menos dos tramos/],
+    [[0, 0], /repite un tramo/],
+    [[0, 9], /no existe/],
+  ];
+  for (const [ruta, mensaje] of casos) assert.throws(() => s.registrar(autor.id, RUTA, [ruta]), mensaje);
+
+  // Deepwood Copse → Ouyos → Cases → Ouyos: vuelve a una zona ya visitada.
+  const vuelta = [...RUTA, { origen: 'Cases-Ugumlos', destino: 'Ouyos-Aoeuam', minutos: 30 }];
+  assert.throws(() => s.registrar(autor.id, vuelta, [[0, 1, 3]]), /dos veces por la misma zona/);
+  assert.equal(new ConexionReportadaRepository().listarVigentes(new Date(AHORA).toISOString()).length, 0);
+});
+
+test('la misma ruta registrada otra vez (incluso al revés) se actualiza, no se duplica', () => {
+  limpiarReportes();
+  const s = servicioReportes();
+  const primera = s.registrar(autor.id, RUTA, [[0, 1, 2]]).rutas[0];
+  const segunda = s.registrar(otro.id, [...RUTA].reverse(), [[0, 1, 2]]).rutas[0];
+
+  assert.equal(segunda.id, primera.id);
+  assert.deepEqual(segunda.zonas, primera.zonas, 'conserva el sentido original');
+  assert.equal(segunda.usuario, 'curioso');
+});
+
+test('las rutas aparecen en el resumen, en la ficha y en la vista de hideouts mientras sigan abiertas', async () => {
+  limpiarReportes();
+  servicioReportes().registrar(autor.id, RUTA, [[0, 1, 2]]);
+  const { servicio } = crearServicio([], { zonas: ZONAS });
+
+  const { rutas } = await servicio.resumen();
+  assert.equal(rutas.length, 1);
+  assert.deepEqual(rutas[0].zonas.map((z) => z.nombre), ['Deepwood Copse', 'Ouyos-Aoeuam', 'Cases-Ugumlos', 'Martlock']);
+  assert.equal(rutas[0].cierraEn, AHORA + 45 * 60_000, 'cierra con su primer tramo');
+  assert.deepEqual(rutas[0].tramos.map((t) => (t.cierraEn - AHORA) / 60_000), [120, 45, 300]);
+
+  const ficha = await servicio.detalle('Martlock');
+  assert.equal(ficha.rutas.length, 1);
+
+  const hideouts = await servicio.paraMapas(['Deepwood Copse', 'Lymhurst']);
+  assert.deepEqual(Object.keys(hideouts.mapas), ['Deepwood Copse']);
+  assert.equal(hideouts.mapas['Deepwood Copse'].rutas.length, 1);
+  assert.equal(hideouts.mapas['Deepwood Copse'].conexiones[0].hacia.nombre, 'Ouyos-Aoeuam');
+
+  // Cuando cierra un tramo, la ruta deja de mostrarse.
+  const { servicio: despues } = crearServicio([], { zonas: ZONAS, ahora: () => AHORA + 60 * 60_000 });
+  assert.equal((await despues.resumen()).rutas.length, 0);
+});
+
+test('borrar una ruta quita sus tramos exclusivos y conserva los compartidos', async () => {
+  limpiarReportes();
+  const s = servicioReportes();
+  const larga = s.registrar(autor.id, RUTA, [[0, 1, 2]]).rutas[0];
+  const corta = s.registrar(otro.id, RUTA.slice(0, 2), [[0, 1]]).rutas[0];
+
+  assert.throws(() => s.eliminarRuta(otro, larga.id), (e) => e.estado === 403);
+  s.eliminarRuta(autor, larga.id);
+
+  const vigentes = new ConexionReportadaRepository().listarVigentes(new Date(AHORA).toISOString());
+  assert.equal(vigentes.length, 2, 'se borró solo el tramo Cases-Ugumlos – Martlock');
+  const { servicio } = crearServicio([], { zonas: ZONAS });
+  assert.deepEqual((await servicio.resumen()).rutas.map((r) => r.id), [corta.id]);
+
+  // Si se borra una conexión suelta que usaba una ruta, la ruta desaparece.
+  s.eliminar(admin, vigentes[0].id);
+  assert.equal((await servicio.resumen()).rutas.length, 0);
 });
