@@ -51,6 +51,8 @@ test.before(() => {
 });
 
 test.after(() => {
+  // En Windows no se puede borrar un archivo abierto: cerrar la conexión primero.
+  require('../src/config/database').close();
   fs.rmSync(DB_TEMPORAL, { force: true });
   fs.rmSync(`${DB_TEMPORAL}-wal`, { force: true });
   fs.rmSync(`${DB_TEMPORAL}-shm`, { force: true });

@@ -114,6 +114,8 @@ test.before(async () => {
 
 test.after(async () => {
   await new Promise((resolver) => servidor.close(resolver));
+  // En Windows no se puede borrar un archivo abierto: cerrar la conexión primero.
+  require('../src/config/database').close();
   for (const sufijo of ['', '-wal', '-shm']) {
     fs.rmSync(`${DB_TEMPORAL}${sufijo}`, { force: true });
   }
