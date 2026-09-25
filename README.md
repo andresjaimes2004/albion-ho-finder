@@ -251,6 +251,14 @@ Si no las defines, se crea el usuario `admin` con una **contraseña aleatoria
 que se imprime una sola vez en el log del servidor**. No hay credenciales
 por defecto en el código ni en el repositorio.
 
+Si pierdes esa contraseña, registra una cuenta normal desde la web y dale
+rol de administrador desde la terminal del servidor (no toca contraseñas y
+queda en la bitácora):
+
+```bash
+npm run admin:promover -- <usuario>
+```
+
 Si prefieres sembrar la base de datos manualmente antes de arrancar:
 
 ```bash
@@ -393,6 +401,13 @@ Ten en cuenta las limitaciones reales del plan gratuito de Render:
   despertar con la siguiente visita.
 - 750 horas gratis por mes (suficiente para un solo servicio corriendo
   todo el mes).
+- **Las cuentas y todo lo editado desde la web se pierden** al dormir o
+  reiniciar el servicio: usuarios, hideouts, nombres de gremio, logos,
+  imágenes de mapas y conexiones registradas. Define `ADMIN_USUARIO` y
+  `ADMIN_CLAVE` en *Environment* para que la cuenta de administrador se
+  recree siempre con tu contraseña. Para conservar los datos hace falta un
+  plan con disco persistente (montarlo, p. ej., en `/var/data` y definir
+  `DB_PATH=/var/data/albion.db`).
 - El disco es efímero (no soporta discos persistentes en el plan Free),
   pero no es un problema aquí: al despertar, el servidor se auto-siembra
   de nuevo en segundos desde `data/hideouts_seed.json`.
