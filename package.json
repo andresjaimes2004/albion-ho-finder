@@ -14,7 +14,8 @@
     "db:import": "node scripts/importarExcel.js",
     "test": "node --test tests/*.test.js",
     "db:geo": "node scripts/importarGeo.js",
-    "db:generar-geo": "node scripts/generarGeoDesdeDumps.js"
+    "db:generar-geo": "node scripts/generarGeoDesdeDumps.js",
+    "db:generar-caminos": "node scripts/generarCaminosDesdeDumps.js"
   },
   "dependencies": {},
   "license": "MIT",

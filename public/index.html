@@ -34,6 +34,12 @@
   </header>
 
   <main class="contenedor principal">
+    <nav class="pestanas" role="tablist" aria-label="Secciones">
+      <button id="pestana-hideouts" type="button" class="pestanas__boton" role="tab" data-vista="hideouts" aria-selected="true" aria-controls="vista-hideouts">Hideouts</button>
+      <button id="pestana-caminos" type="button" class="pestanas__boton" role="tab" data-vista="caminos" aria-selected="false" aria-controls="vista-caminos">Caminos de Avalon</button>
+    </nav>
+
+    <div id="vista-hideouts" role="tabpanel" aria-labelledby="pestana-hideouts">
     <section class="panel-busqueda" aria-label="Buscador de gremio">
       <label for="input-gremio" class="panel-busqueda__label">Nombre del gremio</label>
       <div class="panel-busqueda__caja">
@@ -122,6 +128,63 @@
       <h3>Últimos cambios</h3>
       <ul id="admin-auditoria" class="admin-lista admin-lista--compacta"></ul>
     </section>
+    </div>
+
+    <div id="vista-caminos" role="tabpanel" aria-labelledby="pestana-caminos" hidden>
+      <section class="panel-busqueda" aria-label="Buscador de caminos de Avalon">
+        <div class="caminos-cabecera">
+          <h2 class="caminos-cabecera__titulo">Caminos de Avalon</h2>
+          <span id="caminos-estado" class="caminos-estado" aria-live="polite"></span>
+        </div>
+        <label for="input-camino" class="panel-busqueda__label">Camino o mapa</label>
+        <div class="panel-busqueda__caja">
+          <svg class="icono-buscar" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+            <path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <input id="input-camino" class="entrada-busqueda" type="text" list="caminos-sugerencias"
+                 placeholder="Ej: Ouyos-Aoeuam, Deepwood Copse..." autocomplete="off" maxlength="80" />
+          <datalist id="caminos-sugerencias"></datalist>
+        </div>
+        <div class="caminos-filtros">
+          <select id="caminos-grupo" aria-label="Tipo de camino">
+            <option value="">Todos los tipos</option>
+            <option value="real">Reales</option>
+            <option value="zonaNegra">Zona Negra</option>
+            <option value="avalon">Avalon</option>
+            <option value="profundo">Profundos</option>
+            <option value="hideout">Hideout</option>
+          </select>
+          <select id="caminos-tier" aria-label="Tier">
+            <option value="">Todos los tiers</option>
+            <option value="4">T4</option>
+            <option value="6">T6</option>
+            <option value="8">T8</option>
+          </select>
+          <label class="casilla"><input id="caminos-activos" type="checkbox" /> Solo con conexiones activas</label>
+        </div>
+        <p class="panel-busqueda__ayuda">
+          Toca un camino para ver sus datos oficiales y las conexiones que tiene abiertas ahora, con el tiempo que les queda.
+        </p>
+      </section>
+
+      <section id="caminos-detalle" class="caminos-detalle" hidden aria-live="polite"></section>
+
+      <div id="caminos-cargando" class="estado">
+        <span class="cargando" aria-hidden="true"></span>
+        <p>Cargando caminos de Avalon...</p>
+      </div>
+      <p id="caminos-error" class="estado estado--error" hidden></p>
+      <div id="caminos-resumen" class="resumen-resultados" hidden></div>
+      <div id="caminos-lista" class="caminos-lista"></div>
+      <button id="caminos-mas" type="button" class="boton boton--sutil caminos-mas" hidden>Mostrar más</button>
+
+      <p class="caminos-atribucion">
+        Catálogo de caminos: dumps oficiales del cliente de Albion Online (Sandbox Interactive).
+        Conexiones en vivo: <a href="https://ava.smugden.com/" target="_blank" rel="noopener noreferrer">ava.smugden.com</a>,
+        reportadas por los escáneres de su comunidad.
+      </p>
+    </div>
   </main>
 
   <footer class="pie">

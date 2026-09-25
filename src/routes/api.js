@@ -7,6 +7,7 @@ const buscador = require('../controllers/buscadorController');
 const auth = require('../controllers/authController');
 const mapas = require('../controllers/mapaController');
 const admin = require('../controllers/adminController');
+const tracking = require('../controllers/trackingController');
 const db = require('../config/database');
 const crearLimitador = require('../middlewares/limitador');
 const config = require('../config/seguridad');
@@ -38,6 +39,8 @@ router.get('/mapas', mapas.mundo);
 router.get('/mapas/:nombre', mapas.detalle);
 router.get('/mapas/:nombre/imagen', mapas.imagen);
 router.get('/gremios/:id/logo', admin.servirLogo);
+router.get('/tracking', tracking.resumen);
+router.get('/tracking/:nombre', tracking.detalle);
 
 router.get('/salud', (req, res) => {
   try {

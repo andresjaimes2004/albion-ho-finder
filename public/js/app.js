@@ -5,13 +5,14 @@ import { VentanaMapa } from './mapaDetalle.js';
 import { MapaMundial } from './mapaMundial.js';
 import { PanelSesion } from './sesion.js';
 import { PanelAdmin } from './admin.js';
+import { PanelCaminos } from './tracking.js';
 
 /**
  * app.js
  * ----------------------------------------------------------------------
  * Controlador de la interfaz (POO, sin frameworks): encapsula referencias
  * al DOM y el estado de la búsqueda, y coordina los módulos de mapa,
- * sesión y administración.
+ * sesión, administración y caminos de Avalon.
  *
  * Todo el contenido dinámico se inserta con textContent/createElement
  * (nunca innerHTML con datos de la API) para evitar XSS con nombres de
@@ -50,6 +51,10 @@ class BuscadorUI {
 
     this.panelAdmin = new PanelAdmin();
 
+    this.panelCaminos = new PanelCaminos({
+      abrirMapa: (nombre) => this.ventanaMapa.abrir(nombre),
+    });
+
     this.panelSesion = new PanelSesion({
       alCambiarSesion: (usuario) => {
         this.usuario = usuario;
@@ -62,6 +67,7 @@ class BuscadorUI {
     });
 
     this._bindEventos();
+    this._bindPestanas();
     this._iniciar();
   }
 
@@ -95,6 +101,33 @@ class BuscadorUI {
       evento.currentTarget.textContent = seccion.hidden ? 'Ver mapa de la Zona Negra' : 'Ocultar mapa';
       if (!seccion.hidden) this.mapaMundial.cargar().catch(() => {});
     });
+  }
+
+  /** Pestañas Hideouts / Caminos de Avalon, enlazables con #caminos. */
+  _bindPestanas() {
+    this.pestanas = [...document.querySelectorAll('.pestanas__boton')];
+    for (const pestana of this.pestanas) {
+      pestana.addEventListener('click', () => {
+        history.replaceState(null, '', pestana.dataset.vista === 'caminos' ? '#caminos' : location.pathname);
+        this._mostrarVista(pestana.dataset.vista);
+      });
+    }
+    window.addEventListener('hashchange', () => this._mostrarVista(this._vistaDeUrl()));
+    this._mostrarVista(this._vistaDeUrl());
+  }
+
+  _vistaDeUrl() {
+    return location.hash === '#caminos' ? 'caminos' : 'hideouts';
+  }
+
+  _mostrarVista(vista) {
+    for (const pestana of this.pestanas) {
+      const activa = pestana.dataset.vista === vista;
+      pestana.setAttribute('aria-selected', String(activa));
+      document.getElementById(`vista-${pestana.dataset.vista}`).hidden = !activa;
+    }
+    if (vista === 'caminos') this.panelCaminos.activar();
+    else this.panelCaminos.desactivar();
   }
 
   _mostrarEstado(nombreEstado) {

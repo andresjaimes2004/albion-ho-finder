@@ -71,6 +71,10 @@ export const api = {
   mundo: () => peticion('/api/mapas'),
   detalleMapa: (nombre) => peticion(`/api/mapas/${encodeURIComponent(nombre)}`),
 
+  tracking: () => peticion('/api/tracking'),
+  detalleTracking: (nombre, senal) =>
+    peticion(`/api/tracking/${encodeURIComponent(nombre)}`, { senal }),
+
   sesion: () => peticion('/api/auth/sesion'),
   login: (usuario, clave) =>
     peticion('/api/auth/login', { metodo: 'POST', datos: { usuario, clave } }),

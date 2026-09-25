@@ -7,6 +7,31 @@ con el slot y el tipo (HQ, personal o estándar).
 
 ## Cambios recientes
 
+### v4 — Caminos de Avalon (tracking)
+
+- **Nueva pestaña "Caminos de Avalon"** (enlazable con `/#caminos`): lista
+  los 400 caminos avalonianos del juego, filtrables por nombre, tipo y
+  tier, y permite consultar cualquier camino o mapa de Zona Negra para ver
+  **las conexiones que tiene abiertas ahora y cuánto les queda**, con
+  cuenta regresiva en vivo (roja a menos de 30 min, ámbar a menos de 1 h).
+- **Catálogo oficial:** tipo, tier, recursos por tier y dungeons de cada
+  camino salen de `cluster/world.json` de los dumps del cliente
+  (clusters `TUNNEL_*`), guardados en `data/caminos_avalon.json`.
+- **Conexiones en vivo:** el juego abre y cierra los portales al azar y no
+  los publica en ningún dato oficial; se toman de la API pública de
+  [ava.smugden.com](https://ava.smugden.com/), que alimentan los
+  escáneres de su comunidad. El servidor la consulta con una caché
+  compartida de 30 s (a smugden le llega como mucho una petición por
+  intervalo) y, si falla, sigue sirviendo la última respuesta buena.
+- **Integración con la Zona Negra:** las conexiones que llegan a un mapa
+  de Zona Negra ofrecen "Ver mapa" para abrir su ventana de detalle.
+
+**Límites honestos:** la API de smugden no está documentada ni tiene
+términos de uso publicados, así que puede cambiar sin aviso. Solo tiene
+conexiones cuando alguien de su comunidad está escaneando; si no, la
+sección muestra el catálogo con "sin conexiones" y la antigüedad de la
+fuente.
+
 ### v3 — Mapa del juego como fondo
 
 - **Mapa mundial con el mapa real del juego:** el fondo del mapa de la Zona
@@ -173,6 +198,12 @@ node scripts/generarGeoDesdeDumps.js ao-bin-dumps/cluster/world.json
 npm run db:geo
 ```
 
+El catálogo de caminos de Avalon se regenera desde el mismo archivo:
+
+```bash
+npm run db:generar-caminos -- ao-bin-dumps/cluster/world.json
+```
+
 ## Uso local
 
 ```bash
@@ -239,6 +270,10 @@ Públicos:
   (+ datos de su imagen propia, si tiene).
 - `GET /api/mapas/:nombre/imagen` → imagen de fondo propia del mapa.
 - `GET /api/gremios/:id/logo` → logo del gremio (servido desde la BD).
+- `GET /api/tracking` → catálogo de caminos de Avalon + conexiones vigentes
+  + estado de la fuente en vivo.
+- `GET /api/tracking/:nombre` → un camino o mapa: datos oficiales y sus
+  conexiones vigentes (entradas y salidas, con hora de cierre).
 - `GET /api/salud` → chequeo de salud de la base de datos.
 
 Sesión:
