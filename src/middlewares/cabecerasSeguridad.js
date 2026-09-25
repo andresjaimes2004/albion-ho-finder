@@ -24,7 +24,9 @@ const CSP = [
   "form-action 'self'",
   "frame-ancestors 'none'",
   "object-src 'none'",
-  "script-src 'self'",
+  // 'wasm-unsafe-eval' solo permite compilar WebAssembly (el OCR de
+  // capturas); no habilita eval() ni scripts en línea.
+  "script-src 'self' 'wasm-unsafe-eval'",
   "style-src 'self' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   // Las teselas del mapa del juego se cargan desde la wiki oficial.

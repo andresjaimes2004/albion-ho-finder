@@ -15,7 +15,8 @@
     "test": "node --test tests/*.test.js",
     "db:geo": "node scripts/importarGeo.js",
     "db:generar-geo": "node scripts/generarGeoDesdeDumps.js",
-    "db:generar-caminos": "node scripts/generarCaminosDesdeDumps.js"
+    "db:generar-caminos": "node scripts/generarCaminosDesdeDumps.js",
+    "db:generar-zonas": "node scripts/generarZonasDesdeDumps.js"
   },
   "dependencies": {},
   "license": "MIT",

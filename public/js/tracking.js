@@ -121,6 +121,11 @@ export class PanelCaminos {
     });
   }
 
+  establecerUsuario(usuario) {
+    this.usuario = usuario;
+    if (this.mapaAbierto) this.abrirDetalle(this.mapaAbierto, { silencioso: true });
+  }
+
   // --------------------------------------------------------- ciclo de vida --
 
   /** Se llama al mostrar la sección. */
@@ -233,8 +238,11 @@ export class PanelCaminos {
     if (estado.error) {
       this.estadoFuente.classList.add('caminos-estado--error');
       partes.push(estado.error);
+      // Las del gremio no dependen de smugden: se siguen mostrando.
+      if (estado.delGremio) partes.push(`${estado.delGremio} conexi${estado.delGremio === 1 ? 'ón' : 'ones'} del gremio`);
     } else {
       partes.push(`${estado.activas} conexi${estado.activas === 1 ? 'ón activa' : 'ones activas'}`);
+      if (estado.delGremio) partes.push(`${estado.delGremio} del gremio`);
     }
 
     if (estado.actualizadoEn) {
@@ -461,7 +469,7 @@ export class PanelCaminos {
       tiempo.classList.add('conexion__tiempo--desconocido');
     }
 
-    item.append(destino, tiempo);
+    item.append(destino, tiempo, this._crearFuente(conexion));
 
     if (hacia.clase === 'zonaNegra' && this.abrirMapa) {
       const ver = crear('button', 'boton boton--pequeno boton--sutil', 'Ver mapa');
@@ -470,6 +478,38 @@ export class PanelCaminos {
       item.append(ver);
     }
     return item;
+  }
+
+  /** De dónde viene la conexión y, si es del gremio y es tuya (o eres admin), botón para borrarla. */
+  _crearFuente(conexion) {
+    const fuente = crear('span', `conexion__fuente conexion__fuente--${conexion.fuente || 'smugden'}`);
+    if (conexion.fuente !== 'gremio') {
+      fuente.textContent = 'smugden';
+      fuente.title = 'Reportada por la comunidad de ava.smugden.com';
+      return fuente;
+    }
+
+    fuente.textContent = conexion.reportadoPor ? `gremio · ${conexion.reportadoPor}` : 'gremio';
+    fuente.title = 'Registrada por un miembro desde una captura del juego';
+    const puedeBorrar = this.usuario && (this.usuario.id === conexion.reportadoPorId || this.usuario.rol === 'ADMIN');
+    if (puedeBorrar) {
+      const borrar = crear('button', 'conexion__borrar', '✕');
+      borrar.type = 'button';
+      borrar.title = 'Borrar esta conexión';
+      borrar.setAttribute('aria-label', 'Borrar esta conexión');
+      borrar.addEventListener('click', async () => {
+        borrar.disabled = true;
+        try {
+          await api.borrarReporte(conexion.reporteId);
+          await this.refrescar();
+        } catch (error) {
+          borrar.disabled = false;
+          borrar.title = error.message || 'No se pudo borrar.';
+        }
+      });
+      fuente.append(' ', borrar);
+    }
+    return fuente;
   }
 
   _crearBloqueOficial(camino) {

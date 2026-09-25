@@ -74,6 +74,10 @@ export const api = {
   tracking: () => peticion('/api/tracking'),
   detalleTracking: (nombre, senal) =>
     peticion(`/api/tracking/${encodeURIComponent(nombre)}`, { senal }),
+  zonas: () => peticion('/api/tracking/zonas'),
+  reportarConexiones: (conexiones) =>
+    peticion('/api/tracking/reportes', { metodo: 'POST', datos: { conexiones } }),
+  borrarReporte: (id) => peticion(`/api/tracking/reportes/${id}`, { metodo: 'DELETE' }),
 
   sesion: () => peticion('/api/auth/sesion'),
   login: (usuario, clave) =>

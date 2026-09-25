@@ -4,11 +4,13 @@ const path = require('path');
 const fs = require('fs');
 
 const MapaRepository = require('../repositories/MapaRepository');
+const ConexionReportadaRepository = require('../repositories/ConexionReportadaRepository');
+const { cargarZonas, ETIQUETAS_GRUPO } = require('./zonas');
 
 /**
  * TrackingService
  * ----------------------------------------------------------------------
- * Seguimiento de los caminos de Avalon. Combina dos fuentes:
+ * Seguimiento de los caminos de Avalon. Combina tres fuentes:
  *
  *  - Catálogo oficial (estático): los caminos avalonianos que existen en
  *    el juego, con su tipo, tier, recursos y dungeons. Sale de los dumps
@@ -19,6 +21,10 @@ const MapaRepository = require('../repositories/MapaRepository');
  *    abierto. El juego las cambia cada pocas horas y no están en ningún
  *    dato oficial; se consultan a la API pública de ava.smugden.com,
  *    alimentada por los escáneres de su comunidad.
+ *
+ *  - Conexiones del gremio: las que registran los propios usuarios desde
+ *    capturas del juego (ver ReportesCaminosService). Si smugden informa
+ *    la misma conexión, se muestra solo la del gremio.
  *
  * La API externa se consulta SOLO desde el servidor y con una caché
  * compartida (por defecto 30 s): da igual cuántos usuarios tengan la
@@ -37,6 +43,9 @@ const URL_EN_VIVO =
   process.env.TRACKING_API_URL || 'https://ava-api.smugden.com/api/ava-roads/public';
 
 const MAX_CONEXIONES = 2000;
+// Dos reportes de la misma conexión cuyos cierres difieren menos que esto
+// se consideran la misma conexión.
+const TOLERANCIA_DUPLICADO_MS = 20 * 60_000;
 const MAX_TEXTO = 80;
 
 const CATEGORIAS = {
@@ -100,17 +109,31 @@ async function obtenerDeSmugden() {
   return respuesta.json();
 }
 
+/** Misma pareja de zonas (en cualquier sentido) y cierre parecido. */
+function mismaConexion(a, b) {
+  const mismasZonas =
+    (a.origen.clave === b.origen.clave && a.destino.clave === b.destino.clave) ||
+    (a.origen.clave === b.destino.clave && a.destino.clave === b.origen.clave);
+  if (!mismasZonas) return false;
+  if (a.cierraEn === null || b.cierraEn === null) return true;
+  return Math.abs(a.cierraEn - b.cierraEn) <= TOLERANCIA_DUPLICADO_MS;
+}
+
 class TrackingService {
   constructor({
     catalogo = cargarCatalogo(),
     obtenerEnVivo = obtenerDeSmugden,
     mapaRepository = new MapaRepository(),
+    reportesRepository = new ConexionReportadaRepository(),
+    zonas = cargarZonas(),
     ttlMs = 30_000,
     ahora = () => Date.now(),
   } = {}) {
     this.catalogo = catalogo;
     this.obtenerEnVivo = obtenerEnVivo;
     this.mapas = mapaRepository;
+    this.reportes = reportesRepository;
+    this.zonaPorNombre = new Map(zonas.map((z) => [normalizar(z.nombre), z]));
     this.ttlMs = ttlMs;
     this.ahora = ahora;
 
@@ -169,11 +192,16 @@ class TrackingService {
     const ahora = this.ahora();
     const indiceZonaNegra = this._indiceZonaNegra();
 
-    const conexiones = [];
+    const delGremio = this.reportes
+      .listarVigentes(new Date(ahora).toISOString())
+      .map((r) => this._conexionReportada(r, indiceZonaNegra));
+
+    const conexiones = [...delGremio];
     for (const cruda of datos.crudas) {
       const conexion = this._normalizarConexion(cruda, datos.consultadoEn, indiceZonaNegra);
       if (!conexion) continue;
       if (conexion.cierraEn !== null && conexion.cierraEn <= ahora) continue;
+      if (delGremio.some((g) => mismaConexion(g, conexion))) continue;
       conexiones.push(conexion);
     }
     conexiones.sort((a, b) => (a.cierraEn ?? Infinity) - (b.cierraEn ?? Infinity));
@@ -185,6 +213,7 @@ class TrackingService {
         consultadoEn: new Date(datos.consultadoEn).toISOString(),
         actualizadoEn: datos.actualizadoEn ? new Date(datos.actualizadoEn).toISOString() : null,
         activas: conexiones.length,
+        delGremio: delGremio.length,
         error: datos.error,
       },
     };
@@ -204,9 +233,23 @@ class TrackingService {
 
     return {
       id: textoSeguro(cruda.id) || `${origen.clave}>${destino.clave}`,
+      fuente: 'smugden',
       origen,
       destino,
       cierraEn: this._cierre(cruda, consultadoEn),
+    };
+  }
+
+  _conexionReportada(reporte, indiceZonaNegra) {
+    return {
+      id: `gremio-${reporte.id}`,
+      fuente: 'gremio',
+      reporteId: reporte.id,
+      reportadoPor: reporte.usuario || null,
+      reportadoPorId: reporte.usuarioId,
+      origen: this._extremo(null, reporte.origen, null, indiceZonaNegra),
+      destino: this._extremo(null, reporte.destino, null, indiceZonaNegra),
+      cierraEn: Date.parse(reporte.cierraEn),
     };
   }
 
@@ -243,6 +286,12 @@ class TrackingService {
       (id && indiceZonaNegra.porId.get(normalizarId(id)));
     if (zonaNegra) {
       return { clave: normalizar(zonaNegra.nombre), nombre: zonaNegra.nombre, clase: 'zonaNegra', tier: zonaNegra.tier, etiqueta: 'Zona Negra' };
+    }
+
+    // Otras zonas oficiales (continente real, ciudades...): nombre canónico y tipo.
+    const zona = nombre && this.zonaPorNombre.get(normalizar(nombre));
+    if (zona) {
+      return { clave: normalizar(zona.nombre), nombre: zona.nombre, clase: 'otro', tier: null, etiqueta: ETIQUETAS_GRUPO[zona.grupo] || null };
     }
 
     const tipo = textoSeguro(tipoCrudo);
@@ -316,7 +365,16 @@ class TrackingService {
       .filter((c) => c.origen.clave === clave || c.destino.clave === clave)
       .map((c) => {
         const esOrigen = c.origen.clave === clave;
-        return { id: c.id, hacia: esOrigen ? c.destino : c.origen, sentido: esOrigen ? 'salida' : 'entrada', cierraEn: c.cierraEn };
+        return {
+          id: c.id,
+          fuente: c.fuente,
+          reporteId: c.reporteId,
+          reportadoPor: c.reportadoPor,
+          reportadoPorId: c.reportadoPorId,
+          hacia: esOrigen ? c.destino : c.origen,
+          sentido: esOrigen ? 'salida' : 'entrada',
+          cierraEn: c.cierraEn,
+        };
       });
 
     const camino = this.caminoPorNombre.get(clave);
