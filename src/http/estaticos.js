@@ -29,6 +29,8 @@ const TIPOS = {
   '.ico': 'image/x-icon',
   '.woff2': 'font/woff2',
   '.txt': 'text/plain; charset=utf-8',
+  // Modelo de idioma del OCR (public/vendor/tesseract-*).
+  '.traineddata': 'application/octet-stream',
 };
 
 function servirEstaticos(carpeta) {
@@ -68,8 +70,14 @@ function servirEstaticos(carpeta) {
     // El HTML, el CSS y el JS se revalidan siempre para que un despliegue
     // nuevo no quede atrapado en la caché del navegador; el resto
     // (imágenes, iconos, fuentes) sí se cachea una hora.
+    // Las librerías de terceros de /vendor llevan la versión en la ruta
+    // (p. ej. tesseract-5.1.1): nunca cambian, así que se cachean 30 días.
     const revalidar = ['.html', '.css', '.js'].includes(extension);
-    res.set('Cache-Control', revalidar ? 'no-cache' : 'public, max-age=3600');
+    if (/^\/vendor\/[^/]+-\d+(\.\d+)+\//.test(req.ruta)) {
+      res.set('Cache-Control', 'public, max-age=2592000, immutable');
+    } else {
+      res.set('Cache-Control', revalidar ? 'no-cache' : 'public, max-age=3600');
+    }
     return res.send(datos);
   };
 }

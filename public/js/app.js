@@ -6,6 +6,7 @@ import { MapaMundial } from './mapaMundial.js';
 import { PanelSesion } from './sesion.js';
 import { PanelAdmin } from './admin.js';
 import { PanelCaminos } from './tracking.js';
+import { PanelRegistro } from './registroCaminos.js';
 
 /**
  * app.js
@@ -55,10 +56,16 @@ class BuscadorUI {
       abrirMapa: (nombre) => this.ventanaMapa.abrir(nombre),
     });
 
+    this.panelRegistro = new PanelRegistro({
+      alGuardar: () => this.panelCaminos.refrescar(),
+    });
+
     this.panelSesion = new PanelSesion({
       alCambiarSesion: (usuario) => {
         this.usuario = usuario;
         this.panelAdmin.establecerUsuario(usuario);
+        this.panelCaminos.establecerUsuario(usuario);
+        this.panelRegistro.establecerUsuario(usuario);
       },
       alElegirTermino: (termino) => {
         this.input.value = termino;
@@ -128,6 +135,7 @@ class BuscadorUI {
     }
     if (vista === 'caminos') this.panelCaminos.activar();
     else this.panelCaminos.desactivar();
+    this.panelRegistro.establecerVisible(vista === 'caminos');
   }
 
   _mostrarEstado(nombreEstado) {

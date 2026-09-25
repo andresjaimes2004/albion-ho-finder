@@ -168,6 +168,49 @@
         </p>
       </section>
 
+      <section class="registro" aria-labelledby="registro-titulo">
+        <div class="registro__cabecera">
+          <div>
+            <h2 id="registro-titulo" class="registro__titulo">Registrar conexiones desde capturas</h2>
+            <p class="registro__subtitulo">Suma al mapa las conexiones que ve tu gremio.</p>
+          </div>
+          <button id="registro-alternar" type="button" class="boton boton--pequeno" aria-expanded="false" aria-controls="registro-cuerpo">Abrir</button>
+        </div>
+
+        <div id="registro-cuerpo" class="registro__cuerpo" hidden>
+          <p id="registro-sin-sesion" class="estado estado--info registro__aviso" hidden>
+            Inicia sesión para registrar conexiones: cada una queda a tu nombre.
+          </p>
+
+          <div id="registro-con-sesion">
+            <ol class="registro__pasos">
+              <li>En el juego, abre el mapa del camino y <strong>pasa el cursor por encima de un portal</strong>.</li>
+              <li>Saca la captura con <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> (pantalla completa o solo esa zona, incluyendo el recuadro del portal).</li>
+              <li>Vuelve aquí y pégala con <kbd>Ctrl</kbd>+<kbd>V</kbd>. Una captura por portal; puedes pegar varias seguidas.</li>
+            </ol>
+
+            <div id="registro-zona" class="registro__zona" tabindex="0">
+              <strong>Pega aquí tus capturas (Ctrl+V)</strong>
+              <span>o arrástralas, o</span>
+              <label class="boton boton--pequeno boton--sutil registro__archivos">
+                elige archivos
+                <input id="registro-archivos" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden />
+              </label>
+            </div>
+
+            <p id="registro-estado" class="registro__estado" aria-live="polite"></p>
+            <ul id="registro-lista" class="registro__lista"></ul>
+
+            <div id="registro-acciones" class="registro__acciones" hidden>
+              <button id="registro-guardar" type="button" class="boton">Guardar conexiones</button>
+              <button id="registro-vaciar" type="button" class="boton boton--sutil">Vaciar</button>
+            </div>
+            <p class="registro__privacidad">Las capturas se leen en tu navegador y no se suben: solo se guarda lo que confirmas.</p>
+          </div>
+          <datalist id="registro-zonas"></datalist>
+        </div>
+      </section>
+
       <section id="caminos-detalle" class="caminos-detalle" hidden aria-live="polite"></section>
 
       <div id="caminos-cargando" class="estado">

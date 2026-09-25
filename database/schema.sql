@@ -166,3 +166,24 @@ CREATE TABLE IF NOT EXISTS mapas_imagen (
     usuario_id      INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
     actualizado_en  TEXT    NOT NULL DEFAULT (datetime('now'))
 );
+
+-- ============================================================================
+-- v4: conexiones de caminos de Avalon reportadas por el gremio
+-- ============================================================================
+
+-- Conexión entre dos zonas leída de una captura del juego (o escrita a mano)
+-- por un usuario con sesión. Los nombres son los oficiales de
+-- data/zonas_albion.json. `cierra_en` es la hora UTC calculada a partir del
+-- tiempo restante que mostraba el juego; pasada esa hora el registro deja de
+-- mostrarse y se purga.
+CREATE TABLE IF NOT EXISTS conexiones_reportadas (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    origen       TEXT    NOT NULL,
+    destino      TEXT    NOT NULL,
+    cierra_en    TEXT    NOT NULL,
+    usuario_id   INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+    creado_en    TEXT    NOT NULL DEFAULT (datetime('now')),
+    CHECK (origen <> destino)
+);
+
+CREATE INDEX IF NOT EXISTS idx_conexiones_reportadas_cierre ON conexiones_reportadas (cierra_en);

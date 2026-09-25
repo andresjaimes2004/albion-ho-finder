@@ -7,6 +7,30 @@ con el slot y el tipo (HQ, personal o estándar).
 
 ## Cambios recientes
 
+### v5 — Registrar conexiones desde capturas del juego
+
+- **Panel "Registrar conexiones desde capturas"** en la pestaña Caminos de
+  Avalon (requiere sesión). En el juego se abre el mapa del camino, se pasa
+  el cursor por un portal y se saca una captura (Win+Shift+S); en la web se
+  pega con Ctrl+V (o se arrastra). Se pueden pegar varias seguidas.
+- **Lectura en el navegador:** la captura nunca sale del equipo. Se ubica el
+  recuadro del portal por su barra de capacidad amarilla y el título del
+  camino por el pergamino superior, se recortan y se leen con OCR
+  (Tesseract.js, servido desde `public/vendor`). Los nombres se corrigen
+  contra las 815 zonas oficiales (`data/zonas_albion.json`), así que los
+  errores típicos del OCR o un título cortado no importan.
+- **Revisión antes de guardar:** cada captura queda como una fila editable
+  (origen, destino y tiempo) con los datos dudosos resaltados. Al guardar
+  se descuenta el tiempo pasado desde la captura.
+- **Conexiones del gremio junto a las de smugden:** se muestran con la
+  etiqueta "gremio · usuario"; si smugden informa la misma conexión, se
+  deja solo la del gremio. Quien la registró o un administrador puede
+  borrarla. Se purgan solas un día después de cerrar.
+
+Se descartó leer el tráfico de red del juego: los destinos y tiempos de los
+portales llegan cifrados, y descifrarlos exigiría manipular el cliente, lo
+que Sandbox prohíbe.
+
 ### v4 — Caminos de Avalon (tracking)
 
 - **Nueva pestaña "Caminos de Avalon"** (enlazable con `/#caminos`): lista
@@ -202,6 +226,7 @@ El catálogo de caminos de Avalon se regenera desde el mismo archivo:
 
 ```bash
 npm run db:generar-caminos -- ao-bin-dumps/cluster/world.json
+npm run db:generar-zonas -- ao-bin-dumps/cluster/world.json
 ```
 
 ## Uso local
@@ -274,6 +299,12 @@ Públicos:
   + estado de la fuente en vivo.
 - `GET /api/tracking/:nombre` → un camino o mapa: datos oficiales y sus
   conexiones vigentes (entradas y salidas, con hora de cierre).
+- `GET /api/tracking/zonas` → zonas oficiales a las que puede llevar un portal.
+
+Con sesión (+ token CSRF):
+
+- `POST /api/tracking/reportes` → registrar conexiones `{ conexiones: [{ origen, destino, minutos }] }`.
+- `DELETE /api/tracking/reportes/:id` → borrar una (autor o administrador).
 - `GET /api/salud` → chequeo de salud de la base de datos.
 
 Sesión:

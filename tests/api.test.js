@@ -398,7 +398,8 @@ test('la CSP solo abre las imágenes a la wiki oficial de Albion', async () => {
   const csp = cabeceras.get('content-security-policy');
 
   assert.match(csp, /img-src 'self' data: https:\/\/wiki\.albiononline\.com(;|$)/);
-  assert.match(csp, /script-src 'self'(;|$)/);
+  // Solo se añade WebAssembly (OCR de capturas): nada de 'unsafe-eval' ni 'unsafe-inline'.
+  assert.match(csp, /script-src 'self' 'wasm-unsafe-eval'(;|$)/);
 });
 
 test('el administrador sube, ajusta y quita la imagen de fondo de un mapa', async () => {
@@ -535,4 +536,49 @@ test('una ruta desconocida de la API responde JSON, no la página web', async ()
 
   assert.equal(estado, 404);
   assert.equal(json.ok, false);
+});
+
+// ------------------------------------------------ caminos de Avalon --
+
+test('registrar conexiones de caminos exige sesión y token CSRF', async () => {
+  const anonimo = crearCliente();
+  const conexiones = [{ origen: 'Ouyos-Aoeuam', destino: 'Martlock', minutos: 90 }];
+
+  const sinSesion = await anonimo.peticion('/api/tracking/reportes', { metodo: 'POST', datos: { conexiones } });
+  assert.equal(sinSesion.estado, 401);
+
+  // Sesión creada con el servicio: las pruebas anteriores agotan a
+  // propósito el límite de intentos de login por minuto.
+  const auth = new AuthService();
+  auth.registrar({ usuario: 'mapeador', clave: 'ClaveSegura99' });
+  const sesion = auth.iniciarSesion({ usuario: 'mapeador', clave: 'ClaveSegura99', huella: 'pruebas' });
+  const cliente = crearCliente();
+  cliente.cookies.set('ho_sesion', sesion.token);
+  cliente.cookies.set('ho_csrf', sesion.csrf);
+
+  const sinCsrf = await cliente.peticion('/api/tracking/reportes', { metodo: 'POST', datos: { conexiones } });
+  assert.equal(sinCsrf.estado, 403);
+
+  const creada = await cliente.escribir('/api/tracking/reportes', { metodo: 'POST', datos: { conexiones } });
+  assert.equal(creada.estado, 201);
+  assert.equal(creada.json.creadas, 1);
+  const id = creada.json.conexiones[0].id;
+
+  const invalida = await cliente.escribir('/api/tracking/reportes', {
+    metodo: 'POST',
+    datos: { conexiones: [{ origen: 'Narnia', destino: 'Martlock', minutos: 5 }] },
+  });
+  assert.equal(invalida.estado, 400);
+  assert.match(invalida.json.mensaje, /no es una zona/);
+
+  const borrada = await cliente.escribir(`/api/tracking/reportes/${id}`, { metodo: 'DELETE' });
+  assert.equal(borrada.estado, 200);
+});
+
+test('la lista de zonas oficiales es pública y cacheable', async () => {
+  const { estado, json, cabeceras } = await crearCliente().peticion('/api/tracking/zonas');
+  assert.equal(estado, 200);
+  assert.ok(json.zonas.length > 800);
+  assert.ok(json.zonas.some((z) => z.nombre === 'Meltwater Sump' && z.grupo === 'zonaNegra'));
+  assert.match(cabeceras.get('cache-control'), /max-age/);
 });
