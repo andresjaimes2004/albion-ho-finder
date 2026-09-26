@@ -1,11 +1,29 @@
-# Buscador de Hideouts — Zona Negra (Albion Online)
+# Albion Navigator — Hideouts de gremios y rutas de Avalon (Albion Online)
 
 Aplicación web que reemplaza el Excel "Buscador de Gremio — Hideouts Zona Negra":
 el usuario escribe el nombre (completo o parcial) de un gremio y la página
 devuelve todos los mapas de Zona Negra donde ese gremio tiene un Hideout,
-con el slot y el tipo (HQ, personal o estándar).
+con el slot y el tipo (HQ, personal o estándar). También sigue las rutas de
+Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
+
+### v7 — Nueva imagen: Albion Navigator
+
+- **Nombre y logo:** el sitio pasa a llamarse **Albion Navigator**. El
+  escudo del logo se usa completo y, recortado como medallón (la brújula
+  central), en la cabecera, el pie, el favicon y el icono de iOS
+  (`public/assets/marca-96.webp`, `favicon-32.png`, `apple-touch-icon.png`).
+- **Cabecera:** barra fija y translúcida (con desenfoque) con la marca, las
+  secciones Hideouts / Caminos de Avalon como navegación y la cuenta. En
+  móvil queda en dos filas; "Crear cuenta" se ofrece desde el diálogo de
+  inicio de sesión.
+- **Fondo:** arte de Albion Online oscurecido en la parte superior que se
+  funde con el fondo (`fondo-avalon.webp`, con versión de 960 px para
+  móvil). Paneles de búsqueda translúcidos sobre el arte.
+- **Títulos de sección** con icono, título y descripción.
+- **Pie a varias columnas:** marca y descripción, herramientas, recursos,
+  créditos ("Creado por TurnDark") y aviso de marca de Sandbox Interactive.
 
 ### v6.2 — Sin fuentes externas en Caminos de Avalon
 

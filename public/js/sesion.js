@@ -116,7 +116,7 @@ export class PanelSesion {
 
       const registrarse = document.createElement('button');
       registrarse.type = 'button';
-      registrarse.className = 'boton boton--sutil';
+      registrarse.className = 'boton boton--sutil cuenta__registro';
       registrarse.textContent = 'Crear cuenta';
       registrarse.addEventListener('click', () => this.abrir('registro'));
 

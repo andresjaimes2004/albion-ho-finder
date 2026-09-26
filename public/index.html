@@ -3,29 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Buscador de Hideouts — Zona Negra | Albion Online</title>
-  <meta name="description" content="Busca en qué mapas de la Zona Negra tiene Hideout tu gremio de Albion Online y míralo sobre el mapa interactivo." />
-  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
-  <link rel="alternate icon" href="assets/favicon-32.png" type="image/png" />
+  <title>Albion Navigator — Hideouts de gremios y rutas de Avalon | Albion Online</title>
+  <meta name="description" content="Albion Navigator: busca en qué mapas de la Zona Negra tiene Hideout un gremio de Albion Online y sigue las rutas de Avalon abiertas." />
+  <link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32" />
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
-  <meta name="theme-color" content="#0d0c0f" />
+  <meta name="theme-color" content="#0c0a10" />
+  <link rel="preload" as="image" href="assets/fondo-avalon.webp" media="(min-width: 961px)" />
+  <link rel="preload" as="image" href="assets/fondo-avalon-960.webp" media="(max-width: 960px)" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
-  <div class="fondo-textura" aria-hidden="true"></div>
+  <div class="fondo-arte" aria-hidden="true"></div>
 
   <header class="cabecera">
-    <div class="contenedor cabecera__contenido">
-      <div class="marca">
-        <img class="marca__icono" src="assets/logo.svg" alt="" width="44" height="44" aria-hidden="true" />
-        <div>
-          <h1 class="marca__titulo">Buscador de Hideouts</h1>
-          <p class="marca__subtitulo">Zona Negra · Albion Online</p>
-        </div>
-      </div>
+    <div class="contenedor contenedor--ancho cabecera__contenido">
+      <a class="marca" href="/" aria-label="Albion Navigator, inicio">
+        <img class="marca__icono" src="assets/marca-96.webp" alt="" width="40" height="40" />
+        <span class="marca__texto">
+          <span class="marca__titulo">Albion Navigator</span>
+          <span class="marca__subtitulo">Hideouts · Rutas de Avalon</span>
+        </span>
+      </a>
+
+      <nav class="pestanas" role="tablist" aria-label="Secciones">
+        <button id="pestana-hideouts" type="button" class="pestanas__boton" role="tab" data-vista="hideouts" aria-selected="true" aria-controls="vista-hideouts">
+          <svg class="pestanas__icono" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.5" stroke="currentColor" stroke-width="2"/></svg>
+          Hideouts
+        </button>
+        <button id="pestana-caminos" type="button" class="pestanas__boton" role="tab" data-vista="caminos" aria-selected="false" aria-controls="vista-caminos">
+          <svg class="pestanas__icono" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="6" cy="18" r="2.5" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="6" r="2.5" stroke="currentColor" stroke-width="2"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Caminos de Avalon
+        </button>
+      </nav>
+
       <div class="cabecera__derecha">
         <span id="badge-temporada" class="badge-temporada" hidden></span>
         <div id="cuenta" class="cuenta"></div>
@@ -34,12 +47,17 @@
   </header>
 
   <main class="contenedor principal">
-    <nav class="pestanas" role="tablist" aria-label="Secciones">
-      <button id="pestana-hideouts" type="button" class="pestanas__boton" role="tab" data-vista="hideouts" aria-selected="true" aria-controls="vista-hideouts">Hideouts</button>
-      <button id="pestana-caminos" type="button" class="pestanas__boton" role="tab" data-vista="caminos" aria-selected="false" aria-controls="vista-caminos">Caminos de Avalon</button>
-    </nav>
-
     <div id="vista-hideouts" role="tabpanel" aria-labelledby="pestana-hideouts">
+    <header class="titulo-vista">
+      <span class="titulo-vista__icono" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.5" stroke="currentColor" stroke-width="2"/></svg>
+      </span>
+      <div>
+        <h1 class="titulo-vista__titulo">Hideouts de la Zona Negra</h1>
+        <p class="titulo-vista__texto">Escribe el nombre de un gremio y descubre en qué mapas tiene hideout, con su slot, su tipo y las rutas de Avalon que llegan a ellos.</p>
+      </div>
+    </header>
+
     <section class="panel-busqueda" aria-label="Buscador de gremio">
       <label for="input-gremio" class="panel-busqueda__label">Nombre del gremio</label>
       <div class="panel-busqueda__caja">
@@ -131,11 +149,18 @@
     </div>
 
     <div id="vista-caminos" role="tabpanel" aria-labelledby="pestana-caminos" hidden>
-      <section class="panel-busqueda" aria-label="Buscador de caminos de Avalon">
-        <div class="caminos-cabecera">
-          <h2 class="caminos-cabecera__titulo">Caminos de Avalon</h2>
+      <header class="titulo-vista">
+        <span class="titulo-vista__icono" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="6" cy="18" r="2.5" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="6" r="2.5" stroke="currentColor" stroke-width="2"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </span>
+        <div>
+          <h2 class="titulo-vista__titulo">Caminos de Avalon</h2>
+          <p class="titulo-vista__texto">Explora los 400 caminos avalonianos, filtra por tipo y tier, y mira qué portales están abiertos ahora y cuánto les queda.</p>
           <span id="caminos-estado" class="caminos-estado" aria-live="polite"></span>
         </div>
+      </header>
+
+      <section class="panel-busqueda" aria-label="Buscador de caminos de Avalon">
         <label for="input-camino" class="panel-busqueda__label">Camino o mapa</label>
         <div class="panel-busqueda__caja">
           <svg class="icono-buscar" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -233,8 +258,40 @@
   </main>
 
   <footer class="pie">
-    <div class="contenedor">
-      <p>Datos actualizados por temporada. Geografía de los mapas tomada de los dumps públicos del cliente del juego. Albion Online y sus marcas pertenecen a Sandbox Interactive GmbH.</p>
+    <div class="contenedor contenedor--ancho pie__rejilla">
+      <div class="pie__marca">
+        <a class="marca" href="/" aria-label="Albion Navigator, inicio">
+          <img class="marca__icono" src="assets/marca-96.webp" alt="" width="36" height="36" loading="lazy" />
+          <span class="marca__titulo">Albion Navigator</span>
+        </a>
+        <p>Encuentra los hideouts de cualquier gremio en la Zona Negra y sigue las rutas de Avalon que registra la comunidad.</p>
+      </div>
+
+      <nav class="pie__columna" aria-label="Herramientas">
+        <h2 class="pie__titulo">Herramientas</h2>
+        <ul>
+          <li><a href="/">Buscador de hideouts</a></li>
+          <li><a href="/#caminos">Caminos de Avalon</a></li>
+        </ul>
+      </nav>
+
+      <nav class="pie__columna" aria-label="Recursos">
+        <h2 class="pie__titulo">Recursos</h2>
+        <ul>
+          <li><a href="https://albiononline.com/" target="_blank" rel="noopener noreferrer">Albion Online</a></li>
+          <li><a href="https://wiki.albiononline.com/" target="_blank" rel="noopener noreferrer">Wiki oficial</a></li>
+          <li><a href="https://github.com/ao-data/ao-bin-dumps" target="_blank" rel="noopener noreferrer">Datos del juego (ao-bin-dumps)</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="contenedor contenedor--ancho pie__inferior">
+      <p>© 2026 Albion Navigator · Datos actualizados por temporada.</p>
+      <p class="pie__creditos">Creado por <strong>TurnDark</strong></p>
+    </div>
+
+    <div class="contenedor contenedor--ancho">
+      <p class="pie__aviso">Albion Online es una marca registrada de Sandbox Interactive GmbH. Albion Navigator es un proyecto independiente y no está afiliado, aprobado ni patrocinado por Sandbox Interactive. Geografía de los mapas tomada de los dumps públicos del cliente del juego.</p>
     </div>
   </footer>
 

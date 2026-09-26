@@ -1,7 +1,7 @@
 {
   "name": "albion-ho-finder",
   "version": "1.0.0",
-  "description": "Buscador de Hideouts de Zona Negra por gremio con mapa interactivo, cuentas de usuario y panel de administración - Albion Online",
+  "description": "Albion Navigator: hideouts de gremios en la Zona Negra y rutas de Avalon, con mapa interactivo, cuentas de usuario y panel de administración - Albion Online",
   "main": "server.js",
   "type": "commonjs",
   "engines": {
