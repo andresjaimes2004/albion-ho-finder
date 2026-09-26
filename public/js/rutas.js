@@ -139,7 +139,7 @@ export function crearTarjetaRuta(ruta, { usuario = null, resaltar = null, alEleg
 
 /**
  * Lista de conexiones directas vigentes de un mapa.
- * @param {Array} conexiones  [{ sentido, hacia:{nombre, tier, etiqueta}, cierraEn, fuente }]
+ * @param {Array} conexiones  [{ sentido, hacia:{nombre, tier, etiqueta}, cierraEn, reportadoPor }]
  * @param {object} opciones
  *   - alElegirZona(nombre): al tocar el mapa del otro extremo
  */
@@ -162,7 +162,7 @@ export function crearListaConexiones(conexiones, { alElegirZona = null } = {}) {
       destino,
       crear('span', 'rutas-hideout__meta', meta),
       c.cierraEn ? crearReloj(c.cierraEn) : crear('span', 'rutas-hideout__meta', 'sin hora de cierre'),
-      crear('span', `conexion__fuente conexion__fuente--${c.fuente}`, c.fuente === 'gremio' ? 'gremio' : 'smugden')
+      crear('span', 'conexion__fuente conexion__fuente--gremio', c.reportadoPor ? `gremio · ${c.reportadoPor}` : 'gremio')
     );
     lista.appendChild(item);
   }

@@ -10,12 +10,13 @@ import { crear, crearReloj, crearTarjetaRuta } from './rutas.js';
  * las conexiones vigentes de cada uno con cuenta regresiva hasta su
  * cierre.
  *
- *  - Mientras la sección está visible, el resumen se refresca cada 60 s
- *    (el servidor ya cachea la fuente externa, así que es barato).
+ *  - Las conexiones las registran los propios usuarios desde capturas
+ *    del juego; mientras la sección está visible, el resumen se refresca
+ *    cada 60 s para mostrar las que registren otros.
  *  - Las cuentas regresivas se actualizan cada segundo en el navegador,
  *    sin pedir nada al servidor.
- *  - Todo el texto se inserta con textContent: los nombres vienen de una
- *    fuente externa y nunca se interpretan como HTML.
+ *  - Todo el texto se inserta con textContent: los nombres y usuarios los
+ *    escriben otras personas y nunca se interpretan como HTML.
  * ----------------------------------------------------------------------
  */
 
@@ -34,17 +35,6 @@ function normalizar(texto) {
   return String(texto || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
 }
 
-
-function haceCuanto(iso) {
-  const ms = Date.now() - Date.parse(iso);
-  if (!Number.isFinite(ms)) return null;
-  const minutos = Math.round(ms / 60_000);
-  if (minutos < 1) return 'hace menos de un minuto';
-  if (minutos < 60) return `hace ${minutos} min`;
-  const horas = Math.round(minutos / 60);
-  if (horas < 48) return `hace ${horas} h`;
-  return `hace ${Math.round(horas / 24)} días`;
-}
 
 export class PanelCaminos {
   constructor({ abrirMapa }) {
@@ -216,27 +206,12 @@ export class PanelCaminos {
     this.estadoFuente.replaceChildren();
     this.estadoFuente.className = 'caminos-estado';
 
-    const partes = [];
-    if (estado.error) {
-      this.estadoFuente.classList.add('caminos-estado--error');
-      partes.push(estado.error);
-      // Las del gremio no dependen de smugden: se siguen mostrando.
-      if (estado.delGremio) partes.push(`${estado.delGremio} conexi${estado.delGremio === 1 ? 'ón' : 'ones'} del gremio`);
-    } else {
-      partes.push(`${estado.activas} conexi${estado.activas === 1 ? 'ón activa' : 'ones activas'}`);
-      if (estado.delGremio) partes.push(`${estado.delGremio} del gremio`);
-    }
-
-    if (estado.actualizadoEn) {
-      const antiguedadMs = Date.now() - Date.parse(estado.actualizadoEn);
-      if (!estado.error && antiguedadMs > 60 * 60_000) {
-        this.estadoFuente.classList.add('caminos-estado--viejo');
-      }
-      partes.push(`fuente actualizada ${haceCuanto(estado.actualizadoEn)}`);
-    }
+    const partes = [`${estado.activas} conexi${estado.activas === 1 ? 'ón activa' : 'ones activas'}`];
+    if (estado.rutas) partes.push(`${estado.rutas} ruta${estado.rutas === 1 ? '' : 's'}`);
+    if (!estado.activas) this.estadoFuente.classList.add('caminos-estado--vacio');
 
     this.estadoFuente.append(crear('span', 'caminos-estado__punto'), partes.join(' · '));
-    this.estadoFuente.title = `Consultado a ${estado.fuente} ${haceCuanto(estado.consultadoEn) || ''}`.trim();
+    this.estadoFuente.title = 'Conexiones registradas por los usuarios desde capturas del juego';
   }
 
   _renderizarSugerencias() {
@@ -405,7 +380,7 @@ export class PanelCaminos {
         crear(
           'p',
           'caminos-detalle__vacio',
-          'No hay conexiones reportadas en este momento. Aparecen cuando alguien de la comunidad escanea el camino con la herramienta de smugden.'
+          'No hay conexiones registradas en este momento. Si estás en este camino, registra sus portales desde una captura del juego con el panel "Registrar conexiones desde capturas".'
         )
       );
       return bloque;
@@ -431,7 +406,7 @@ export class PanelCaminos {
     item.lastChild.title = conexion.sentido === 'salida' ? 'Portal que sale de este mapa' : 'Portal que llega a este mapa';
 
     const destino = crear('span', 'conexion__destino');
-    const nombre = hacia.nombre || (hacia.idCluster ? `Mapa ${hacia.idCluster}` : 'Mapa desconocido');
+    const nombre = hacia.nombre || 'Mapa desconocido';
     if (hacia.nombre) {
       const enlace = crear('button', 'conexion__nombre', nombre);
       enlace.type = 'button';
@@ -461,15 +436,9 @@ export class PanelCaminos {
     return item;
   }
 
-  /** De dónde viene la conexión y, si es del gremio y es tuya (o eres admin), botón para borrarla. */
+  /** Quién registró la conexión y, si es tuya (o eres admin), botón para borrarla. */
   _crearFuente(conexion) {
-    const fuente = crear('span', `conexion__fuente conexion__fuente--${conexion.fuente || 'smugden'}`);
-    if (conexion.fuente !== 'gremio') {
-      fuente.textContent = 'smugden';
-      fuente.title = 'Reportada por la comunidad de ava.smugden.com';
-      return fuente;
-    }
-
+    const fuente = crear('span', 'conexion__fuente conexion__fuente--gremio');
     fuente.textContent = conexion.reportadoPor ? `gremio · ${conexion.reportadoPor}` : 'gremio';
     fuente.title = 'Registrada por un miembro desde una captura del juego';
     const puedeBorrar = this.usuario && (this.usuario.id === conexion.reportadoPorId || this.usuario.rol === 'ADMIN');

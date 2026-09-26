@@ -7,6 +7,17 @@ con el slot y el tipo (HQ, personal o estándar).
 
 ## Cambios recientes
 
+### v6.2 — Sin fuentes externas en Caminos de Avalon
+
+- Se quitó la API de ava.smugden.com: no se actualizaba con la frecuencia
+  necesaria. Las conexiones y rutas salen **solo** de lo que registran los
+  usuarios desde capturas del juego (v5), y el catálogo de caminos, de los
+  dumps oficiales del cliente. El servidor ya no hace peticiones externas
+  para esta sección y la variable `TRACKING_API_URL` dejó de usarse.
+- El indicador de la pestaña muestra "N conexiones activas · M rutas"; si
+  un camino no tiene conexiones, la ficha invita a registrarlas desde una
+  captura.
+
 ### v6.1 — Rutas en la ventana del mapa
 
 - Al abrir la ventana de un mapa (desde el buscador, el mapa mundial o una

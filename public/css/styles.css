@@ -1018,10 +1018,7 @@ body {
   flex-shrink: 0;
 }
 
-.caminos-estado--viejo .caminos-estado__punto { background: var(--color-advertencia); box-shadow: none; }
-.caminos-estado--viejo { color: var(--color-advertencia); }
-.caminos-estado--error .caminos-estado__punto { background: var(--color-error); box-shadow: none; }
-.caminos-estado--error { color: var(--color-error); }
+.caminos-estado--vacio .caminos-estado__punto { background: var(--color-texto-tenue); box-shadow: none; }
 
 .entrada-busqueda {
   flex: 1;
