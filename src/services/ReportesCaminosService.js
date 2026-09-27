@@ -32,8 +32,10 @@ const { cargarZonas, claveZona } = require('./zonas');
  * ----------------------------------------------------------------------
  */
 
-const MAX_POR_ENVIO = 20;
-const MAX_RUTAS_POR_ENVIO = 10;
+// Se pueden pegar muchas capturas de golpe y, con bifurcaciones, salen
+// varias rutas que comparten tramos (el mismo tope que el navegador).
+const MAX_POR_ENVIO = 50;
+const MAX_RUTAS_POR_ENVIO = 40;
 const MAX_MINUTOS = 24 * 60;
 const CONSERVAR_CERRADAS_MS = 24 * 3600 * 1000;
 

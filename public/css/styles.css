@@ -2814,3 +2814,6 @@ html:has(dialog[open]) { overflow: hidden; }
   background: rgba(201, 162, 39, 0.14);
   border: 1px solid rgba(201, 162, 39, 0.35);
 }
+
+/* Aviso cuando las bifurcaciones superan el tope de rutas del registro. */
+.registro__ruta-tope { margin: 0 0 8px; font-size: 0.84rem; color: var(--advertencia-suave); }

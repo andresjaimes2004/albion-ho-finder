@@ -170,11 +170,80 @@ test('encadena tramos en cualquier orden y sentido, empezando por la Zona Negra'
   assert.equal(claveRuta(rutas[0].zonas), claveRuta(invertirRuta(rutas[0]).zonas));
 });
 
-test('no adivina rutas con bifurcaciones o ciclos: esos tramos quedan sueltos', async () => {
+test('un portal que lleva a varios mapas genera rutas independientes que comparten tramos', async () => {
   const { agruparEnRutas } = await cargar('encadenar.js');
-  const ciclo = [{ origen: 'A', destino: 'B' }, { origen: 'B', destino: 'C' }, { origen: 'C', destino: 'A' }];
+  const grupos = { Negra1: 'zonaNegra', Negra2: 'zonaNegra', Negra3: 'zonaNegra' };
+  const grupoDe = (z) => grupos[z] || 'avalon';
+  // Capturas en desorden: Negra1 → Ava1, y Ava1 lleva a Negra2 y a Ava2 → Negra3.
+  const tramos = [
+    { origen: 'Ava2', destino: 'Negra3' },
+    { origen: 'Ava1', destino: 'Negra2' },
+    { origen: 'Negra1', destino: 'Ava1' },
+    { origen: 'Ava1', destino: 'Ava2' },
+  ];
+  const { rutas, sueltos } = agruparEnRutas(tramos, grupoDe);
+  // Entre dos Zonas Negras el sentido es ambiguo (se puede invertir): se compara sin él.
+  const sinSentido = (zonas) => [zonas.join(' > '), [...zonas].reverse().join(' > ')].sort()[0];
+  const recorridos = rutas.map((r) => sinSentido(r.zonas)).sort();
+  assert.deepEqual(recorridos, [
+    'Negra1 > Ava1 > Ava2 > Negra3',
+    'Negra1 > Ava1 > Negra2',
+    'Negra2 > Ava1 > Ava2 > Negra3',
+  ]);
+  assert.deepEqual(sueltos, [], 'todos los tramos están en alguna ruta');
+  // El tramo compartido Negra1–Ava1 aparece en dos rutas.
+  assert.equal(rutas.filter((r) => r.indices.includes(2)).length, 2);
+  // Cada ruta enlaza bien: los índices siguen el orden de las zonas.
+  for (const r of rutas) {
+    r.indices.forEach((i, k) => {
+      const t = tramos[i];
+      assert.deepEqual([t.origen, t.destino].sort(), [r.zonas[k], r.zonas[k + 1]].sort());
+    });
+  }
+});
+
+test('recorre ciclos entre caminos sin repetir zonas y cuenta una vez el mismo portal repetido', async () => {
+  const { agruparEnRutas } = await cargar('encadenar.js');
+  const grupos = { A: 'zonaNegra', B: 'zonaNegra' };
+  const grupoDe = (z) => grupos[z] || 'avalon';
+  const tramos = [
+    { origen: 'A', destino: 'Ava1' },
+    { origen: 'Ava1', destino: 'Ava2' },
+    { origen: 'Ava2', destino: 'Ava3' },
+    { origen: 'Ava3', destino: 'Ava1' },
+    { origen: 'Ava3', destino: 'B' },
+    { origen: 'Ava1', destino: 'A' }, // el mismo portal pegado otra vez
+  ];
+  const { rutas, sueltos } = agruparEnRutas(tramos, grupoDe);
+  assert.deepEqual(rutas.map((r) => r.zonas.join(' > ')).sort(), ['A > Ava1 > Ava2 > Ava3 > B', 'A > Ava1 > Ava3 > B'], 'empieza en A: aparece en la captura más antigua');
+  assert.deepEqual(sueltos, [5], 'la captura repetida queda fuera de las rutas');
+  for (const r of rutas) assert.equal(new Set(r.zonas).size, r.zonas.length, 'sin zonas repetidas');
+});
+
+test('una Zona Negra conectada directamente a otra, o un solo tramo, no es una ruta', async () => {
+  const { agruparEnRutas } = await cargar('encadenar.js');
+  const grupoDe = (z) => (z.startsWith('Negra') ? 'zonaNegra' : 'avalon');
+  assert.deepEqual(agruparEnRutas([{ origen: 'Negra1', destino: 'Ava1' }], grupoDe).rutas, []);
+  assert.deepEqual(agruparEnRutas([{ origen: 'Negra1', destino: 'Negra2' }], grupoDe).rutas, []);
+  // Un camino sin salida conocida tampoco cierra una ruta.
+  assert.deepEqual(agruparEnRutas([{ origen: 'Negra1', destino: 'Ava1' }, { origen: 'Ava1', destino: 'Ava2' }], grupoDe).rutas, []);
+});
+
+test('pone un tope a las combinaciones cuando hay muchas bifurcaciones', async () => {
+  const { agruparEnRutas } = await cargar('encadenar.js');
+  const grupoDe = (z) => (z.startsWith('Negra') ? 'zonaNegra' : 'avalon');
+  // Un camino central conectado a 12 mapas de Zona Negra: 66 rutas posibles.
+  const tramos = Array.from({ length: 12 }, (_, k) => ({ origen: 'Centro', destino: `Negra${k}` }));
+  const { rutas, truncado } = agruparEnRutas(tramos, grupoDe, { maxRutas: 20 });
+  assert.equal(rutas.length, 20);
+  assert.equal(truncado, true);
+  assert.equal(agruparEnRutas(tramos, grupoDe).rutas.length, 40, 'tope por defecto');
+});
+
+test('sin catálogo de zonas usa como extremos las zonas con un solo portal', async () => {
+  const { agruparEnRutas } = await cargar('encadenar.js');
   const bifurcacion = [{ origen: 'A', destino: 'B' }, { origen: 'B', destino: 'C' }, { origen: 'B', destino: 'D' }];
-  assert.deepEqual(agruparEnRutas(ciclo), { rutas: [], sueltos: [0, 1, 2] });
-  assert.deepEqual(agruparEnRutas(bifurcacion), { rutas: [], sueltos: [0, 1, 2] });
-  assert.deepEqual(agruparEnRutas([{ origen: 'A', destino: 'B' }]).rutas, [], 'un solo tramo no es una ruta');
+  assert.deepEqual(agruparEnRutas(bifurcacion).rutas.map((r) => r.zonas.join('')).sort(), ['ABC', 'ABD', 'CBD']);
+  const ciclo = [{ origen: 'A', destino: 'B' }, { origen: 'B', destino: 'C' }, { origen: 'C', destino: 'A' }];
+  assert.deepEqual(agruparEnRutas(ciclo).rutas, [], 'un ciclo cerrado no tiene extremos');
 });

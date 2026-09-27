@@ -217,6 +217,8 @@ export const EN = {
   'Lista para guardar.': 'Ready to save.',
   'Ruta {ruta} · tramo {tramo} de {total}': 'Route {ruta} · leg {tramo} of {total}',
   'Ruta {n}': 'Route {n}',
+  'En {n} rutas: {lista}': 'In {n} routes: {lista}',
+  'Hay demasiadas combinaciones: se muestran las primeras {n} rutas.': 'Too many combinations: showing the first {n} routes.',
   ' · {n} tramos': ' · {n} legs',
   ' (se guardarán por separado)': ' (will be saved separately)',
   'Invertir sentido': 'Reverse direction',
