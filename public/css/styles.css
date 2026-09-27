@@ -2873,3 +2873,93 @@ html:has(dialog[open]) { overflow: hidden; }
   .mundo__nodo--destacado .mundo__halo { animation: none; }
   .mundo__chip, .mundo__punto, .mundo__halo { transition: none; }
 }
+
+/* ============================================================================
+   v10 — Listas desplegables con la estética del sitio
+   ============================================================================ */
+/* La lista nativa de un <select> la pinta el sistema (resaltado azul). Donde
+   el navegador permite personalizarla (appearance: base-select, Chrome y
+   Edge recientes) se le da el mismo estilo que al resto: panel oscuro
+   translúcido, resaltado dorado y apertura con fundido. En el resto de
+   navegadores se mantiene la lista nativa. */
+@supports (appearance: base-select) {
+  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila) select {
+    appearance: base-select;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding-right: 14px;
+    background-image: none;
+  }
+
+  /* Flecha dorada propia, que gira al abrir. */
+  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila) select::picker-icon {
+    content: '';
+    width: 14px;
+    height: 14px;
+    background: var(--flecha-select) center / contain no-repeat;
+    transition: rotate 0.25s ease;
+  }
+  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila) select:open::picker-icon { rotate: 180deg; }
+  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila) select:open { border-color: rgba(201, 162, 39, 0.6); }
+
+  /* Panel de opciones */
+  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila) select::picker(select) {
+    appearance: base-select;
+    margin-block: 6px;
+    padding: 6px;
+    min-width: anchor-size(width);
+    border: 1px solid rgba(201, 162, 39, 0.35);
+    border-radius: 14px;
+    background: rgba(20, 17, 26, 0.96);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+    color: var(--color-texto);
+    opacity: 0;
+    translate: 0 -6px;
+    transition:
+      opacity 0.2s ease,
+      translate 0.2s ease,
+      overlay 0.2s ease allow-discrete,
+      display 0.2s ease allow-discrete;
+  }
+  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila) select:open::picker(select) {
+    opacity: 1;
+    translate: 0 0;
+  }
+  @starting-style {
+    :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila) select:open::picker(select) {
+      opacity: 0;
+      translate: 0 -6px;
+    }
+  }
+
+  /* Opciones: resaltado dorado en vez de azul. */
+  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila) select option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px 8px 10px;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--color-texto-suave);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila) select option:hover,
+  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila) select option:focus-visible {
+    background: rgba(201, 162, 39, 0.16);
+    color: var(--color-oro-claro);
+    outline: none;
+  }
+  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila) select option:checked {
+    background: rgba(201, 162, 39, 0.24);
+    color: var(--color-oro-claro);
+  }
+  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila) select option::checkmark { color: var(--color-oro-claro); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  select::picker(select), select::picker-icon { transition: none; }
+}
