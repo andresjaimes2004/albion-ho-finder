@@ -26,7 +26,8 @@ const sinMovimiento = () => window.matchMedia('(prefers-reduced-motion: reduce)'
 export class Portada {
   /**
    * @param {object} opciones
-   *   - irA(vista): cambia de apartado ('inicio' | 'hideouts' | 'caminos')
+   *   - irA(vista, { destino, alTerminar }): cambia de apartado
+   *     ('inicio' | 'hideouts' | 'caminos') con fundido
    *   - abrirRegistro(): abre el panel de registro desde capturas
    */
   constructor({ irA, abrirRegistro }) {
@@ -50,14 +51,15 @@ export class Portada {
         // Ctrl/Cmd + clic o clic central: que el navegador abra otra pestaña.
         if (evento.ctrlKey || evento.metaKey || evento.shiftKey || evento.button !== 0) return;
         evento.preventDefault();
-        this.irA(enlace.dataset.ir);
-        if (enlace.hasAttribute('data-abrir-registro')) {
-          this.abrirRegistro();
-          const registro = document.querySelector('.registro');
-          if (registro) this._desplazarA(registro);
-        }
+        const registro = enlace.hasAttribute('data-abrir-registro') && document.querySelector('.registro');
         const enfocar = enlace.dataset.enfocar && document.getElementById(enlace.dataset.enfocar);
-        if (enfocar) enfocar.focus({ preventScroll: true });
+        this.irA(enlace.dataset.ir, {
+          destino: registro || null,
+          alTerminar: () => {
+            if (registro) this.abrirRegistro();
+            if (enfocar) enfocar.focus({ preventScroll: true });
+          },
+        });
       });
     }
   }
@@ -69,8 +71,9 @@ export class Portada {
         if (!destino) return;
         evento.preventDefault();
         const panel = destino.closest('[data-panel]');
-        if (panel && panel.hidden) this.irA(panel.dataset.panel);
-        this._desplazarA(destino);
+        // En otro apartado: fundido hasta la sección; en el mismo, desplazamiento suave.
+        if (panel && panel.hidden) this.irA(panel.dataset.panel, { destino });
+        else this._desplazarA(destino);
       });
     }
   }

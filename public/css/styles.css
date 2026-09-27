@@ -2442,3 +2442,44 @@ button.ruta__nombre:hover { color: var(--color-oro-claro); text-decoration: unde
   .pregunta, .pregunta__flecha { transition: none; }
   .pregunta::details-content { transition: none; }
 }
+
+/* ------------------------------------------- transiciones entre apartados --- */
+/* Al cambiar de apartado (pestañas, marca, enlaces del pie o de la portada)
+   el contenido se funde en vez de saltar. Con la View Transitions API la
+   barra superior queda fuera del fundido, así no parpadea. (El fondo no
+   lleva nombre: los elementos con nombre se pintan encima del resto y lo
+   taparía; ya cambia de imagen con su propia transición.) */
+
+.cabecera { view-transition-name: cabecera; }
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.38s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::view-transition-old(root) { animation-name: salir-vista; }
+::view-transition-new(root) { animation-name: entrar-vista; }
+
+/* La barra superior no se anima: solo actualiza la pestaña activa. */
+::view-transition-old(cabecera),
+::view-transition-new(cabecera) { animation: none; }
+::view-transition-old(cabecera) { display: none; }
+
+@keyframes salir-vista {
+  to { opacity: 0; transform: translateY(-8px); }
+}
+
+@keyframes entrar-vista {
+  from { opacity: 0; transform: translateY(10px); }
+}
+
+/* Navegadores sin View Transitions: el apartado nuevo aparece con fundido. */
+.vista-entrando { animation: entrar-vista 0.38s cubic-bezier(0.4, 0, 0.2, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) { animation: none !important; }
+  .vista-entrando { animation: none; }
+}

@@ -24,6 +24,8 @@ import { Portada } from './portada.js';
  * gremio arbitrarios.
  * ----------------------------------------------------------------------
  */
+const sinMovimiento = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 class BuscadorUI {
   constructor() {
     this.input = document.getElementById('input-gremio');
@@ -83,7 +85,7 @@ class BuscadorUI {
     });
 
     this.portada = new Portada({
-      irA: (vista) => this._irA(vista),
+      irA: (vista, opciones) => this._irA(vista, opciones),
       abrirRegistro: () => this.panelRegistro.abrir(),
     });
 
@@ -154,8 +156,10 @@ class BuscadorUI {
     const alCambiarUrl = () => {
       const vista = this._vistaDeUrl();
       if (vista === this.vistaActual) return;
-      this._mostrarVista(vista);
-      if (!location.hash.startsWith('#apoyar')) window.scrollTo(0, 0);
+      this._transicion(() => {
+        this._mostrarVista(vista);
+        if (!location.hash.startsWith('#apoyar')) window.scrollTo({ top: 0, behavior: 'instant' });
+      });
     };
     window.addEventListener('hashchange', alCambiarUrl);
     window.addEventListener('popstate', alCambiarUrl);
@@ -168,16 +172,57 @@ class BuscadorUI {
     return 'inicio';
   }
 
-  /** Cambia de apartado dejando entrada en el historial y vuelve arriba. */
-  _irA(vista) {
-    const destino = vista === 'inicio' ? location.pathname : `#${vista}`;
-    if (vista === this.vistaActual && (vista === 'inicio' ? !location.hash : location.hash === destino)) {
-      window.scrollTo(0, 0);
+  /**
+   * Cambia de apartado dejando entrada en el historial.
+   *  - Si ya se está en ese apartado, sube (o baja a `destino`) con
+   *    desplazamiento suave.
+   *  - Si no, cambia con un fundido (_transicion): el salto de posición
+   *    queda oculto dentro del fundido, así no se ve brusco.
+   * @param {object} opciones
+   *   - destino: elemento al que ir dentro del apartado (si no, arriba)
+   *   - alTerminar(): se ejecuta ya con el apartado visible
+   */
+  _irA(vista, { destino = null, alTerminar = null } = {}) {
+    const url = vista === 'inicio' ? location.pathname : `#${vista}`;
+    const yaEsta = vista === this.vistaActual && (vista === 'inicio' ? !location.hash : location.hash === url);
+    if (yaEsta) {
+      const suave = sinMovimiento() ? 'auto' : 'smooth';
+      if (destino) destino.scrollIntoView({ behavior: suave, block: 'start' });
+      else window.scrollTo({ top: 0, behavior: suave });
+      if (alTerminar) alTerminar();
       return;
     }
-    history.pushState(null, '', destino);
-    this._mostrarVista(vista);
-    window.scrollTo(0, 0);
+    this._transicion(() => {
+      history.pushState(null, '', url);
+      this._mostrarVista(vista);
+      if (destino) destino.scrollIntoView({ behavior: 'instant', block: 'start' });
+      else window.scrollTo({ top: 0, behavior: 'instant' });
+      if (alTerminar) alTerminar();
+    });
+  }
+
+  /**
+   * Aplica un cambio de apartado con fundido. Usa la View Transitions API
+   * donde existe (Chrome, Edge, Safari): la barra superior queda quieta y
+   * el resto se funde. En los demás navegadores el apartado nuevo aparece
+   * con una animación CSS. Sin animación si el usuario pide reducirla.
+   */
+  _transicion(actualizar) {
+    if (sinMovimiento()) {
+      actualizar();
+      return;
+    }
+    if (typeof document.startViewTransition === 'function') {
+      document.startViewTransition(actualizar);
+      return;
+    }
+    actualizar();
+    const panel = this.paneles.find((p) => !p.hidden);
+    if (panel) {
+      panel.classList.remove('vista-entrando');
+      void panel.offsetWidth; // reinicia la animación si se repite
+      panel.classList.add('vista-entrando');
+    }
   }
 
   _mostrarVista(vista) {
@@ -390,8 +435,7 @@ class BuscadorUI {
 
   /** Cambia a la pestaña de caminos con la ficha de un mapa abierta. */
   _irACaminos(nombre) {
-    this._irA('caminos');
-    this.panelCaminos.abrirDetalle(nombre);
+    this._irA('caminos', { alTerminar: () => this.panelCaminos.abrirDetalle(nombre) });
   }
 
   _crearItemHideout(hideout) {
