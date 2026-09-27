@@ -11,44 +11,26 @@ const { cargarZonas, ETIQUETAS_GRUPO } = require('./zonas');
 /**
  * TrackingService
  * ----------------------------------------------------------------------
- * Seguimiento de los caminos de Avalon. Combina tres fuentes:
+ * Seguimiento de los caminos de Avalon. Combina dos fuentes propias:
  *
  *  - Catálogo oficial (estático): los caminos avalonianos que existen en
  *    el juego, con su tipo, tier, recursos y dungeons. Sale de los dumps
  *    del cliente (data/caminos_avalon.json, ver
  *    scripts/generarCaminosDesdeDumps.js).
  *
- *  - Conexiones en vivo: qué portal une a qué mapa y cuánto le queda
- *    abierto. El juego las cambia cada pocas horas y no están en ningún
- *    dato oficial; se consultan a la API pública de ava.smugden.com,
- *    alimentada por los escáneres de su comunidad.
+ *  - Conexiones del gremio: qué portal une a qué mapa y cuánto le queda
+ *    abierto. El juego las cambia cada pocas horas y no las publica en
+ *    ningún dato oficial, así que las registran los propios usuarios
+ *    desde capturas del juego (ver ReportesCaminosService). Varias de
+ *    ellas pueden formar una ruta en orden (Zona Negra → camino → … →
+ *    destino); una ruta se muestra mientras todos sus tramos sigan
+ *    abiertos.
  *
- *  - Conexiones del gremio: las que registran los propios usuarios desde
- *    capturas del juego (ver ReportesCaminosService). Si smugden informa
- *    la misma conexión, se muestra solo la del gremio. Varias de ellas
- *    pueden formar una ruta en orden (Zona Negra → camino → … → destino);
- *    una ruta se muestra mientras todos sus tramos sigan abiertos.
- *
- * La API externa se consulta SOLO desde el servidor y con una caché
- * compartida (por defecto 30 s): da igual cuántos usuarios tengan la
- * página abierta, a smugden le llega como mucho una petición por
- * intervalo. Además esa API solo admite peticiones del navegador desde
- * su propio dominio (CORS), así que el frontend no podría llamarla
- * directamente.
- *
- * Si la API falla, se sigue sirviendo la última respuesta buena (o una
- * lista vacía) con el error en `estado.error`: el catálogo oficial
- * siempre queda disponible.
+ * No se consulta ninguna API externa: todo lo que se muestra sale de los
+ * dumps oficiales o de la base de datos propia.
  * ----------------------------------------------------------------------
  */
 
-const URL_EN_VIVO =
-  process.env.TRACKING_API_URL || 'https://ava-api.smugden.com/api/ava-roads/public';
-
-const MAX_CONEXIONES = 2000;
-// Dos reportes de la misma conexión cuyos cierres difieren menos que esto
-// se consideran la misma conexión.
-const TOLERANCIA_DUPLICADO_MS = 20 * 60_000;
 const MAX_TEXTO = 80;
 
 const CATEGORIAS = {
@@ -73,28 +55,10 @@ function normalizar(texto) {
     .replace(/[^a-z0-9]+/g, '');
 }
 
-/** "TNL-001", "tnl001", "TNL-0001" → "tnl1"; "0337" → "337". */
-function normalizarId(id) {
-  const limpio = normalizar(id);
-  const coincidencia = limpio.match(/^(tnl)?0*(\d+)$/);
-  return coincidencia ? `${coincidencia[1] || ''}${coincidencia[2]}` : limpio;
-}
-
 function textoSeguro(valor) {
-  if (typeof valor !== 'string' && typeof valor !== 'number') return null;
-  const limpio = String(valor).trim().slice(0, MAX_TEXTO);
-  // La fuente usa "?" cuando no conoce el nombre del mapa.
-  return limpio && limpio !== '?' ? limpio : null;
-}
-
-function numeroFinito(valor) {
-  return typeof valor === 'number' && Number.isFinite(valor) ? valor : null;
-}
-
-function fechaMs(valor) {
-  if (!valor) return null;
-  const ms = Date.parse(valor);
-  return Number.isFinite(ms) ? ms : null;
+  if (typeof valor !== 'string') return null;
+  const limpio = valor.trim().slice(0, MAX_TEXTO);
+  return limpio || null;
 }
 
 function cargarCatalogo() {
@@ -102,44 +66,20 @@ function cargarCatalogo() {
   return JSON.parse(fs.readFileSync(ruta, 'utf-8'));
 }
 
-/** Consulta real a la API de smugden (inyectable en las pruebas). */
-async function obtenerDeSmugden() {
-  const respuesta = await fetch(URL_EN_VIVO, {
-    headers: { Accept: 'application/json', 'User-Agent': 'albion-ho-finder (tracking de caminos)' },
-    signal: AbortSignal.timeout(8000),
-  });
-  if (!respuesta.ok) throw new Error(`La fuente en vivo respondió ${respuesta.status}.`);
-  return respuesta.json();
-}
-
-/** Misma pareja de zonas (en cualquier sentido) y cierre parecido. */
-function mismaConexion(a, b) {
-  const mismasZonas =
-    (a.origen.clave === b.origen.clave && a.destino.clave === b.destino.clave) ||
-    (a.origen.clave === b.destino.clave && a.destino.clave === b.origen.clave);
-  if (!mismasZonas) return false;
-  if (a.cierraEn === null || b.cierraEn === null) return true;
-  return Math.abs(a.cierraEn - b.cierraEn) <= TOLERANCIA_DUPLICADO_MS;
-}
-
 class TrackingService {
   constructor({
     catalogo = cargarCatalogo(),
-    obtenerEnVivo = obtenerDeSmugden,
     mapaRepository = new MapaRepository(),
     reportesRepository = new ConexionReportadaRepository(),
     rutasRepository = new RutaReportadaRepository(),
     zonas = cargarZonas(),
-    ttlMs = 30_000,
     ahora = () => Date.now(),
   } = {}) {
     this.catalogo = catalogo;
-    this.obtenerEnVivo = obtenerEnVivo;
     this.mapas = mapaRepository;
     this.reportes = reportesRepository;
     this.rutasRepo = rutasRepository;
     this.zonaPorNombre = new Map(zonas.map((z) => [normalizar(z.nombre), z]));
-    this.ttlMs = ttlMs;
     this.ahora = ahora;
 
     this.caminos = catalogo.caminos.map((c) => ({
@@ -147,81 +87,28 @@ class TrackingService {
       ...(CATEGORIAS[c.tipo] || { grupo: 'otro', etiqueta: c.tipo }),
     }));
     this.caminoPorNombre = new Map(this.caminos.map((c) => [normalizar(c.nombre), c]));
-    this.caminoPorId = new Map(this.caminos.map((c) => [normalizarId(c.id), c]));
-
-    this.cache = null;
-    this.consultaEnCurso = null;
   }
 
-  // ------------------------------------------------------------- en vivo --
+  // ---------------------------------------------------------- vigentes --
 
-  /** Datos en vivo, consultando la fuente solo si la caché venció. */
-  async _enVivo() {
-    const ahora = this.ahora();
-    if (this.cache && ahora - this.cache.consultadoEn < this.ttlMs) return this.cache;
-    if (this.consultaEnCurso) return this.consultaEnCurso;
-
-    this.consultaEnCurso = (async () => {
-      try {
-        const cuerpo = await this.obtenerEnVivo();
-        if (!cuerpo || !Array.isArray(cuerpo.roads)) {
-          throw new Error('La fuente en vivo devolvió un formato inesperado.');
-        }
-        this.cache = {
-          consultadoEn: ahora,
-          actualizadoEn: fechaMs(cuerpo.updated_at),
-          crudas: cuerpo.roads.slice(0, MAX_CONEXIONES),
-          error: null,
-        };
-      } catch (error) {
-        // Se conserva la última respuesta buena; solo se anota el fallo.
-        this.cache = {
-          consultadoEn: ahora,
-          actualizadoEn: this.cache ? this.cache.actualizadoEn : null,
-          crudas: this.cache ? this.cache.crudas : [],
-          error: 'No se pudo consultar la fuente de conexiones en vivo.',
-        };
-        console.warn('[tracking]', error.message);
-      } finally {
-        this.consultaEnCurso = null;
-      }
-      return this.cache;
-    })();
-
-    return this.consultaEnCurso;
-  }
-
-  /** Conexiones vigentes (descarta las ya cerradas) y el estado de la fuente. */
-  async _conexionesVigentes() {
-    const datos = await this._enVivo();
+  /** Conexiones y rutas del gremio que siguen abiertas. */
+  _conexionesVigentes() {
     const ahora = this.ahora();
     const indiceZonaNegra = this._indiceZonaNegra();
 
     const reportadas = this.reportes.listarVigentes(new Date(ahora).toISOString());
-    const delGremio = reportadas.map((r) => this._conexionReportada(r, indiceZonaNegra));
+    const conexiones = reportadas
+      .map((r) => this._conexionReportada(r, indiceZonaNegra))
+      .sort((a, b) => a.cierraEn - b.cierraEn);
     const rutas = this._rutasVigentes(reportadas, indiceZonaNegra);
-
-    const conexiones = [...delGremio];
-    for (const cruda of datos.crudas) {
-      const conexion = this._normalizarConexion(cruda, datos.consultadoEn, indiceZonaNegra);
-      if (!conexion) continue;
-      if (conexion.cierraEn !== null && conexion.cierraEn <= ahora) continue;
-      if (delGremio.some((g) => mismaConexion(g, conexion))) continue;
-      conexiones.push(conexion);
-    }
-    conexiones.sort((a, b) => (a.cierraEn ?? Infinity) - (b.cierraEn ?? Infinity));
 
     return {
       conexiones,
       rutas,
       estado: {
-        fuente: 'ava.smugden.com',
-        consultadoEn: new Date(datos.consultadoEn).toISOString(),
-        actualizadoEn: datos.actualizadoEn ? new Date(datos.actualizadoEn).toISOString() : null,
+        consultadoEn: new Date(ahora).toISOString(),
         activas: conexiones.length,
-        delGremio: delGremio.length,
         rutas: rutas.length,
-        error: datos.error,
       },
     };
   }
@@ -239,7 +126,7 @@ class TrackingService {
       const cierres = tramos.map((t) => Date.parse(t.cierraEn));
       rutas.push({
         id: ruta.id,
-        zonas: ruta.zonas.map((nombre) => this._extremo(null, nombre, null, indiceZonaNegra)),
+        zonas: ruta.zonas.map((nombre) => this._extremo(nombre, indiceZonaNegra)),
         tramos: tramos.map((t, k) => ({ reporteId: t.id, cierraEn: cierres[k] })),
         cierraEn: Math.min(...cierres),
         reportadoPor: ruta.usuario || null,
@@ -268,27 +155,6 @@ class TrackingService {
       });
   }
 
-  _normalizarConexion(cruda, consultadoEn, indiceZonaNegra) {
-    if (!cruda || typeof cruda !== 'object') return null;
-
-    const origen = this._extremo(
-      cruda.source_cluster_id,
-      cruda.source_map_name,
-      cruda.source_map_type,
-      indiceZonaNegra
-    );
-    const destino = this._extremo(cruda.target_cluster_id, cruda.target_name, null, indiceZonaNegra);
-    if (!origen || !destino) return null;
-
-    return {
-      id: textoSeguro(cruda.id) || `${origen.clave}>${destino.clave}`,
-      fuente: 'smugden',
-      origen,
-      destino,
-      cierraEn: this._cierre(cruda, consultadoEn),
-    };
-  }
-
   _conexionReportada(reporte, indiceZonaNegra) {
     return {
       id: `gremio-${reporte.id}`,
@@ -296,79 +162,50 @@ class TrackingService {
       reporteId: reporte.id,
       reportadoPor: reporte.usuario || null,
       reportadoPorId: reporte.usuarioId,
-      origen: this._extremo(null, reporte.origen, null, indiceZonaNegra),
-      destino: this._extremo(null, reporte.destino, null, indiceZonaNegra),
+      origen: this._extremo(reporte.origen, indiceZonaNegra),
+      destino: this._extremo(reporte.destino, indiceZonaNegra),
       cierraEn: Date.parse(reporte.cierraEn),
     };
   }
 
-  /** Momento de cierre (ms epoch) según los campos que traiga la fuente. */
-  _cierre(cruda, consultadoEn) {
-    const expira = numeroFinito(cruda.expires_at_ms);
-    if (expira && expira > 0) return expira;
-
-    const segundos = numeroFinito(cruda.closes_in_seconds);
-    if (segundos !== null && segundos >= 0) {
-      const base = fechaMs(cruda.first_seen_at) ?? fechaMs(cruda.last_seen_at) ?? consultadoEn;
-      return base + segundos * 1000;
-    }
-    // `close_time_local` viene en la hora local del escáner, sin zona
-    // horaria: no se puede convertir con seguridad, así que se omite.
-    return null;
-  }
-
-  /** Identifica un extremo de la conexión contra el catálogo y la Zona Negra. */
-  _extremo(idCrudo, nombreCrudo, tipoCrudo, indiceZonaNegra) {
-    const id = textoSeguro(idCrudo);
+  /** Identifica una zona contra el catálogo, la Zona Negra y las zonas oficiales. */
+  _extremo(nombreCrudo, indiceZonaNegra) {
     const nombre = textoSeguro(nombreCrudo);
-    if (!id && !nombre) return null;
+    if (!nombre) return null;
+    const clave = normalizar(nombre);
 
-    const camino =
-      (nombre && this.caminoPorNombre.get(normalizar(nombre))) ||
-      (id && this.caminoPorId.get(normalizarId(id)));
+    const camino = this.caminoPorNombre.get(clave);
     if (camino) {
-      return { clave: normalizar(camino.nombre), nombre: camino.nombre, clase: 'avalon', tier: camino.tier, etiqueta: camino.etiqueta };
+      return { clave, nombre: camino.nombre, clase: 'avalon', tier: camino.tier, etiqueta: camino.etiqueta };
     }
 
-    const zonaNegra =
-      (nombre && indiceZonaNegra.porNombre.get(normalizar(nombre))) ||
-      (id && indiceZonaNegra.porId.get(normalizarId(id)));
+    const zonaNegra = indiceZonaNegra.porNombre.get(clave);
     if (zonaNegra) {
-      return { clave: normalizar(zonaNegra.nombre), nombre: zonaNegra.nombre, clase: 'zonaNegra', tier: zonaNegra.tier, etiqueta: 'Zona Negra' };
+      return { clave, nombre: zonaNegra.nombre, clase: 'zonaNegra', tier: zonaNegra.tier, etiqueta: 'Zona Negra' };
     }
 
     // Otras zonas oficiales (continente real, ciudades...): nombre canónico y tipo.
-    const zona = nombre && this.zonaPorNombre.get(normalizar(nombre));
-    if (zona) {
-      return { clave: normalizar(zona.nombre), nombre: zona.nombre, clase: 'otro', tier: null, etiqueta: ETIQUETAS_GRUPO[zona.grupo] || null };
-    }
-
-    const tipo = textoSeguro(tipoCrudo);
+    const zona = this.zonaPorNombre.get(clave);
     return {
-      clave: normalizar(nombre || id),
-      nombre: nombre || null,
+      clave,
+      nombre: zona ? zona.nombre : nombre,
       clase: 'otro',
       tier: null,
-      etiqueta: tipo && /^tunnel/i.test(tipo) ? 'Camino de Avalon' : null,
-      idCluster: id,
+      etiqueta: zona ? ETIQUETAS_GRUPO[zona.grupo] || null : null,
     };
   }
 
   _indiceZonaNegra() {
     const porNombre = new Map();
-    const porId = new Map();
-    for (const mapa of this.mapas.listarResumenGeo()) {
-      porNombre.set(normalizar(mapa.nombre), mapa);
-      if (mapa.clusterId) porId.set(normalizarId(mapa.clusterId), mapa);
-    }
-    return { porNombre, porId };
+    for (const mapa of this.mapas.listarResumenGeo()) porNombre.set(normalizar(mapa.nombre), mapa);
+    return { porNombre };
   }
 
   // ----------------------------------------------------------- públicos --
 
   /** Catálogo completo + todas las conexiones vigentes. */
   async resumen() {
-    const { conexiones, rutas, estado } = await this._conexionesVigentes();
+    const { conexiones, rutas, estado } = this._conexionesVigentes();
 
     const conteo = new Map();
     for (const c of conexiones) {
@@ -381,7 +218,7 @@ class TrackingService {
       estado,
       fuentes: {
         catalogo: 'Dumps oficiales del cliente de Albion Online (ao-bin-dumps).',
-        enVivo: 'ava.smugden.com — escáneres de la comunidad.',
+        conexiones: 'Registradas por los usuarios desde capturas del juego.',
       },
       caminos: this.caminos.map((c) => ({
         nombre: c.nombre,
@@ -409,7 +246,7 @@ class TrackingService {
    */
   async detalle(nombreMapa) {
     const clave = normalizar(nombreMapa);
-    const { conexiones, rutas: todas, estado } = await this._conexionesVigentes();
+    const { conexiones, rutas: todas, estado } = this._conexionesVigentes();
 
     const propias = this._conexionesDe(clave, conexiones);
     const rutas = todas.filter((r) => r.zonas.some((z) => z.clave === clave));
@@ -431,7 +268,7 @@ class TrackingService {
     }
 
     // Mapas fuera del catálogo (ciudades, zonas reales...) que solo se
-    // conocen porque aparecen en alguna conexión en vivo.
+    // conocen porque aparecen en alguna conexión registrada.
     const extremo = conexiones
       .map((c) => (c.origen.clave === clave ? c.origen : c.destino.clave === clave ? c.destino : null))
       .find(Boolean);
@@ -439,7 +276,7 @@ class TrackingService {
       return {
         ok: true,
         estado,
-        mapa: { nombre: extremo.nombre || extremo.idCluster || nombreMapa, clase: 'otro' },
+        mapa: { nombre: extremo.nombre || nombreMapa, clase: 'otro' },
         conexiones: propias,
         rutas,
       };
@@ -454,7 +291,7 @@ class TrackingService {
    * los mapas que tienen algo.
    */
   async paraMapas(nombres) {
-    const { conexiones, rutas, estado } = await this._conexionesVigentes();
+    const { conexiones, rutas, estado } = this._conexionesVigentes();
     const mapas = {};
     for (const nombre of nombres) {
       const clave = normalizar(nombre);
@@ -469,6 +306,5 @@ class TrackingService {
 }
 
 TrackingService.normalizar = normalizar;
-TrackingService.normalizarId = normalizarId;
 
 module.exports = TrackingService;

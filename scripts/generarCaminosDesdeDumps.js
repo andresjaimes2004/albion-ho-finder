@@ -16,8 +16,8 @@
  *     marcados en el minimapa
  *
  * Las CONEXIONES entre caminos no están en los dumps: el juego las abre
- * y cierra al azar cada pocas horas. Esas llegan en vivo desde la API
- * pública de ava.smugden.com (ver src/services/TrackingService.js).
+ * y cierra al azar cada pocas horas. Las registran los usuarios desde
+ * capturas del juego (ver src/services/ReportesCaminosService.js).
  *
  * Uso:
  *   node scripts/generarCaminosDesdeDumps.js <ruta/a/world.json> [salida.json]
