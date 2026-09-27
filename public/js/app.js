@@ -213,7 +213,10 @@ class BuscadorUI {
       return;
     }
     if (typeof document.startViewTransition === 'function') {
-      document.startViewTransition(actualizar);
+      const transicion = document.startViewTransition(actualizar);
+      // Si el navegador omite la animación (pestaña oculta, otra transición
+      // en curso...) el cambio se aplica igual; solo se evita el error.
+      transicion.ready.catch(() => {});
       return;
     }
     actualizar();
