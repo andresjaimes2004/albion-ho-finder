@@ -1,5 +1,7 @@
 'use strict';
 
+import { t } from './i18n.js';
+
 /**
  * api.js
  * ----------------------------------------------------------------------
@@ -54,7 +56,8 @@ async function peticion(ruta, { metodo = 'GET', datos, senal, binario } = {}) {
   }
 
   if (!respuesta.ok || (cuerpo && cuerpo.ok === false)) {
-    const mensaje = (cuerpo && cuerpo.mensaje) || 'No se pudo completar la operación.';
+    // Los mensajes frecuentes del servidor se traducen; el resto se muestra tal cual.
+    const mensaje = t((cuerpo && cuerpo.mensaje) || 'No se pudo completar la operación.');
     const fallo = new Error(mensaje);
     fallo.estado = respuesta.status;
     fallo.cuerpo = cuerpo;

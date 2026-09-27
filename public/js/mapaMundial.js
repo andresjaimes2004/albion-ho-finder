@@ -3,6 +3,7 @@
 import { crear, limpiar, habilitarNavegacion } from './svg.js';
 import { CapaTeselas, TESELAS, mundoAPixel0 } from './mapaOficial.js';
 import api from './api.js';
+import { t } from './i18n.js';
 
 /**
  * mapaMundial.js
@@ -38,7 +39,7 @@ export class MapaMundial {
 
   async cargar() {
     if (this.datos) return this.datos;
-    this.estado.textContent = 'Cargando mapa de la Zona Negra...';
+    this.estado.textContent = t('Cargando mapa de la Zona Negra...');
     this.estado.hidden = false;
 
     this.datos = await api.mundo();
@@ -116,7 +117,7 @@ export class MapaMundial {
       grupo.appendChild(
         crear('rect', { x: -lado / 2, y: -lado / 2, width: lado, height: lado, rx: lado * 0.18 })
       );
-      grupo.appendChild(crear('title', {}, `${mapa.nombre} — T${mapa.tier} · ${mapa.hideouts} hideout(s)`));
+      grupo.appendChild(crear('title', {}, t('{nombre} — T{tier} · {n} hideout(s)', { nombre: mapa.nombre, tier: mapa.tier, n: mapa.hideouts })));
       grupo.appendChild(
         crear(
           'text',
@@ -161,8 +162,8 @@ export class MapaMundial {
       new ResizeObserver(() => this.teselas && this.teselas.actualizar()).observe(this.svg);
     }
 
-    this.leyenda.textContent = `${mapas.length} mapas de Zona Negra · ${this.datos.conexiones.length} conexiones`;
-    if (this.atribucion) this.atribucion.textContent = TESELAS.atribucion;
+    this.leyenda.textContent = t('{mapas} mapas de Zona Negra · {conexiones} conexiones', { mapas: mapas.length, conexiones: this.datos.conexiones.length });
+    if (this.atribucion) this.atribucion.textContent = t(TESELAS.atribucion);
 
     if (this.destacados.size) this.destacar([...this.destacados]);
   }

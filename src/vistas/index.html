@@ -1,46 +1,75 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="{{@idioma}}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Albion Navigator — Hideouts de gremios y rutas de Avalon | Albion Online</title>
-  <meta name="description" content="Albion Navigator: busca en qué mapas de la Zona Negra tiene Hideout un gremio de Albion Online y sigue las rutas de Avalon abiertas." />
-  <link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32" />
-  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+  <title>{{@titulo}}</title>
+  <meta name="description" content="{{@descripcion}}" />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  {{@verificaciones}}
+  <link rel="canonical" href="{{@urlCanonica}}" />
+  <link rel="alternate" hreflang="es" href="{{@urlEs}}" />
+  <link rel="alternate" hreflang="en" href="{{@urlEn}}" />
+  <link rel="alternate" hreflang="x-default" href="{{@urlEn}}" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Albion Navigator" />
+  <meta property="og:title" content="{{@titulo}}" />
+  <meta property="og:description" content="{{@descripcion}}" />
+  <meta property="og:url" content="{{@urlCanonica}}" />
+  <meta property="og:locale" content="{{@locale}}" />
+  <meta property="og:locale:alternate" content="{{@localeAlterno}}" />
+  <meta property="og:image" content="{{@urlImagen}}" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="{{Escudo de Albion Navigator sobre arte de Albion Online}}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="{{@titulo}}" />
+  <meta name="twitter:description" content="{{@descripcion}}" />
+  <meta name="twitter:image" content="{{@urlImagen}}" />
+
+  <link rel="icon" href="/assets/favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.webmanifest" />
   <meta name="theme-color" content="#0c0a10" />
-  <link rel="preload" as="image" href="assets/fondo-avalon.webp" media="(min-width: 961px)" />
-  <link rel="preload" as="image" href="assets/fondo-avalon-960.webp" media="(max-width: 960px)" />
+  <link rel="preload" as="image" href="/assets/fondo-avalon.webp" media="(min-width: 961px)" />
+  <link rel="preload" as="image" href="/assets/fondo-avalon-960.webp" media="(max-width: 960px)" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="/css/styles.css" />
+  <script type="application/ld+json">{{@datosEstructurados}}</script>
 </head>
 <body>
   <div class="fondo-arte" aria-hidden="true"></div>
 
   <header class="cabecera">
     <div class="contenedor contenedor--ancho cabecera__contenido">
-      <a class="marca" href="/" aria-label="Albion Navigator, inicio">
-        <img class="marca__icono" src="assets/marca-96.webp" alt="" width="40" height="40" />
+      <a class="marca" href="{{@inicio}}" aria-label="{{Albion Navigator, inicio}}">
+        <img class="marca__icono" src="/assets/marca-96.webp" alt="" width="40" height="40" />
         <span class="marca__texto">
           <span class="marca__titulo">Albion Navigator</span>
-          <span class="marca__subtitulo">Hideouts · Rutas de Avalon</span>
+          <span class="marca__subtitulo">{{Hideouts · Rutas de Avalon}}</span>
         </span>
       </a>
 
-      <nav class="pestanas" role="tablist" aria-label="Secciones">
+      <nav class="pestanas" role="tablist" aria-label="{{Secciones}}">
         <button id="pestana-hideouts" type="button" class="pestanas__boton" role="tab" data-vista="hideouts" aria-selected="true" aria-controls="vista-hideouts">
           <svg class="pestanas__icono" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.5" stroke="currentColor" stroke-width="2"/></svg>
           Hideouts
         </button>
         <button id="pestana-caminos" type="button" class="pestanas__boton" role="tab" data-vista="caminos" aria-selected="false" aria-controls="vista-caminos">
           <svg class="pestanas__icono" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="6" cy="18" r="2.5" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="6" r="2.5" stroke="currentColor" stroke-width="2"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          Caminos de Avalon
+          {{Caminos de Avalon}}
         </button>
       </nav>
 
       <div class="cabecera__derecha">
         <span id="badge-temporada" class="badge-temporada" hidden></span>
+        <nav class="idioma" aria-label="{{Idioma}}">
+          <a class="idioma__opcion" href="{{@inicioEs}}" hreflang="es" lang="es" {{@actualEs}}>ES</a>
+          <a class="idioma__opcion" href="{{@inicioEn}}" hreflang="en" lang="en" {{@actualEn}}>EN</a>
+        </nav>
         <div id="cuenta" class="cuenta"></div>
       </div>
     </div>
@@ -53,13 +82,13 @@
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.5" stroke="currentColor" stroke-width="2"/></svg>
       </span>
       <div>
-        <h1 class="titulo-vista__titulo">Hideouts de la Zona Negra</h1>
-        <p class="titulo-vista__texto">Escribe el nombre de un gremio y descubre en qué mapas tiene hideout, con su slot, su tipo y las rutas de Avalon que llegan a ellos.</p>
+        <h1 class="titulo-vista__titulo">{{Hideouts de la Zona Negra}}</h1>
+        <p class="titulo-vista__texto">{{Escribe el nombre de un gremio y descubre en qué mapas tiene hideout, con su slot, su tipo y las rutas de Avalon que llegan a ellos.}}</p>
       </div>
     </header>
 
-    <section class="panel-busqueda" aria-label="Buscador de gremio">
-      <label for="input-gremio" class="panel-busqueda__label">Nombre del gremio</label>
+    <section class="panel-busqueda" aria-label="{{Buscador de gremio}}">
+      <label for="input-gremio" class="panel-busqueda__label">{{Nombre del gremio}}</label>
       <div class="panel-busqueda__caja">
         <svg class="icono-buscar" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
@@ -68,36 +97,36 @@
         <input
           id="input-gremio"
           type="text"
-          placeholder="Ej: Gankers Letales, ARCH..."
+          placeholder="{{Ej: Gankers Letales, ARCH...}}"
           autocomplete="off"
           maxlength="60"
         />
       </div>
       <p class="panel-busqueda__ayuda">
-        Escribe el nombre completo o solo una parte. Toca cualquier mapa del resultado para abrirlo en detalle.
+        {{Escribe el nombre completo o solo una parte. Toca cualquier mapa del resultado para abrirlo en detalle.}}
       </p>
       <button id="alternar-mapa" type="button" class="boton boton--sutil" aria-expanded="false">
-        Ver mapa de la Zona Negra
+        {{Ver mapa de la Zona Negra}}
       </button>
     </section>
 
     <section id="historial" class="panel-historial" hidden>
       <div class="panel-historial__cabecera">
-        <h2>Tus últimas búsquedas</h2>
-        <button id="historial-limpiar" type="button" class="boton boton--pequeno boton--sutil">Limpiar</button>
+        <h2>{{Tus últimas búsquedas}}</h2>
+        <button id="historial-limpiar" type="button" class="boton boton--pequeno boton--sutil">{{Limpiar}}</button>
       </div>
       <ul id="historial-lista" class="historial"></ul>
     </section>
 
-    <section id="mapa-mundial" class="mapa-mundial" hidden aria-label="Mapa interactivo de la Zona Negra">
+    <section id="mapa-mundial" class="mapa-mundial" hidden aria-label="{{Mapa interactivo de la Zona Negra}}">
       <div class="mapa-mundial__cabecera">
-        <h2>Mapa de la Zona Negra</h2>
+        <h2>{{Mapa de la Zona Negra}}</h2>
         <p id="mapa-mundial__leyenda" class="mapa-mundial__leyenda"></p>
       </div>
       <p id="mapa-mundial__estado" class="estado estado--info" hidden></p>
-      <svg id="mapa-mundial__svg" class="lienzo" role="img" aria-label="Mapa de clusters de la Zona Negra"></svg>
+      <svg id="mapa-mundial__svg" class="lienzo" role="img" aria-label="{{Mapa de clusters de la Zona Negra}}"></svg>
       <p class="mapa-mundial__pie">
-        Arrastra para moverte y usa la rueda para acercar. Los mapas resaltados son los del gremio buscado.
+        {{Arrastra para moverte y usa la rueda para acercar. Los mapas resaltados son los del gremio buscado.}}
       </p>
       <p id="mapa-mundial__atribucion" class="mapa-mundial__pie mapa-mundial__atribucion"></p>
     </section>
@@ -105,45 +134,45 @@
     <section id="zona-resultados" class="zona-resultados" aria-live="polite">
       <div id="estado-vacio" class="estado estado--info">
         <span class="estado__icono">🗺️</span>
-        <p>Escribe al menos 2 caracteres para empezar a buscar.</p>
+        <p>{{Escribe al menos 2 caracteres para empezar a buscar.}}</p>
       </div>
 
       <div id="estado-cargando" class="estado" hidden>
         <span class="cargando" aria-hidden="true"></span>
-        <p>Buscando en la Zona Negra...</p>
+        <p>{{Buscando en la Zona Negra...}}</p>
       </div>
 
       <div id="estado-sin-resultados" class="estado estado--advertencia" hidden>
         <span class="estado__icono">🚫</span>
-        <p>No se encontró ningún Hideout para ese gremio.</p>
+        <p>{{No se encontró ningún Hideout para ese gremio.}}</p>
       </div>
 
       <div id="estado-error" class="estado estado--error" hidden>
         <span class="estado__icono">⚠️</span>
-        <p id="estado-error__texto">Ocurrió un error al consultar los datos.</p>
+        <p id="estado-error__texto">{{Ocurrió un error al consultar los datos.}}</p>
       </div>
 
       <div id="resumen-resultados" class="resumen-resultados" hidden></div>
       <div id="lista-mapas" class="lista-mapas"></div>
     </section>
 
-    <section id="panel-admin" class="panel-admin" hidden aria-label="Panel de administración">
+    <section id="panel-admin" class="panel-admin" hidden aria-label="{{Panel de administración}}">
       <div class="panel-admin__cabecera">
-        <h2>Administración</h2>
-        <button id="admin-recargar" type="button" class="boton boton--pequeno boton--sutil">Recargar</button>
+        <h2>{{Administración}}</h2>
+        <button id="admin-recargar" type="button" class="boton boton--pequeno boton--sutil">{{Recargar}}</button>
       </div>
       <p id="admin-mensaje" class="panel-admin__mensaje" aria-live="polite"></p>
 
       <div id="admin-resumen" class="admin-resumen"></div>
 
-      <h3>Gremios</h3>
-      <input id="admin-buscar-gremio" type="search" placeholder="Buscar gremio para editar..." maxlength="60" />
+      <h3>{{Gremios}}</h3>
+      <input id="admin-buscar-gremio" type="search" placeholder="{{Buscar gremio para editar...}}" maxlength="60" />
       <ul id="admin-gremios" class="admin-lista"></ul>
 
-      <h3>Usuarios</h3>
+      <h3>{{Usuarios}}</h3>
       <ul id="admin-usuarios" class="admin-lista"></ul>
 
-      <h3>Últimos cambios</h3>
+      <h3>{{Últimos cambios}}</h3>
       <ul id="admin-auditoria" class="admin-lista admin-lista--compacta"></ul>
     </section>
     </div>
@@ -154,72 +183,72 @@
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="6" cy="18" r="2.5" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="6" r="2.5" stroke="currentColor" stroke-width="2"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </span>
         <div>
-          <h2 class="titulo-vista__titulo">Caminos de Avalon</h2>
-          <p class="titulo-vista__texto">Explora los 400 caminos avalonianos, filtra por tipo y tier, y mira qué portales están abiertos ahora y cuánto les queda.</p>
+          <h2 class="titulo-vista__titulo">{{Caminos de Avalon}}</h2>
+          <p class="titulo-vista__texto">{{Explora los 400 caminos avalonianos, filtra por tipo y tier, y mira qué portales están abiertos ahora y cuánto les queda.}}</p>
           <span id="caminos-estado" class="caminos-estado" aria-live="polite"></span>
         </div>
       </header>
 
-      <section class="panel-busqueda" aria-label="Buscador de caminos de Avalon">
-        <label for="input-camino" class="panel-busqueda__label">Camino o mapa</label>
+      <section class="panel-busqueda" aria-label="{{Buscador de caminos de Avalon}}">
+        <label for="input-camino" class="panel-busqueda__label">{{Camino o mapa}}</label>
         <div class="panel-busqueda__caja">
           <svg class="icono-buscar" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
             <path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>
           <input id="input-camino" class="entrada-busqueda" type="text" list="caminos-sugerencias"
-                 placeholder="Ej: Ouyos-Aoeuam, Deepwood Copse..." autocomplete="off" maxlength="80" />
+                 placeholder="{{Ej: Ouyos-Aoeuam, Deepwood Copse...}}" autocomplete="off" maxlength="80" />
           <datalist id="caminos-sugerencias"></datalist>
         </div>
         <div class="caminos-filtros">
-          <select id="caminos-grupo" aria-label="Tipo de camino">
-            <option value="">Todos los tipos</option>
-            <option value="real">Reales</option>
-            <option value="zonaNegra">Zona Negra</option>
+          <select id="caminos-grupo" aria-label="{{Tipo de camino}}">
+            <option value="">{{Todos los tipos}}</option>
+            <option value="real">{{Reales}}</option>
+            <option value="zonaNegra">{{Zona Negra}}</option>
             <option value="avalon">Avalon</option>
-            <option value="profundo">Profundos</option>
+            <option value="profundo">{{Profundos}}</option>
             <option value="hideout">Hideout</option>
           </select>
           <select id="caminos-tier" aria-label="Tier">
-            <option value="">Todos los tiers</option>
+            <option value="">{{Todos los tiers}}</option>
             <option value="4">T4</option>
             <option value="6">T6</option>
             <option value="8">T8</option>
           </select>
-          <label class="casilla"><input id="caminos-activos" type="checkbox" /> Solo con conexiones activas</label>
+          <label class="casilla"><input id="caminos-activos" type="checkbox" /> {{Solo con conexiones activas}}</label>
         </div>
         <p class="panel-busqueda__ayuda">
-          Toca un camino para ver sus datos oficiales y las conexiones que tiene abiertas ahora, con el tiempo que les queda.
+          {{Toca un camino para ver sus datos oficiales y las conexiones que tiene abiertas ahora, con el tiempo que les queda.}}
         </p>
       </section>
 
       <section class="registro" aria-labelledby="registro-titulo">
         <div class="registro__cabecera">
           <div>
-            <h2 id="registro-titulo" class="registro__titulo">Registrar conexiones desde capturas</h2>
-            <p class="registro__subtitulo">Suma al mapa las conexiones que ve tu gremio.</p>
+            <h2 id="registro-titulo" class="registro__titulo">{{Registrar conexiones desde capturas}}</h2>
+            <p class="registro__subtitulo">{{Suma al mapa las conexiones que ve tu gremio.}}</p>
           </div>
-          <button id="registro-alternar" type="button" class="boton boton--pequeno" aria-expanded="false" aria-controls="registro-cuerpo">Abrir</button>
+          <button id="registro-alternar" type="button" class="boton boton--pequeno" aria-expanded="false" aria-controls="registro-cuerpo">{{Abrir}}</button>
         </div>
 
         <div id="registro-cuerpo" class="registro__cuerpo" hidden>
           <p id="registro-sin-sesion" class="estado estado--info registro__aviso" hidden>
-            Inicia sesión para registrar conexiones: cada una queda a tu nombre.
+            {{Inicia sesión para registrar conexiones: cada una queda a tu nombre.}}
           </p>
 
           <div id="registro-con-sesion">
             <ol class="registro__pasos">
-              <li>En el juego, abre el mapa del camino y <strong>pasa el cursor por encima de un portal</strong>.</li>
-              <li>Saca la captura con <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> (pantalla completa o solo esa zona, incluyendo el recuadro del portal).</li>
-              <li>Vuelve aquí y pégala con <kbd>Ctrl</kbd>+<kbd>V</kbd>. Una captura por portal; puedes pegar varias seguidas.</li>
-              <li>Para una <strong>ruta</strong> (Zona Negra → camino → … → mapa final), pega un portal de cada tramo, en cualquier orden: se encadenan solos.</li>
+              <li>{{En el juego, abre el mapa del camino y <strong>pasa el cursor por encima de un portal</strong>.}}</li>
+              <li>{{Saca la captura con <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> (pantalla completa o solo esa zona, incluyendo el recuadro del portal).}}</li>
+              <li>{{Vuelve aquí y pégala con <kbd>Ctrl</kbd>+<kbd>V</kbd>. Una captura por portal; puedes pegar varias seguidas.}}</li>
+              <li>{{Para una <strong>ruta</strong> (Zona Negra → camino → … → mapa final), pega un portal de cada tramo, en cualquier orden: se encadenan solos.}}</li>
             </ol>
 
             <div id="registro-zona" class="registro__zona" tabindex="0">
-              <strong>Pega aquí tus capturas (Ctrl+V)</strong>
-              <span>o arrástralas, o</span>
+              <strong>{{Pega aquí tus capturas (Ctrl+V)}}</strong>
+              <span>{{o arrástralas, o}}</span>
               <label class="boton boton--pequeno boton--sutil registro__archivos">
-                elige archivos
+                {{elige archivos}}
                 <input id="registro-archivos" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden />
               </label>
             </div>
@@ -229,30 +258,30 @@
             <div id="registro-rutas" class="registro__rutas" hidden aria-live="polite"></div>
 
             <div id="registro-acciones" class="registro__acciones" hidden>
-              <button id="registro-guardar" type="button" class="boton">Guardar conexiones</button>
-              <button id="registro-vaciar" type="button" class="boton boton--sutil">Vaciar</button>
+              <button id="registro-guardar" type="button" class="boton">{{Guardar conexiones}}</button>
+              <button id="registro-vaciar" type="button" class="boton boton--sutil">{{Vaciar}}</button>
             </div>
-            <p class="registro__privacidad">Las capturas se leen en tu navegador y no se suben: solo se guarda lo que confirmas.</p>
+            <p class="registro__privacidad">{{Las capturas se leen en tu navegador y no se suben: solo se guarda lo que confirmas.}}</p>
           </div>
           <datalist id="registro-zonas"></datalist>
         </div>
       </section>
 
       <section id="caminos-detalle" class="caminos-detalle" hidden aria-live="polite"></section>
-      <section id="caminos-rutas" class="caminos-rutas" hidden aria-label="Rutas del gremio"></section>
+      <section id="caminos-rutas" class="caminos-rutas" hidden aria-label="{{Rutas del gremio}}"></section>
 
       <div id="caminos-cargando" class="estado">
         <span class="cargando" aria-hidden="true"></span>
-        <p>Cargando caminos de Avalon...</p>
+        <p>{{Cargando caminos de Avalon...}}</p>
       </div>
       <p id="caminos-error" class="estado estado--error" hidden></p>
       <div id="caminos-resumen" class="resumen-resultados" hidden></div>
       <div id="caminos-lista" class="caminos-lista"></div>
-      <button id="caminos-mas" type="button" class="boton boton--sutil caminos-mas" hidden>Mostrar más</button>
+      <button id="caminos-mas" type="button" class="boton boton--sutil caminos-mas" hidden>{{Mostrar más}}</button>
 
       <p class="caminos-atribucion">
-        Catálogo de caminos: dumps oficiales del cliente de Albion Online (Sandbox Interactive).
-        Conexiones: registradas por los usuarios desde capturas del juego.
+        {{Catálogo de caminos: dumps oficiales del cliente de Albion Online (Sandbox Interactive).}}
+        {{Conexiones: registradas por los usuarios desde capturas del juego.}}
       </p>
     </div>
   </main>
@@ -260,43 +289,43 @@
   <footer class="pie">
     <div class="contenedor contenedor--ancho pie__rejilla">
       <div class="pie__marca">
-        <a class="marca" href="/" aria-label="Albion Navigator, inicio">
-          <img class="marca__icono" src="assets/marca-96.webp" alt="" width="36" height="36" loading="lazy" />
+        <a class="marca" href="{{@inicio}}" aria-label="{{Albion Navigator, inicio}}">
+          <img class="marca__icono" src="/assets/marca-96.webp" alt="" width="36" height="36" loading="lazy" />
           <span class="marca__titulo">Albion Navigator</span>
         </a>
-        <p>Encuentra los hideouts de cualquier gremio en la Zona Negra y sigue las rutas de Avalon que registra la comunidad.</p>
+        <p>{{Encuentra los hideouts de cualquier gremio en la Zona Negra y sigue las rutas de Avalon que registra la comunidad.}}</p>
       </div>
 
-      <nav class="pie__columna" aria-label="Herramientas">
-        <h2 class="pie__titulo">Herramientas</h2>
+      <nav class="pie__columna" aria-label="{{Herramientas}}">
+        <h2 class="pie__titulo">{{Herramientas}}</h2>
         <ul>
-          <li><a href="/">Buscador de hideouts</a></li>
-          <li><a href="/#caminos">Caminos de Avalon</a></li>
+          <li><a href="{{@inicio}}">{{Buscador de hideouts}}</a></li>
+          <li><a href="{{@inicio}}#caminos">{{Caminos de Avalon}}</a></li>
         </ul>
       </nav>
 
-      <nav class="pie__columna" aria-label="Recursos">
-        <h2 class="pie__titulo">Recursos</h2>
+      <nav class="pie__columna" aria-label="{{Recursos}}">
+        <h2 class="pie__titulo">{{Recursos}}</h2>
         <ul>
           <li><a href="https://albiononline.com/" target="_blank" rel="noopener noreferrer">Albion Online</a></li>
-          <li><a href="https://wiki.albiononline.com/" target="_blank" rel="noopener noreferrer">Wiki oficial</a></li>
-          <li><a href="https://github.com/ao-data/ao-bin-dumps" target="_blank" rel="noopener noreferrer">Datos del juego (ao-bin-dumps)</a></li>
+          <li><a href="https://wiki.albiononline.com/" target="_blank" rel="noopener noreferrer">{{Wiki oficial}}</a></li>
+          <li><a href="https://github.com/ao-data/ao-bin-dumps" target="_blank" rel="noopener noreferrer">{{Datos del juego (ao-bin-dumps)}}</a></li>
         </ul>
       </nav>
     </div>
 
     <div class="contenedor contenedor--ancho pie__inferior">
-      <p>© 2026 Albion Navigator · Datos actualizados por temporada.</p>
-      <p class="pie__creditos">Creado por <strong>TurnDark</strong></p>
+      <p>{{© 2026 Albion Navigator · Datos actualizados por temporada.}}</p>
+      <p class="pie__creditos">{{Creado por <strong>TurnDark</strong>}}</p>
     </div>
 
     <div class="contenedor contenedor--ancho">
-      <p class="pie__aviso">Albion Online es una marca registrada de Sandbox Interactive GmbH. Albion Navigator es un proyecto independiente y no está afiliado, aprobado ni patrocinado por Sandbox Interactive. Geografía de los mapas tomada de los dumps públicos del cliente del juego.</p>
+      <p class="pie__aviso">{{Albion Online es una marca registrada de Sandbox Interactive GmbH. Albion Navigator es un proyecto independiente y no está afiliado, aprobado ni patrocinado por Sandbox Interactive. Geografía de los mapas tomada de los dumps públicos del cliente del juego.}}</p>
     </div>
   </footer>
 
   <!-- Ventana flotante: detalle del mapa -->
-  <dialog id="ventana-mapa" class="ventana" aria-label="Detalle del mapa">
+  <dialog id="ventana-mapa" class="ventana" aria-label="{{Detalle del mapa}}">
     <div class="ventana__contenido">
       <header class="ventana__cabecera">
         <div>
@@ -304,8 +333,8 @@
           <div id="ventana-mapa__insignias" class="ventana__insignias"></div>
         </div>
         <div class="ventana__controles">
-          <button id="ventana-mapa__reiniciar" type="button" class="boton boton--pequeno boton--sutil">Centrar</button>
-          <button id="ventana-mapa__cerrar" type="button" class="boton boton--icono" aria-label="Cerrar">✕</button>
+          <button id="ventana-mapa__reiniciar" type="button" class="boton boton--pequeno boton--sutil">{{Centrar}}</button>
+          <button id="ventana-mapa__cerrar" type="button" class="boton boton--icono" aria-label="{{Cerrar}}">✕</button>
         </div>
       </header>
 
@@ -314,17 +343,17 @@
       <div class="ventana__cuerpo">
         <div class="ventana__lienzo">
           <div id="ventana-mapa__fondos" class="selector-fondo"></div>
-          <svg id="ventana-mapa__svg" class="lienzo lienzo--mapa" role="img" aria-label="Mapa del cluster"></svg>
+          <svg id="ventana-mapa__svg" class="lienzo lienzo--mapa" role="img" aria-label="{{Mapa del cluster}}"></svg>
           <ul class="leyenda">
             <li><span class="punto punto--hq"></span> HQ</li>
-            <li><span class="punto punto--personal"></span> Personal</li>
+            <li><span class="punto punto--personal"></span> {{Personal}}</li>
             <li><span class="punto punto--estandar"></span> Hideout</li>
-            <li><span class="punto punto--salida"></span> Salida a mapa vecino</li>
+            <li><span class="punto punto--salida"></span> {{Salida a mapa vecino}}</li>
           </ul>
         </div>
         <aside class="ventana__panel">
-          <section id="ventana-mapa__rutas" class="ventana__rutas" aria-label="Rutas de Avalon de este mapa" hidden></section>
-          <h3>Hideouts en este mapa</h3>
+          <section id="ventana-mapa__rutas" class="ventana__rutas" aria-label="{{Rutas de Avalon de este mapa}}" hidden></section>
+          <h3>{{Hideouts en este mapa}}</h3>
           <ul id="ventana-mapa__hideouts" class="lista-hideouts-detalle"></ul>
           <div id="ventana-mapa__admin" class="ventana__admin" hidden></div>
         </aside>
@@ -337,28 +366,28 @@
   </dialog>
 
   <!-- Ventana flotante: cuenta -->
-  <dialog id="ventana-cuenta" class="ventana ventana--estrecha" aria-label="Cuenta">
+  <dialog id="ventana-cuenta" class="ventana ventana--estrecha" aria-label="{{Cuenta}}">
     <div class="ventana__contenido">
       <header class="ventana__cabecera">
-        <h2 id="ventana-cuenta__titulo">Iniciar sesión</h2>
-        <button id="ventana-cuenta__cerrar" type="button" class="boton boton--icono" aria-label="Cerrar">✕</button>
+        <h2 id="ventana-cuenta__titulo">{{Iniciar sesión}}</h2>
+        <button id="ventana-cuenta__cerrar" type="button" class="boton boton--icono" aria-label="{{Cerrar}}">✕</button>
       </header>
 
       <form id="formulario-cuenta" class="formulario">
-        <label for="cuenta-usuario">Usuario</label>
+        <label for="cuenta-usuario">{{Usuario}}</label>
         <input id="cuenta-usuario" name="usuario" type="text" autocomplete="username" required minlength="3" maxlength="32" />
 
-        <label for="cuenta-clave">Contraseña</label>
+        <label for="cuenta-clave">{{Contraseña}}</label>
         <input id="cuenta-clave" name="clave" type="password" autocomplete="current-password" required minlength="10" maxlength="128" />
 
         <p id="cuenta-mensaje" class="formulario__mensaje" aria-live="polite"></p>
 
-        <button id="cuenta-enviar" type="submit" class="boton">Entrar</button>
-        <button id="cuenta-alternar" type="button" class="boton boton--sutil">¿No tienes cuenta? Regístrate</button>
+        <button id="cuenta-enviar" type="submit" class="boton">{{Entrar}}</button>
+        <button id="cuenta-alternar" type="button" class="boton boton--sutil">{{¿No tienes cuenta? Regístrate}}</button>
       </form>
     </div>
   </dialog>
 
-  <script type="module" src="js/app.js"></script>
+  <script type="module" src="/js/app.js"></script>
 </body>
 </html>

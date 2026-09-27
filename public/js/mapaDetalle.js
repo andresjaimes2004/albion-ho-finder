@@ -11,6 +11,7 @@ import {
 } from './mapaOficial.js';
 import api from './api.js';
 import { crear as crearHtml, crearListaConexiones, crearTarjetaRuta } from './rutas.js';
+import { t, tn } from './i18n.js';
 
 /**
  * mapaDetalle.js
@@ -135,7 +136,7 @@ export class VentanaMapa {
     limpiar(this.insignias);
     limpiar(this.svg);
     this.lista.replaceChildren();
-    this.aviso.textContent = 'Cargando mapa...';
+    this.aviso.textContent = t('Cargando mapa...');
     this.aviso.hidden = false;
 
     if (!this.dialogo.open) this.dialogo.showModal();
@@ -191,12 +192,12 @@ export class VentanaMapa {
     this.panelRutas.hidden = false;
 
     const partes = [];
-    if (rutas.length) partes.push(`${rutas.length} ruta${rutas.length === 1 ? '' : 's'}`);
-    if (conexiones.length) partes.push(`${conexiones.length} conexi${conexiones.length === 1 ? 'ón' : 'ones'}`);
+    if (rutas.length) partes.push(tn(rutas.length, '{n} ruta', '{n} rutas'));
+    if (conexiones.length) partes.push(tn(conexiones.length, '{n} conexión', '{n} conexiones'));
 
     const cabecera = crearHtml('div', 'ventana__rutas-cabecera');
     cabecera.append(
-      crearHtml('h3', null, 'Rutas de Avalon activas'),
+      crearHtml('h3', null, t('Rutas de Avalon activas')),
       crearHtml('span', 'ventana__rutas-resumen', partes.join(' · '))
     );
     this.panelRutas.appendChild(cabecera);
@@ -219,12 +220,12 @@ export class VentanaMapa {
     }
 
     if (conexiones.length) {
-      this.panelRutas.appendChild(crearHtml('p', 'rutas-hideout__subtitulo', 'Conexiones directas de este mapa'));
+      this.panelRutas.appendChild(crearHtml('p', 'rutas-hideout__subtitulo', t('Conexiones directas de este mapa')));
       this.panelRutas.appendChild(crearListaConexiones(conexiones, { alElegirZona: irA }));
     }
 
     if (irA) {
-      const ir = crearHtml('button', 'boton boton--pequeno', 'Ir a la ruta en Caminos de Avalon →');
+      const ir = crearHtml('button', 'boton boton--pequeno', t('Ir a la ruta en Caminos de Avalon →'));
       ir.type = 'button';
       ir.addEventListener('click', () => irA(nombreMapa));
       this.panelRutas.appendChild(ir);
@@ -256,24 +257,24 @@ export class VentanaMapa {
     this._renderAdmin();
 
     const textos = [
-      'Salidas, caminos y territorios: dumps oficiales del cliente de Albion Online.',
-      'La ubicación de cada hideout la marca un administrador: el juego no la publica.',
+      t('Salidas, caminos y territorios: dumps oficiales del cliente de Albion Online.'),
+      t('La ubicación de cada hideout la marca un administrador: el juego no la publica.'),
     ];
     if (this.fondo === 'oficial') {
-      textos.push(`${TESELAS.atribucion} El mapa mundial es ilustrativo: la superposición es aproximada.`);
+      textos.push(`${t(TESELAS.atribucion)} ${t('El mapa mundial es ilustrativo: la superposición es aproximada.')}`);
     }
     this.pie.textContent = textos.join(' ');
   }
 
   _renderInsignias(mapa, temporada) {
     limpiar(this.insignias);
-    const nombresBioma = { FR: 'Bosque', HL: 'Tierras altas', MN: 'Montaña', ST: 'Estepa', SW: 'Pantano' };
+    const nombresBioma = { FR: t('Bosque'), HL: t('Tierras altas'), MN: t('Montaña'), ST: t('Estepa'), SW: t('Pantano') };
     const insignias = [
-      temporada ? `Temporada ${temporada}` : null,
-      mapa.tier ? `Tier ${mapa.tier}` : null,
+      temporada ? t('Temporada {codigo}', { codigo: temporada }) : null,
+      mapa.tier ? t('Tier {tier}', { tier: mapa.tier }) : null,
       nombresBioma[mapa.bioma] || null,
-      mapa.cuadrante ? `Cuadrante ${mapa.cuadrante}` : null,
-      `${this.datos.totalHideouts} hideout${this.datos.totalHideouts === 1 ? '' : 's'}`,
+      mapa.cuadrante ? t('Cuadrante {cuadrante}', { cuadrante: mapa.cuadrante }) : null,
+      tn(this.datos.totalHideouts, '{n} hideout', '{n} hideouts'),
     ].filter(Boolean);
 
     for (const texto of insignias) {
@@ -290,17 +291,17 @@ export class VentanaMapa {
     const grupo = document.createElement('div');
     grupo.className = 'selector-fondo__opciones';
     grupo.setAttribute('role', 'group');
-    grupo.setAttribute('aria-label', 'Fondo del mapa');
+    grupo.setAttribute('aria-label', t('Fondo del mapa'));
 
     for (const opcion of FONDOS) {
       const boton = document.createElement('button');
       boton.type = 'button';
       boton.className = 'selector-fondo__boton';
-      boton.textContent = opcion.etiqueta;
+      boton.textContent = t(opcion.etiqueta);
       boton.setAttribute('aria-pressed', String(this.fondo === opcion.id));
       if (opcion.id === 'propia' && !this.datos.imagen) {
         boton.disabled = true;
-        boton.title = 'Este mapa todavía no tiene una imagen subida por un administrador.';
+        boton.title = t('Este mapa todavía no tiene una imagen subida por un administrador.');
       }
       boton.addEventListener('click', () => {
         this.fondo = opcion.id;
@@ -319,7 +320,7 @@ export class VentanaMapa {
       this.mostrarCaminos = casilla.checked;
       this._render();
     });
-    caminos.append(casilla, ' Caminos de los datos');
+    caminos.append(casilla, t(' Caminos de los datos'));
 
     this.selectorFondo.append(grupo, caminos);
   }
@@ -438,7 +439,7 @@ export class VentanaMapa {
         crear(
           'text',
           { y: -8, 'text-anchor': 'middle', class: 'mapa__etiqueta', 'font-size': 11, 'stroke-width': 3 },
-          territorio.nombre || 'Territorio'
+          territorio.nombre || t('Territorio')
         )
       );
       capa.appendChild(etiqueta.grupo);
@@ -523,10 +524,10 @@ export class VentanaMapa {
           'font-size': 12,
           'stroke-width': 3,
         },
-        salida.destino || 'Salida'
+        salida.destino || t('Salida')
       )
     );
-    grupo.appendChild(crear('title', {}, `Ir a ${salida.destino || 'mapa vecino'}`));
+    grupo.appendChild(crear('title', {}, t('Ir a {destino}', { destino: salida.destino || t('mapa vecino') })));
 
     if (salida.destino) {
       const navegar = (evento) => {
@@ -574,7 +575,7 @@ export class VentanaMapa {
         hideout.gremio
       )
     );
-    grupo.appendChild(crear('title', {}, `${hideout.gremio} — ${hideout.etiquetaTipo} (slot ${hideout.slot})`));
+    grupo.appendChild(crear('title', {}, t('{gremio} — {tipo} (slot {slot})', { gremio: hideout.gremio, tipo: t(hideout.etiquetaTipo), slot: hideout.slot })));
 
     grupo.addEventListener('click', (evento) => {
       evento.stopPropagation();
@@ -615,7 +616,7 @@ export class VentanaMapa {
     if (!hideouts.length) {
       const vacio = document.createElement('p');
       vacio.className = 'ventana-mapa__vacio';
-      vacio.textContent = 'Este mapa no tiene hideouts registrados en la temporada activa.';
+      vacio.textContent = t('Este mapa no tiene hideouts registrados en la temporada activa.');
       this.lista.appendChild(vacio);
       return;
     }
@@ -653,8 +654,8 @@ export class VentanaMapa {
       const detalle = document.createElement('div');
       detalle.className = 'hideout-fila__detalle';
       detalle.textContent = hideout.pos
-        ? `Slot ${hideout.slot} · ubicado en el mapa`
-        : `Slot ${hideout.slot} · sin ubicar en el mapa`;
+        ? t('Slot {slot} · ubicado en el mapa', { slot: hideout.slot })
+        : t('Slot {slot} · sin ubicar en el mapa', { slot: hideout.slot });
 
       item.append(cabecera, detalle);
 
@@ -673,7 +674,7 @@ export class VentanaMapa {
     marcar.type = 'button';
     marcar.className = 'boton boton--pequeno';
     marcar.textContent =
-      this.hideoutSeleccionado === hideout.id ? 'Haz clic en el mapa...' : 'Marcar en el mapa';
+      this.hideoutSeleccionado === hideout.id ? t('Haz clic en el mapa...') : t('Marcar en el mapa');
     marcar.addEventListener('click', (evento) => {
       evento.stopPropagation();
       this._seleccionar(hideout.id);
@@ -684,7 +685,7 @@ export class VentanaMapa {
       const quitar = document.createElement('button');
       quitar.type = 'button';
       quitar.className = 'boton boton--pequeno boton--sutil';
-      quitar.textContent = 'Quitar ubicación';
+      quitar.textContent = t('Quitar ubicación');
       quitar.addEventListener('click', async (evento) => {
         evento.stopPropagation();
         await this._ejecutar(() => api.admin.posicionarHideout(hideout.id, null, null));
@@ -695,10 +696,10 @@ export class VentanaMapa {
     const eliminar = document.createElement('button');
     eliminar.type = 'button';
     eliminar.className = 'boton boton--pequeno boton--peligro';
-    eliminar.textContent = 'Eliminar';
+    eliminar.textContent = t('Eliminar');
     eliminar.addEventListener('click', async (evento) => {
       evento.stopPropagation();
-      if (!window.confirm(`¿Eliminar el hideout de "${hideout.gremio}" (slot ${hideout.slot})?`)) return;
+      if (!window.confirm(t('¿Eliminar el hideout de "{gremio}" (slot {slot})?', { gremio: hideout.gremio, slot: hideout.slot }))) return;
       await this._ejecutar(() => api.admin.eliminarHideout(hideout.id));
     });
     acciones.appendChild(eliminar);
@@ -743,8 +744,8 @@ export class VentanaMapa {
     const ayuda = document.createElement('p');
     ayuda.className = 'ventana__ayuda';
     ayuda.textContent = this.hideoutSeleccionado
-      ? 'Haz clic sobre el mapa para fijar la ubicación del hideout seleccionado.'
-      : 'Modo administrador: elige un hideout de la lista para marcar su ubicación, o añade uno nuevo.';
+      ? t('Haz clic sobre el mapa para fijar la ubicación del hideout seleccionado.')
+      : t('Modo administrador: elige un hideout de la lista para marcar su ubicación, o añade uno nuevo.');
     this.panelAdmin.appendChild(ayuda);
 
     this.panelAdmin.appendChild(this._formularioHideout());
@@ -757,7 +758,7 @@ export class VentanaMapa {
 
     const gremio = document.createElement('input');
     gremio.type = 'text';
-    gremio.placeholder = 'Gremio';
+    gremio.placeholder = t('Gremio');
     gremio.maxLength = 60;
     gremio.required = true;
 
@@ -768,14 +769,14 @@ export class VentanaMapa {
     slot.value = '1';
     slot.required = true;
     slot.className = 'entrada-corta';
-    slot.setAttribute('aria-label', 'Slot');
+    slot.setAttribute('aria-label', t('Slot'));
 
     const tipo = document.createElement('select');
-    tipo.setAttribute('aria-label', 'Tipo de hideout');
+    tipo.setAttribute('aria-label', t('Tipo de hideout'));
     for (const [valor, etiqueta] of [
       ['ESTANDAR', 'HO'],
       ['HQ', 'HQ'],
-      ['P', 'Personal'],
+      ['P', t('Personal')],
     ]) {
       const opcion = document.createElement('option');
       opcion.value = valor;
@@ -786,7 +787,7 @@ export class VentanaMapa {
     const enviar = document.createElement('button');
     enviar.type = 'submit';
     enviar.className = 'boton boton--pequeno';
-    enviar.textContent = 'Añadir hideout';
+    enviar.textContent = t('Añadir hideout');
 
     formulario.append(gremio, slot, tipo, enviar);
     formulario.addEventListener('submit', async (evento) => {
@@ -809,21 +810,21 @@ export class VentanaMapa {
     seccion.className = 'ajuste-imagen';
 
     const titulo = document.createElement('h4');
-    titulo.textContent = 'Imagen de fondo propia';
+    titulo.textContent = t('Imagen de fondo propia');
     seccion.appendChild(titulo);
 
     const explicacion = document.createElement('p');
     explicacion.className = 'ventana__ayuda';
     explicacion.textContent = this.datos.imagen
-      ? 'Ajusta la imagen hasta que las salidas y el borde coincidan con el mapa. Se guarda para todos los visitantes.'
-      : 'Sube una captura del mapa completo en diamante (PNG, JPG o WebP, máx. 4 MB). Después podrás ajustarla.';
+      ? t('Ajusta la imagen hasta que las salidas y el borde coincidan con el mapa. Se guarda para todos los visitantes.')
+      : t('Sube una captura del mapa completo en diamante (PNG, JPG o WebP, máx. 4 MB). Después podrás ajustarla.');
     seccion.appendChild(explicacion);
 
     const archivo = document.createElement('input');
     archivo.type = 'file';
     archivo.accept = 'image/png,image/jpeg,image/webp';
     archivo.className = 'ajuste-imagen__archivo';
-    archivo.setAttribute('aria-label', 'Subir imagen de fondo');
+    archivo.setAttribute('aria-label', t('Subir imagen de fondo'));
     archivo.addEventListener('change', async () => {
       const fichero = archivo.files && archivo.files[0];
       if (!fichero) return;
@@ -869,15 +870,15 @@ export class VentanaMapa {
     };
 
     controles.append(
-      crearControl('Escala', 'escala', { min: 0.2, max: 3, paso: 0.01 }),
-      crearControl('Mover X', 'dx', { min: -600, max: 600, paso: 1 }),
-      crearControl('Mover Y', 'dy', { min: -600, max: 600, paso: 1 })
+      crearControl(t('Escala'), 'escala', { min: 0.2, max: 3, paso: 0.01 }),
+      crearControl(t('Mover X'), 'dx', { min: -600, max: 600, paso: 1 }),
+      crearControl(t('Mover Y'), 'dy', { min: -600, max: 600, paso: 1 })
     );
 
     const filaRotacion = document.createElement('label');
     filaRotacion.className = 'ajuste-imagen__fila';
     const textoRotacion = document.createElement('span');
-    textoRotacion.textContent = 'Rotación';
+    textoRotacion.textContent = t('Rotación');
     const rotacion = document.createElement('select');
     for (const grados of [0, 90, 180, 270]) {
       const opcion = document.createElement('option');
@@ -900,7 +901,7 @@ export class VentanaMapa {
     const guardar = document.createElement('button');
     guardar.type = 'button';
     guardar.className = 'boton boton--pequeno';
-    guardar.textContent = 'Guardar ajuste';
+    guardar.textContent = t('Guardar ajuste');
     guardar.addEventListener('click', async () => {
       const { escala, dx, dy, rotacion: grados } = this.ajuste;
       await this._ejecutar(() =>
@@ -911,9 +912,9 @@ export class VentanaMapa {
     const quitar = document.createElement('button');
     quitar.type = 'button';
     quitar.className = 'boton boton--pequeno boton--peligro';
-    quitar.textContent = 'Quitar imagen';
+    quitar.textContent = t('Quitar imagen');
     quitar.addEventListener('click', async () => {
-      if (!window.confirm('¿Quitar la imagen de fondo de este mapa?')) return;
+      if (!window.confirm(t('¿Quitar la imagen de fondo de este mapa?'))) return;
       await this._ejecutar(() => api.admin.borrarImagenMapa(this.datos.mapa.id), { conservarFondo: false });
     });
 

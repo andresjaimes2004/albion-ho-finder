@@ -8,6 +8,30 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v8 — SEO y versión en inglés
+
+- **Dos idiomas, dos URL:** `/` en español y `/en/` en inglés, con su
+  propio título, descripción, URL canónica y enlaces `hreflang` entre
+  ellas (`x-default` → inglés). Selector ES / EN en la barra superior que
+  conserva la sección abierta (`#caminos`). No se redirige según el idioma
+  del navegador: Google necesita ver ambas versiones.
+- **Plantilla única:** la página sale de `src/vistas/index.html`; los
+  textos marcados con `{{...}}` se traducen con `src/i18n/pagina.js` y los
+  del JavaScript con `public/js/i18n.js` (`t('texto en español')`). Las
+  pruebas fallan si un texto nuevo no tiene traducción.
+- **Para buscadores:** palabras clave de lo que buscan los jugadores
+  (hideouts de gremios, Zona Negra / Black Zone, caminos y rutas de Avalon /
+  Avalonian roads), datos estructurados de schema.org (`WebSite` y
+  `WebApplication` gratuita), Open Graph y Twitter Card con imagen de
+  1200×630 (`og-albion-navigator.jpg`), `robots.txt`, `sitemap.xml` y
+  `manifest.webmanifest`.
+- **Sin contenido duplicado:** las rutas desconocidas responden un 404 real
+  (antes devolvían la página principal) y `/index.html` redirige a `/`.
+- **Variables nuevas:** `SITIO_URL` (por defecto
+  `https://albionho.duckdns.org`) y, opcionales,
+  `GOOGLE_SITE_VERIFICATION` / `BING_SITE_VERIFICATION` para verificar el
+  sitio en Search Console y Bing Webmaster Tools.
+
 ### v7 — Nueva imagen: Albion Navigator
 
 - **Nombre y logo:** el sitio pasa a llamarse **Albion Navigator**. El
