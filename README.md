@@ -25,7 +25,8 @@ Avalon abiertas que registra la comunidad.
   botones: "Buscar un gremio" y "Apoyar el proyecto". Debajo, una franja
   con cifras reales (hideouts, mapas con hideouts, caminos y temporada) que
   cuentan hacia arriba al cargar.
-- **"Todo lo que necesitas"**: tres tarjetas (buscar hideouts, seguir rutas,
+- **"Todo lo que necesitas"**: tres tarjetas, cada una con su arte (buscar
+  hideouts, seguir rutas,
   registrar conexiones) que se expanden al pasar el ratón; en móvil se
   apilan.
 - **"Mantén Albion Navigator en línea"**: en qué se usan las donaciones y

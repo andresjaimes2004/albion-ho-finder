@@ -2163,9 +2163,9 @@ button.ruta__nombre:hover { color: var(--color-oro-claro); text-decoration: unde
   background: linear-gradient(180deg, rgba(12, 10, 16, 0.1) 0%, rgba(12, 10, 16, 0.92) 70%);
 }
 
-.funcion--hideouts { background-image: url('../assets/fondo-avalon-960.webp'); background-position: 8% 30%; }
-.funcion--caminos { background-image: url('../assets/fondo-avalon-960.webp'); background-position: 50% 15%; }
-.funcion--registro { background-image: url('../assets/fondo-avalon-960.webp'); background-position: 80% 35%; }
+.funcion--hideouts { background-image: url('../assets/tarjeta-hideouts.webp'); background-position: 68% 40%; }
+.funcion--caminos { background-image: url('../assets/tarjeta-rutas.webp'); background-position: 42% 20%; }
+.funcion--registro { background-image: url('../assets/tarjeta-registro.webp'); background-position: 18% 40%; }
 
 .funcion__contenido { position: relative; padding: 22px; }
 .funcion__titulo { font-family: var(--fuente-titulos); font-size: 1.2rem; margin: 0 0 8px; color: var(--color-oro-claro); }
