@@ -127,7 +127,7 @@
           <span class="funcion__ir" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m0 0-6-6m6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           <div class="funcion__contenido">
             <h3 class="funcion__titulo">{{Busca hideouts}}</h3>
-            <p class="funcion__texto">{{Escribe el nombre de un gremio y mira todos sus hideouts, con slot y tipo, sobre el mapa del juego.}}</p>
+            <p class="funcion__texto">{{Escribe el nombre de un gremio y mira todos sus hideouts, con su tipo, sobre el mapa del juego.}}</p>
           </div>
         </a>
         <a class="funcion funcion--caminos" href="{{@inicio}}#caminos" data-ir="caminos">
@@ -208,7 +208,7 @@
       </span>
       <div>
         <h2 class="titulo-vista__titulo">{{Hideouts de la Zona Negra}}</h2>
-        <p class="titulo-vista__texto">{{Escribe el nombre de un gremio y descubre en qué mapas tiene hideout, con su slot, su tipo y las rutas de Avalon que llegan a ellos.}}</p>
+        <p class="titulo-vista__texto">{{Escribe el nombre de un gremio y descubre en qué mapas tiene hideout, su tipo y las rutas de Avalon que llegan a ellos.}}</p>
       </div>
     </header>
 
@@ -483,6 +483,7 @@
             <li><span class="punto punto--hq"></span> HQ</li>
             <li><span class="punto punto--estandar"></span> HO</li>
             <li><span class="punto punto--salida"></span> {{Salida a mapa vecino}}</li>
+            <li><span class="punto punto--fija"></span> {{Ciudad o pasaje (no se abre)}}</li>
           </ul>
         </div>
         <aside class="ventana__panel">

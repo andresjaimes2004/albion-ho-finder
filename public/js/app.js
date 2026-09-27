@@ -352,10 +352,25 @@ class BuscadorUI {
       encabezado.appendChild(meta);
     }
 
-    const verMapa = document.createElement('span');
-    verMapa.className = 'tarjeta-mapa__accion con-icono icono-mapa';
-    verMapa.textContent = t('Ver mapa');
-    encabezado.appendChild(verMapa);
+    // Flecha de la esquina, como en las tarjetas de la portada: toda la
+    // tarjeta abre el mapa (el botón se estira sobre ella con CSS).
+    const ir = document.createElement('span');
+    ir.className = 'tarjeta-mapa__ir';
+    ir.setAttribute('aria-hidden', 'true');
+    const flecha = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    flecha.setAttribute('viewBox', '0 0 24 24');
+    flecha.setAttribute('width', '16');
+    flecha.setAttribute('height', '16');
+    flecha.setAttribute('fill', 'none');
+    const trazo = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    trazo.setAttribute('d', 'M5 12h14m0 0-6-6m6 6-6 6');
+    trazo.setAttribute('stroke', 'currentColor');
+    trazo.setAttribute('stroke-width', '2.2');
+    trazo.setAttribute('stroke-linecap', 'round');
+    trazo.setAttribute('stroke-linejoin', 'round');
+    flecha.appendChild(trazo);
+    ir.appendChild(flecha);
+    encabezado.appendChild(ir);
 
     encabezado.addEventListener('click', () =>
       this.ventanaMapa.abrir(grupo.mapa, { resaltarGremio: this.ultimoTermino })
@@ -467,15 +482,11 @@ class BuscadorUI {
     gremio.className = 'item-hideout__gremio';
     gremio.textContent = hideout.gremio;
 
-    const slot = document.createElement('span');
-    slot.className = 'item-hideout__slot';
-    slot.textContent = t('Slot {slot}', { slot: hideout.slot });
-
     const etiqueta = document.createElement('span');
     etiqueta.className = `etiqueta-tipo etiqueta-tipo--${hideout.tipo.toLowerCase()}`;
     etiqueta.textContent = hideout.tipo === 'ESTANDAR' ? 'HO' : hideout.tipo;
 
-    item.append(gremio, slot, etiqueta);
+    item.append(gremio, etiqueta);
 
     if (hideout.ubicado) {
       const ubicado = document.createElement('span');

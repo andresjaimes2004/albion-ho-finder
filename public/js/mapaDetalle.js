@@ -38,6 +38,38 @@ import { t, tn } from './i18n.js';
 const COLOR_TIPO = { HQ: 'hq', ESTANDAR: 'estandar' };
 const MARGEN_VISTA = 70;
 
+/**
+ * Jerarquía de lo que se dibuja sobre el mapa, en píxeles de pantalla: lo
+ * que más se consulta (mapas vecinos, gremios) se lee primero y las
+ * referencias (torres, castillos, Smuggler's Den, portales, pasajes)
+ * quedan en segundo plano para no saturar los mapas con muchas salidas.
+ */
+const ESTILO = {
+  salida: { fuente: 11.5, contorno: 2.6, radio: 8, centro: 3, separacion: 14 },
+  salidaFija: { fuente: 9, contorno: 2.2, radio: 5.5, centro: 2, separacion: 10 },
+  pin: { fuente: 10.5, contorno: 2.4 },
+  territorio: { fuente: 9.5, contorno: 2.2 },
+};
+
+/** Duración del fundido al saltar a un mapa vecino (igual que en el CSS). */
+const FUNDIDO_MS = 220;
+const reducirMovimiento = () =>
+  typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const esperar = (ms) => new Promise((resolver) => setTimeout(resolver, ms));
+
+/**
+ * Descarga y decodifica la imagen antes de mostrar el mapa, para que no
+ * aparezca a trozos después del fundido. Si tarda o falla, se sigue igual.
+ */
+function precargarImagen(url, limiteMs = 4000) {
+  const imagen = new Image();
+  imagen.src = url;
+  const lista = typeof imagen.decode === 'function'
+    ? imagen.decode().catch(() => {})
+    : new Promise((resolver) => { imagen.onload = imagen.onerror = resolver; });
+  return Promise.race([lista, esperar(limiteMs)]);
+}
+
 export class VentanaMapa {
   constructor({ obtenerSesion, alCambiar, irACaminos } = {}) {
     this.obtenerSesion = obtenerSesion || (() => null);
@@ -45,6 +77,8 @@ export class VentanaMapa {
     this.irACaminos = irACaminos || null;
 
     this.dialogo = document.getElementById('ventana-mapa');
+    this.contenido = this.dialogo.querySelector('.ventana__contenido');
+    this.turno = 0;
     this.titulo = document.getElementById('ventana-mapa__titulo');
     this.insignias = document.getElementById('ventana-mapa__insignias');
     this.svg = document.getElementById('ventana-mapa__svg');
@@ -117,31 +151,59 @@ export class VentanaMapa {
     return Boolean(sesion && sesion.rol === 'ADMIN');
   }
 
+  /**
+   * Abre la ventana con un mapa, o salta a otro si ya está abierta. Al
+   * saltar (salidas a mapas vecinos) el mapa actual se desvanece, el nuevo
+   * se carga con su imagen ya descargada y aparece con un fundido; así no
+   * se ve la ventana vacía ni la imagen cargándose a trozos.
+   */
   async abrir(nombreMapa, { resaltarGremio = null } = {}) {
+    // Si se pulsan varias salidas seguidas, solo cuenta la última.
+    const turno = ++this.turno;
+    const saltando = this.dialogo.open && Boolean(this.datos);
     this.resaltado = resaltarGremio;
     this.hideoutSeleccionado = null;
-    this.titulo.textContent = nombreMapa;
-    limpiar(this.insignias);
-    limpiar(this.svg);
-    this.lista.replaceChildren();
-    this.aviso.textContent = t('Cargando mapa...');
-    this.aviso.hidden = false;
+    this.contenido.classList.add('ventana__contenido--cambiando');
 
-    if (!this.dialogo.open) this.dialogo.showModal();
+    if (!saltando) {
+      this.datos = null;
+      this.titulo.textContent = nombreMapa;
+      limpiar(this.insignias);
+      limpiar(this.svg);
+      this.lista.replaceChildren();
+      this.aviso.textContent = t('Cargando mapa...');
+      this.aviso.hidden = false;
+      if (!this.dialogo.open) this.dialogo.showModal();
+    }
     this._cargarRutas(nombreMapa);
 
     try {
-      this.datos = await api.detalleMapa(nombreMapa);
+      const [datos] = await Promise.all([
+        api.detalleMapa(nombreMapa),
+        saltando && !reducirMovimiento() ? esperar(FUNDIDO_MS) : null,
+      ]);
+      if (turno !== this.turno) return;
+      if (datos.imagen) await precargarImagen(datos.imagen.url);
+      if (turno !== this.turno) return;
+
+      this.datos = datos;
       this.aviso.hidden = true;
       // Si el mapa tiene imagen propia, se muestra por defecto.
-      this.fondo = this.datos.imagen ? 'propia' : 'oficial';
-      this.ajuste = this.datos.imagen ? { ...this.datos.imagen } : null;
+      this.fondo = datos.imagen ? 'propia' : 'oficial';
+      this.ajuste = datos.imagen ? { ...datos.imagen } : null;
       this.navegacion.reiniciar();
       this._render();
     } catch (error) {
+      if (turno !== this.turno) return;
       this.aviso.textContent = error.message;
       this.aviso.hidden = false;
     }
+
+    // Un fotograma después, para que el navegador pinte el mapa nuevo aún
+    // transparente y el fundido de entrada se note.
+    requestAnimationFrame(() => {
+      if (turno === this.turno) this.contenido.classList.remove('ventana__contenido--cambiando');
+    });
   }
 
   cerrar() {
@@ -305,10 +367,15 @@ export class VentanaMapa {
 
     // Unidades de la vista por píxel de pantalla (a zoom 1): los marcadores
     // y textos se dibujan en píxeles para que se lean igual en cualquier
-    // tamaño de ventana.
+    // tamaño de ventana. En mapas pequeños (móvil, pantallas bajas) se
+    // reducen hasta un 85 % para no tapar el terreno.
     const caja = this.svg.getBoundingClientRect();
-    this.pixel = (borde * 2) / (Math.min(caja.width, caja.height) || 540);
+    const lado = Math.min(caja.width, caja.height) || 540;
+    this.pixel = ((borde * 2) / lado) * Math.min(1, Math.max(0.85, lado / 540));
     this.marcadores = [];
+    // Textos y marcadores que entran en el reparto de espacio (_evitarSolapes).
+    this.etiquetas = [];
+    this.obstaculos = [];
 
     const capa = crear('g', { 'data-capa-zoom': '' });
     this.svg.appendChild(capa);
@@ -336,14 +403,7 @@ export class VentanaMapa {
         maxTeselas: 60,
       });
     } else if (this.fondo === 'propia' && this.datos.imagen) {
-      this.imagenFondo = crear('image', {
-        href: this.datos.imagen.url,
-        x: -mitad,
-        y: -mitad,
-        width: mitad * 2,
-        height: mitad * 2,
-        preserveAspectRatio: 'xMidYMid meet',
-      });
+      this.imagenFondo = this._crearImagenPropia(mapa, mitad);
       fondo.appendChild(this.imagenFondo);
       this._aplicarAjuste();
     } else {
@@ -391,14 +451,25 @@ export class VentanaMapa {
       }
       const arriba = esquinas.reduce((min, p) => (p[1] < min[1] ? p : min), esquinas[0]);
       const etiqueta = this._marcador(arriba[0], arriba[1], 'mapa__rotulo');
-      etiqueta.interior.appendChild(
-        crear(
-          'text',
-          { y: -8, 'text-anchor': 'middle', class: 'mapa__etiqueta', 'font-size': 11, 'stroke-width': 3 },
-          territorio.nombre || t('Territorio')
-        )
+      const texto = crear(
+        'text',
+        {
+          y: -6,
+          'text-anchor': 'middle',
+          class: 'mapa__etiqueta mapa__etiqueta--territorio',
+          'font-size': ESTILO.territorio.fuente,
+          'stroke-width': ESTILO.territorio.contorno,
+        },
+        territorio.nombre || t('Territorio')
       );
+      etiqueta.interior.appendChild(texto);
       capa.appendChild(etiqueta.grupo);
+      // Encima del vértice superior o, si choca, justo por dentro.
+      this.etiquetas.push({
+        nodo: texto,
+        prioridad: 2,
+        posiciones: [{ y: -6 }, { y: ESTILO.territorio.fuente + 6 }],
+      });
     }
 
     // 5. Salidas hacia mapas vecinos
@@ -415,8 +486,56 @@ export class VentanaMapa {
     capa.appendChild(capaHideouts);
 
     this.svg.classList.toggle('svg--marcando', Boolean(this.hideoutSeleccionado) && this.esAdmin);
+    // Con imagen propia, lo de fuera del rombo es el arte del apartado:
+    // se oscurece menos que las teselas de los mapas vecinos.
+    this.svg.classList.toggle('lienzo--con-imagen', Boolean(this.imagenFondo));
     this._escalaMarcadores = null;
     this.navegacion.refrescarCapa();
+    this._evitarSolapes();
+  }
+
+  /**
+   * Reparte el espacio entre los textos del mapa. Se colocan primero los
+   * más importantes (mapas vecinos, gremios); los secundarios (torres,
+   * castillos, ciudades, Smuggler's Den, pasajes) prueban otra posición si
+   * chocan, y los de salidas no navegables se ocultan si no caben: su
+   * nombre aparece al pasar el ratón por el marcador.
+   */
+  _evitarSolapes() {
+    if (!this.etiquetas || !this.etiquetas.length) return;
+    const holgura = 2;
+    const caja = (nodo) => {
+      const r = nodo.getBoundingClientRect();
+      return { izq: r.left - holgura, der: r.right + holgura, arr: r.top - holgura, aba: r.bottom + holgura };
+    };
+    const chocan = (a, b) => a.izq < b.der && a.der > b.izq && a.arr < b.aba && a.aba > b.arr;
+    const colocar = (nodo, posicion) => {
+      for (const [atributo, valor] of Object.entries(posicion)) nodo.setAttribute(atributo, valor);
+    };
+    // Cada marcador es obstáculo para todos los textos menos el suyo.
+    const ocupadas = this.obstaculos.map(({ nodo, dueno }) => ({ ...caja(nodo), dueno }));
+
+    for (const etiqueta of [...this.etiquetas].sort((a, b) => a.prioridad - b.prioridad)) {
+      etiqueta.nodo.classList.remove('mapa__etiqueta--oculta');
+      let libre = null;
+      for (const posicion of etiqueta.posiciones) {
+        colocar(etiqueta.nodo, posicion);
+        const actual = caja(etiqueta.nodo);
+        if (!ocupadas.some((otra) => otra.dueno !== etiqueta.nodo && chocan(actual, otra))) {
+          libre = actual;
+          break;
+        }
+      }
+      if (!libre) {
+        colocar(etiqueta.nodo, etiqueta.posiciones[0]);
+        if (etiqueta.ocultable) {
+          etiqueta.nodo.classList.add('mapa__etiqueta--oculta');
+          continue;
+        }
+        libre = caja(etiqueta.nodo);
+      }
+      ocupadas.push(libre);
+    }
   }
 
   /**
@@ -438,6 +557,8 @@ export class VentanaMapa {
     for (const { grupo, x, y } of this.marcadores) {
       grupo.setAttribute('transform', `translate(${x} ${y}) scale(${factor})`);
     }
+    // Al acercar, los textos se separan y los ocultos pueden volver a caber.
+    this._evitarSolapes();
   }
 
   _crearSalida(salida) {
@@ -447,30 +568,60 @@ export class VentanaMapa {
     const ux = vx / distancia;
     const uy = vy / distancia;
 
-    const { grupo, interior } = this._marcador(vx, vy, 'mapa__salida', {
-      'data-interactivo': '',
-      tabindex: '0',
-      role: 'button',
+    // Las salidas a ciudades, Smuggler's Den o pasajes no tienen ficha:
+    // se dibujan como referencia, sin poder abrirse.
+    const navegable = Boolean(salida.destino) && salida.navegable !== false;
+    const { grupo, interior } = this._marcador(
+      vx,
+      vy,
+      navegable ? 'mapa__salida' : 'mapa__salida mapa__salida--fija',
+      navegable ? { 'data-interactivo': '', tabindex: '0', role: 'button' } : {}
+    );
+    const estilo = navegable ? ESTILO.salida : ESTILO.salidaFija;
+    const circulo = crear('circle', { r: estilo.radio });
+    interior.appendChild(circulo);
+    interior.appendChild(crear('circle', { r: estilo.centro, class: 'mapa__salida-centro' }));
+    // Hacia fuera del mapa o, si choca con otro texto, hacia dentro.
+    const lado = (u) => (u > 0.3 ? 'start' : u < -0.3 ? 'end' : 'middle');
+    const fuera = {
+      x: ux * estilo.separacion,
+      y: uy * estilo.separacion + estilo.fuente / 3,
+      'text-anchor': lado(ux),
+    };
+    const dentro = {
+      x: -ux * estilo.separacion,
+      y: -uy * estilo.separacion + estilo.fuente / 3,
+      'text-anchor': lado(-ux),
+    };
+    const texto = crear(
+      'text',
+      {
+        ...fuera,
+        class: 'mapa__etiqueta mapa__etiqueta--salida',
+        'font-size': estilo.fuente,
+        'stroke-width': estilo.contorno,
+      },
+      salida.destino || t('Salida')
+    );
+    interior.appendChild(texto);
+    this.obstaculos.push({ nodo: circulo, dueno: texto });
+    this.etiquetas.push({
+      nodo: texto,
+      prioridad: navegable ? 0 : 3,
+      posiciones: navegable ? [fuera] : [fuera, dentro],
+      ocultable: !navegable,
     });
-    interior.appendChild(crear('circle', { r: 9 }));
-    interior.appendChild(crear('circle', { r: 3.5, class: 'mapa__salida-centro' }));
-    interior.appendChild(
+    grupo.appendChild(
       crear(
-        'text',
-        {
-          x: ux * 16,
-          y: uy * 16 + 4,
-          'text-anchor': ux > 0.3 ? 'start' : ux < -0.3 ? 'end' : 'middle',
-          class: 'mapa__etiqueta mapa__etiqueta--salida',
-          'font-size': 12,
-          'stroke-width': 3,
-        },
-        salida.destino || t('Salida')
+        'title',
+        {},
+        navegable
+          ? t('Ir a {destino}', { destino: salida.destino })
+          : t('Salida a {destino} (no es un mapa de Zona Negra)', { destino: salida.destino || t('mapa vecino') })
       )
     );
-    grupo.appendChild(crear('title', {}, t('Ir a {destino}', { destino: salida.destino || t('mapa vecino') })));
 
-    if (salida.destino) {
+    if (navegable) {
       const navegar = (evento) => {
         // En modo "marcar ubicación" el clic pertenece al mapa, no a la
         // salida: si no, no se podría situar un hideout junto a ella.
@@ -501,22 +652,24 @@ export class VentanaMapa {
       { 'data-interactivo': '', tabindex: '0', role: 'button' }
     );
 
-    interior.appendChild(crear('path', { d: 'M0 0 L-9 -14 A10.5 10.5 0 1 1 9 -14 Z', class: 'mapa__pin-cuerpo' }));
+    const cuerpo = crear('path', { d: 'M0 0 L-9 -14 A10.5 10.5 0 1 1 9 -14 Z', class: 'mapa__pin-cuerpo' });
+    interior.appendChild(cuerpo);
     interior.appendChild(crear('circle', { cy: -19, r: 4.5, class: 'mapa__pin-centro' }));
-    interior.appendChild(
-      crear(
-        'text',
-        {
-          y: 15,
-          'text-anchor': 'middle',
-          class: 'mapa__etiqueta mapa__etiqueta--pin',
-          'font-size': 12,
-          'stroke-width': 3,
-        },
-        hideout.gremio
-      )
+    const texto = crear(
+      'text',
+      {
+        y: 14,
+        'text-anchor': 'middle',
+        class: 'mapa__etiqueta mapa__etiqueta--pin',
+        'font-size': ESTILO.pin.fuente,
+        'stroke-width': ESTILO.pin.contorno,
+      },
+      hideout.gremio
     );
-    grupo.appendChild(crear('title', {}, t('{gremio} — {tipo} (slot {slot})', { gremio: hideout.gremio, tipo: t(hideout.etiquetaTipo), slot: hideout.slot })));
+    interior.appendChild(texto);
+    this.obstaculos.push({ nodo: cuerpo, dueno: texto });
+    this.etiquetas.push({ nodo: texto, prioridad: 1, posiciones: [{ y: 14 }] });
+    grupo.appendChild(crear('title', {}, t('{gremio} — {tipo}', { gremio: hideout.gremio, tipo: t(hideout.etiquetaTipo) })));
 
     grupo.addEventListener('click', (evento) => {
       evento.stopPropagation();
@@ -539,13 +692,53 @@ export class VentanaMapa {
     return [redondear(x), redondear(y)];
   }
 
+  /**
+   * Imagen de fondo propia. Una captura ('diamante') ya viene girada y
+   * solo se encaja en el recuadro del rombo. La textura del minimapa del
+   * juego ('juego') es un cuadrado en coordenadas del mapa: X a la
+   * derecha e Y hacia abajo, de limites.min a limites.max. Se coloca ahí
+   * y se proyecta con la misma transformación que las salidas y los pines
+   * (localAVista), así que encaja sin ajustes.
+   */
+  _crearImagenPropia(mapa, mitad) {
+    if (this._proyeccion() !== 'juego') {
+      this.transformBase = '';
+      return crear('image', {
+        href: this.datos.imagen.url,
+        x: -mitad,
+        y: -mitad,
+        width: mitad * 2,
+        height: mitad * 2,
+        preserveAspectRatio: 'xMidYMid meet',
+      });
+    }
+
+    const [minX, minY] = mapa.limites.min;
+    const [maxX, maxY] = mapa.limites.max;
+    const [a, b] = localAVista(1, 0);
+    const [c, d] = localAVista(0, 1);
+    this.transformBase = ` matrix(${a} ${b} ${c} ${d} 0 0)`;
+    return crear('image', {
+      href: this.datos.imagen.url,
+      x: minX,
+      y: minY,
+      width: maxX - minX,
+      height: maxY - minY,
+      preserveAspectRatio: 'none',
+    });
+  }
+
+  _proyeccion() {
+    return (this.ajuste && this.ajuste.proyeccion) || (this.datos.imagen && this.datos.imagen.proyeccion) || 'diamante';
+  }
+
   /** Aplica escala, desplazamiento y rotación a la imagen propia. */
   _aplicarAjuste() {
     if (!this.imagenFondo || !this.ajuste) return;
     const { escala = 1, dx = 0, dy = 0, rotacion = 0 } = this.ajuste;
     this.imagenFondo.setAttribute(
       'transform',
-      `translate(${dx} ${dy}) rotate(${rotacion}) scale(${escala})`
+      `translate(${dx} ${dy}) rotate(${rotacion}) scale(${escala})${this.transformBase || ''}`
     );
   }
 
@@ -595,8 +788,8 @@ export class VentanaMapa {
       const detalle = document.createElement('div');
       detalle.className = 'hideout-fila__detalle';
       detalle.textContent = hideout.pos
-        ? t('Slot {slot} · ubicado en el mapa', { slot: hideout.slot })
-        : t('Slot {slot} · sin ubicar en el mapa', { slot: hideout.slot });
+        ? t('Ubicado en el mapa')
+        : t('Sin ubicar en el mapa');
 
       item.append(cabecera, detalle);
 
@@ -640,7 +833,7 @@ export class VentanaMapa {
     eliminar.textContent = t('Eliminar');
     eliminar.addEventListener('click', async (evento) => {
       evento.stopPropagation();
-      if (!window.confirm(t('¿Eliminar el hideout de "{gremio}" (slot {slot})?', { gremio: hideout.gremio, slot: hideout.slot }))) return;
+      if (!window.confirm(t('¿Eliminar el hideout de "{gremio}"?', { gremio: hideout.gremio }))) return;
       await this._ejecutar(() => api.admin.eliminarHideout(hideout.id));
     });
     acciones.appendChild(eliminar);
@@ -757,7 +950,7 @@ export class VentanaMapa {
     explicacion.className = 'ventana__ayuda';
     explicacion.textContent = this.datos.imagen
       ? t('Ajusta la imagen hasta que las salidas y el borde coincidan con el mapa. Se guarda para todos los visitantes.')
-      : t('Sube una captura del mapa completo en diamante (PNG, JPG o WebP, máx. 4 MB). Después podrás ajustarla.');
+      : t('Sube la imagen del minimapa del juego o una captura del mapa en diamante (PNG, JPG o WebP, máx. 4 MB). Después podrás ajustarla.');
     seccion.appendChild(explicacion);
 
     const archivo = document.createElement('input');
@@ -780,6 +973,30 @@ export class VentanaMapa {
     const ajuste = this.ajuste || { escala: 1, dx: 0, dy: 0, rotacion: 0 };
     const controles = document.createElement('div');
     controles.className = 'ajuste-imagen__controles';
+
+    const filaTipo = document.createElement('label');
+    filaTipo.className = 'ajuste-imagen__fila';
+    const textoTipo = document.createElement('span');
+    textoTipo.textContent = t('Tipo');
+    const tipo = document.createElement('select');
+    for (const [valor, etiqueta] of [
+      ['juego', t('Minimapa del juego (cuadrado)')],
+      ['diamante', t('Captura en diamante')],
+    ]) {
+      const opcion = document.createElement('option');
+      opcion.value = valor;
+      opcion.textContent = etiqueta;
+      opcion.selected = this._proyeccion() === valor;
+      tipo.appendChild(opcion);
+    }
+    tipo.addEventListener('change', () => {
+      this.ajuste = { ...this.ajuste, proyeccion: tipo.value };
+      this.fondo = 'propia';
+      this._renderSvg(this.datos.mapa, this.datos.hideouts);
+      this._aplicarAjuste();
+    });
+    filaTipo.append(textoTipo, tipo);
+    controles.appendChild(filaTipo);
 
     const crearControl = (etiqueta, clave, { min, max, paso }) => {
       const fila = document.createElement('label');
@@ -844,8 +1061,9 @@ export class VentanaMapa {
     guardar.textContent = t('Guardar ajuste');
     guardar.addEventListener('click', async () => {
       const { escala, dx, dy, rotacion: grados } = this.ajuste;
+      const proyeccion = this._proyeccion();
       await this._ejecutar(() =>
-        api.admin.ajustarImagenMapa(this.datos.mapa.id, { escala, dx, dy, rotacion: grados })
+        api.admin.ajustarImagenMapa(this.datos.mapa.id, { escala, dx, dy, rotacion: grados, proyeccion })
       );
     });
 

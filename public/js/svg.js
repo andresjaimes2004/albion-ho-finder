@@ -102,15 +102,30 @@ export function habilitarNavegacion(svg, { minEscala = 0.5, maxEscala = 16, alCa
   );
 
   svg.addEventListener('pointerdown', (evento) => {
+    // Solo el botón principal mueve el mapa.
+    if (evento.pointerType === 'mouse' && evento.button !== 0) return;
     inicio = { x: evento.clientX, y: evento.clientY };
     huboArrastre = false;
     if (evento.target.closest('[data-interactivo]')) return;
     const punto = aUnidades(evento.clientX, evento.clientY);
     if (!punto) return;
+    // El fondo del mapa son imágenes (teselas o la imagen del mapa): sin
+    // esto, el navegador empieza a "arrastrar la imagen", muestra el cursor
+    // de prohibido y cancela el movimiento, y el mapa se queda pegado.
+    evento.preventDefault();
+    // Seguir el puntero aunque salga del mapa mientras se arrastra.
+    try {
+      svg.setPointerCapture(evento.pointerId);
+    } catch (error) {
+      // Puntero ya liberado: el arrastre sigue funcionando sin captura.
+    }
     estado.arrastrando = true;
     estado.ultimo = punto;
     svg.classList.add('arrastrando');
   });
+
+  // Por si algún navegador intenta igualmente arrastrar una imagen.
+  svg.addEventListener('dragstart', (evento) => evento.preventDefault());
 
   svg.addEventListener('pointermove', (evento) => {
     if (inicio && Math.hypot(evento.clientX - inicio.x, evento.clientY - inicio.y) > 5) {
@@ -132,6 +147,7 @@ export function habilitarNavegacion(svg, { minEscala = 0.5, maxEscala = 16, alCa
   };
   svg.addEventListener('pointerup', soltar);
   svg.addEventListener('pointercancel', soltar);
+  svg.addEventListener('lostpointercapture', soltar);
   svg.addEventListener('pointerleave', soltar);
 
   return {
