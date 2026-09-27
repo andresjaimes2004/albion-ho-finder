@@ -203,6 +203,9 @@ const EN = {
   'Los pagos se hacen en Ko-fi, PayPal o la app de tu banco. Albion Navigator nunca ve ni guarda datos de tarjetas ni de cuentas.':
     'Payments happen on Ko-fi, PayPal or your banking app. Albion Navigator never sees or stores card or account details.',
   'Donar': 'Donate',
+  'Preguntas frecuentes': 'Frequently asked questions',
+  'Accesos rápidos': 'Quick links',
+  'Wiki oficial de Albion Online': 'Official Albion Online wiki',
 
   // Página 404
   'Página no encontrada': 'Page not found',

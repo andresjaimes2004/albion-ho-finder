@@ -2356,3 +2356,128 @@ button.ruta__nombre:hover { color: var(--color-oro-claro); text-decoration: unde
   .funcion, .funcion::before, .funcion__texto, .donar, .boton--primario, .boton--contorno { transition: none; }
   .funcion:hover, .funcion:focus-within, .donar:hover { transform: none; }
 }
+
+/* ---------------------------------------------- preguntas frecuentes --- */
+/* Como HostGator: título a la izquierda, accesos rápidos en 2×2 y un
+   acordeón de tarjetas (una abierta a la vez; la abierta, tintada). */
+
+#preguntas { scroll-margin-top: 96px; }
+
+.preguntas { margin-top: 72px; }
+
+.preguntas__titulo {
+  font-family: var(--fuente-titulos);
+  font-size: clamp(1.4rem, 1.05rem + 1.4vw, 2rem);
+  margin: 0 0 22px;
+  color: var(--color-texto);
+}
+
+.preguntas__accesos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.acceso {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: var(--radio-lg);
+  border: 1px solid var(--color-borde);
+  background: var(--vidrio);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--color-texto);
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.acceso:hover { transform: translateY(-3px); border-color: rgba(201, 162, 39, 0.5); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4); }
+.acceso:focus-visible { outline: 2px solid var(--color-oro-claro); outline-offset: 2px; }
+
+.acceso__icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  color: var(--color-oro-claro);
+  background: rgba(201, 162, 39, 0.12);
+}
+
+.acceso__icono--apoyo { color: var(--color-apoyo); background: rgba(255, 94, 122, 0.12); }
+
+.preguntas__lista { display: flex; flex-direction: column; gap: 12px; }
+
+.pregunta {
+  border-radius: var(--radio-lg);
+  border: 1px solid var(--color-borde);
+  background: var(--vidrio);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: border-color 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.pregunta:hover { border-color: rgba(201, 162, 39, 0.4); }
+
+.pregunta[open] {
+  border-color: rgba(201, 162, 39, 0.45);
+  background-color: rgba(201, 162, 39, 0.07);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.3);
+}
+
+.pregunta__titulo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px;
+  cursor: pointer;
+  list-style: none;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--color-texto);
+}
+
+.pregunta__titulo::-webkit-details-marker { display: none; }
+.pregunta__titulo:focus-visible { outline: 2px solid var(--color-oro-claro); outline-offset: -2px; border-radius: var(--radio-lg); }
+
+.pregunta__flecha {
+  flex-shrink: 0;
+  color: var(--color-oro-claro);
+  transition: transform 0.3s ease;
+}
+
+.pregunta[open] .pregunta__flecha { transform: rotate(180deg); }
+
+.pregunta__respuesta { padding: 0 22px 20px; }
+.pregunta__respuesta p { margin: 0; color: #cfc6d6; line-height: 1.65; }
+
+/* Apertura suave donde el navegador lo permite (Chrome, Edge); en el
+   resto se abre al instante, sin romper nada. */
+@supports (interpolate-size: allow-keywords) {
+  .preguntas { interpolate-size: allow-keywords; }
+  .pregunta::details-content {
+    block-size: 0;
+    overflow: hidden;
+    transition: block-size 0.35s ease, content-visibility 0.35s allow-discrete;
+  }
+  .pregunta[open]::details-content { block-size: auto; }
+}
+
+@media (max-width: 640px) {
+  .preguntas__accesos { grid-template-columns: 1fr; }
+  .pregunta__titulo { padding: 16px 18px; font-size: 0.95rem; }
+  .pregunta__respuesta { padding: 0 18px 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .acceso, .pregunta, .pregunta__flecha { transition: none; }
+  .acceso:hover { transform: none; }
+  .pregunta::details-content { transition: none; }
+}

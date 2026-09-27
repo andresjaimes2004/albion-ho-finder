@@ -38,6 +38,11 @@ Avalon abiertas que registra la comunidad.
   en `public/assets/qr-breb.png`. Se validan antes de publicarse; sin
   configurar, cada opción aparece como "muy pronto". El sitio nunca maneja
   datos de pago: solo enlaza a Ko-fi y muestra la llave.
+- **Preguntas frecuentes** (al estilo de HostGator): cuatro accesos rápidos y
+  un acordeón de 11 preguntas (una abierta a la vez, apertura suave). Las
+  preguntas viven en `src/i18n/preguntas.js` (español e inglés) y se
+  publican también como datos estructurados `FAQPage` para Google.
+- Pie: "© 2026 Albion Navigator. Todos los derechos reservados."
 - Animaciones suaves (entrada de la portada, aparición al desplazarse,
   latido del corazón) que se desactivan con "reducir movimiento".
 

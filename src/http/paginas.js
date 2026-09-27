@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const { SEO, EN } = require('../i18n/pagina');
+const { PREGUNTAS } = require('../i18n/preguntas');
 
 /**
  * paginas.js
@@ -61,6 +62,28 @@ function escaparAtributo(texto) {
   return String(texto).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+function escaparHtml(texto) {
+  return String(texto).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+const FLECHA = '<svg class="pregunta__flecha" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+/**
+ * Acordeón de preguntas frecuentes con <details>: funciona sin JavaScript,
+ * con teclado y lector de pantalla. name="preguntas" deja una sola abierta
+ * a la vez (como en HostGator); la primera empieza abierta.
+ */
+function htmlPreguntas(idioma) {
+  return PREGUNTAS[idioma]
+    .map(
+      ({ pregunta, respuesta }, i) => `<details class="pregunta" name="preguntas"${i === 0 ? ' open' : ''}>
+          <summary class="pregunta__titulo"><span>${escaparHtml(pregunta)}</span>${FLECHA}</summary>
+          <div class="pregunta__respuesta"><p>${escaparHtml(respuesta)}</p></div>
+        </details>`
+    )
+    .join('\n        ');
+}
+
 /** JSON dentro de <script>: sin "<" para que no pueda cerrar la etiqueta. */
 function jsonSeguro(valor) {
   return JSON.stringify(valor).replace(/</g, '\\u003c');
@@ -93,6 +116,16 @@ function datosEstructurados(idioma, url) {
       image: `${sitio}/assets/og-albion-navigator.jpg`,
       author: { '@type': 'Person', name: 'TurnDark' },
       about: { '@type': 'VideoGame', name: 'Albion Online' },
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      inLanguage: idioma,
+      mainEntity: PREGUNTAS[idioma].map(({ pregunta, respuesta }) => ({
+        '@type': 'Question',
+        name: pregunta,
+        acceptedAnswer: { '@type': 'Answer', text: respuesta },
+      })),
     },
   ];
 }
@@ -131,6 +164,7 @@ function variables(idioma) {
     actualEs: idioma === 'es' ? actual : '',
     actualEn: idioma === 'en' ? actual : '',
     verificaciones: verificaciones(),
+    preguntas: htmlPreguntas(idioma),
     ...donaciones(),
   };
 }

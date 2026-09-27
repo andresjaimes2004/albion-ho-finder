@@ -190,6 +190,21 @@
 
       <p class="apoyar__seguridad">{{Los pagos se hacen en Ko-fi, PayPal o la app de tu banco. Albion Navigator nunca ve ni guarda datos de tarjetas ni de cuentas.}}</p>
     </section>
+
+    <section id="preguntas" class="preguntas" aria-labelledby="preguntas-titulo" data-revelar>
+      <h2 id="preguntas-titulo" class="preguntas__titulo">{{Preguntas frecuentes}}</h2>
+
+      <nav class="preguntas__accesos" aria-label="{{Accesos rápidos}}">
+        <a class="acceso" href="{{@inicio}}#hideouts" data-ir="hideouts" data-enfocar="input-gremio"><span class="acceso__icono"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.5" stroke="currentColor" stroke-width="1.9"/></svg></span>{{Buscador de hideouts}}</a>
+        <a class="acceso" href="{{@inicio}}#caminos" data-ir="caminos"><span class="acceso__icono"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="6" cy="18" r="2.5" stroke="currentColor" stroke-width="1.9"/><circle cx="18" cy="6" r="2.5" stroke="currentColor" stroke-width="1.9"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></span>{{Caminos de Avalon}}</a>
+        <a class="acceso" href="https://wiki.albiononline.com/" target="_blank" rel="noopener noreferrer"><span class="acceso__icono"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5v-15Zm0 15A2.5 2.5 0 0 0 6.5 23H20v-5" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg></span>{{Wiki oficial de Albion Online}}</a>
+        <a class="acceso" href="#apoyar" data-desplazar><span class="acceso__icono acceso__icono--apoyo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.8 3.9 4.5 7.3 4.5c2 0 3.6 1.1 4.7 2.7 1.1-1.6 2.7-2.7 4.7-2.7 3.4 0 5.7 3.3 4.5 6.7-1.7 4.7-9.2 9.3-9.2 9.3Z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg></span>{{Apoyar el proyecto}}</a>
+      </nav>
+
+      <div class="preguntas__lista">
+        {{@preguntas}}
+      </div>
+    </section>
     </div>
 
     <div id="vista-hideouts" role="tabpanel" aria-labelledby="pestana-hideouts" data-panel="hideouts" hidden>
@@ -419,6 +434,7 @@
           <li><a href="{{@inicio}}#hideouts" data-ir="hideouts">{{Buscador de hideouts}}</a></li>
           <li><a href="{{@inicio}}#caminos" data-ir="caminos">{{Caminos de Avalon}}</a></li>
           <li><a href="#apoyar" data-desplazar>{{Apoyar el proyecto}}</a></li>
+          <li><a href="#preguntas" data-desplazar>{{Preguntas frecuentes}}</a></li>
         </ul>
       </nav>
 

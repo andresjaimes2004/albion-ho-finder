@@ -123,3 +123,18 @@ test('las donaciones se configuran por entorno y los valores inválidos no se pu
     }
   }
 });
+
+test('las preguntas frecuentes están en ambos idiomas y como datos estructurados', () => {
+  const { PREGUNTAS } = require('../src/i18n/preguntas');
+  assert.ok(PREGUNTAS.es.length >= 8);
+  assert.equal(PREGUNTAS.en.length, PREGUNTAS.es.length, 'misma cantidad de preguntas en ambos idiomas');
+
+  for (const [idioma, { principal }] of Object.entries(generarPaginas())) {
+    assert.equal((principal.match(/<details class="pregunta"/g) || []).length, PREGUNTAS[idioma].length);
+    assert.equal((principal.match(/<details class="pregunta" name="preguntas" open>/g) || []).length, 1, 'solo la primera abierta');
+    const datos = JSON.parse(principal.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
+    const faq = datos.find((d) => d['@type'] === 'FAQPage');
+    assert.equal(faq.mainEntity.length, PREGUNTAS[idioma].length);
+    assert.equal(faq.mainEntity[0].name, PREGUNTAS[idioma][0].pregunta);
+  }
+});
