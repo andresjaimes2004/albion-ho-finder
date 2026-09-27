@@ -7,7 +7,7 @@ import { PanelSesion } from './sesion.js';
 import { PanelAdmin } from './admin.js';
 import { PanelCaminos } from './tracking.js';
 import { PanelRegistro } from './registroCaminos.js';
-import { crear, crearReloj, crearTarjetaRuta, iniciarRelojes } from './rutas.js';
+import { crear, crearListaConexiones, crearTarjetaRuta, iniciarRelojes } from './rutas.js';
 
 /**
  * app.js
@@ -46,6 +46,10 @@ class BuscadorUI {
     this.ventanaMapa = new VentanaMapa({
       obtenerSesion: () => this.usuario,
       alCambiar: () => this._repetirBusqueda(),
+      irACaminos: (nombre) => {
+        this.ventanaMapa.cerrar();
+        this._irACaminos(nombre);
+      },
     });
 
     this.mapaMundial = new MapaMundial({
@@ -325,20 +329,7 @@ class BuscadorUI {
 
     if (conexiones.length) {
       panel.appendChild(crear('p', 'rutas-hideout__subtitulo', 'Conexiones directas de este mapa'));
-      const lista = crear('ul', 'rutas-hideout__conexiones');
-      for (const c of conexiones) {
-        const item = crear('li');
-        const meta = [c.hacia.tier ? `T${c.hacia.tier}` : null, c.hacia.etiqueta].filter(Boolean).join(' · ');
-        item.append(
-          crear('span', 'rutas-hideout__sentido', c.sentido === 'salida' ? '→' : '←'),
-          crear('span', 'rutas-hideout__destino', c.hacia.nombre || 'Mapa desconocido'),
-          crear('span', 'rutas-hideout__meta', meta),
-          c.cierraEn ? crearReloj(c.cierraEn) : crear('span', 'rutas-hideout__meta', 'sin hora de cierre'),
-          crear('span', `conexion__fuente conexion__fuente--${c.fuente}`, c.fuente === 'gremio' ? 'gremio' : 'smugden')
-        );
-        lista.appendChild(item);
-      }
-      panel.appendChild(lista);
+      panel.appendChild(crearListaConexiones(conexiones));
     }
 
     const ver = crear('button', 'boton boton--pequeno boton--sutil', 'Ver en Caminos de Avalon');

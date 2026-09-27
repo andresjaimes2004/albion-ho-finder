@@ -1700,6 +1700,23 @@ button.ruta__nombre:hover { color: var(--color-oro-claro); text-decoration: unde
 .rutas-hideout__meta { font-size: 0.74rem; color: var(--color-texto-tenue); }
 .rutas-hideout__panel > .boton { align-self: flex-start; }
 
+/* Rutas de Avalon en la ventana de detalle del mapa */
+.ventana__rutas {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 12px;
+  border: 1px solid var(--color-oro);
+  border-radius: var(--radio);
+  background: rgba(201, 162, 39, 0.06);
+}
+.ventana__rutas[hidden] { display: none; }
+.ventana__rutas-cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.ventana__rutas-cabecera h3 { margin: 0; }
+.ventana__rutas-resumen { font-size: 0.78rem; color: var(--color-oro-claro); font-weight: 600; }
+.ventana__rutas > .boton { align-self: flex-start; }
+
 @media (max-width: 560px) {
   .caminos-rutas { padding: 14px; }
   .ruta__cierre { margin-left: 0; }

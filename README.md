@@ -7,6 +7,14 @@ con el slot y el tipo (HQ, personal o estándar).
 
 ## Cambios recientes
 
+### v6.1 — Rutas en la ventana del mapa
+
+- Al abrir la ventana de un mapa (desde el buscador, el mapa mundial o una
+  salida vecina), el panel lateral muestra las rutas de Avalon vigentes que
+  pasan por él y sus conexiones directas, con el botón **"Ir a la ruta en
+  Caminos de Avalon"** que cierra la ventana y abre su ficha. Cada zona de
+  la ruta también lleva a su ficha.
+
 ### v6 — Rutas de Avalon y hideouts conectados
 
 - **Rutas:** varias conexiones encadenadas en orden, por ejemplo

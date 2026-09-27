@@ -10,6 +10,7 @@ import {
   vistaALocal,
 } from './mapaOficial.js';
 import api from './api.js';
+import { crear as crearHtml, crearListaConexiones, crearTarjetaRuta } from './rutas.js';
 
 /**
  * mapaDetalle.js
@@ -31,6 +32,10 @@ import api from './api.js';
  * los hideouts. La ubicación de cada hideout la marca un administrador
  * con un clic; se guarda en coordenadas del juego, así que sigue siendo
  * válida aunque se cambie el fondo.
+ *
+ * Si el mapa aparece en rutas de Avalon vigentes o tiene conexiones
+ * abiertas, el panel lateral las muestra con un acceso directo a su ficha
+ * en la pestaña Caminos de Avalon.
  * ----------------------------------------------------------------------
  */
 
@@ -44,9 +49,10 @@ const FONDOS = [
 ];
 
 export class VentanaMapa {
-  constructor({ obtenerSesion, alCambiar } = {}) {
+  constructor({ obtenerSesion, alCambiar, irACaminos } = {}) {
     this.obtenerSesion = obtenerSesion || (() => null);
     this.alCambiar = alCambiar || (() => {});
+    this.irACaminos = irACaminos || null;
 
     this.dialogo = document.getElementById('ventana-mapa');
     this.titulo = document.getElementById('ventana-mapa__titulo');
@@ -57,6 +63,8 @@ export class VentanaMapa {
     this.pie = document.getElementById('ventana-mapa__pie');
     this.aviso = document.getElementById('ventana-mapa__aviso');
     this.panelAdmin = document.getElementById('ventana-mapa__admin');
+    this.panelRutas = document.getElementById('ventana-mapa__rutas');
+    this.controladorRutas = null;
 
     this.datos = null;
     this.resaltado = null;
@@ -131,6 +139,7 @@ export class VentanaMapa {
     this.aviso.hidden = false;
 
     if (!this.dialogo.open) this.dialogo.showModal();
+    this._cargarRutas(nombreMapa);
 
     try {
       this.datos = await api.detalleMapa(nombreMapa);
@@ -148,7 +157,78 @@ export class VentanaMapa {
 
   cerrar() {
     if (this.dialogo.open) this.dialogo.close();
+    if (this.controladorRutas) this.controladorRutas.abort();
     this.hideoutSeleccionado = null;
+  }
+
+  // ---------------------------------------------------- rutas de Avalon ---
+
+  /** Rutas y conexiones vigentes del mapa; es un complemento: si falla, se oculta. */
+  async _cargarRutas(nombreMapa) {
+    if (this.controladorRutas) this.controladorRutas.abort();
+    this.controladorRutas = new AbortController();
+    const senal = this.controladorRutas.signal;
+    this.panelRutas.hidden = true;
+    this.panelRutas.replaceChildren();
+
+    let info;
+    try {
+      const datos = await api.rutasDeMapas([nombreMapa], senal);
+      info = datos.mapas && datos.mapas[nombreMapa];
+    } catch (error) {
+      return;
+    }
+    if (senal.aborted || !info) return;
+    this._renderRutas(nombreMapa, info);
+  }
+
+  _renderRutas(nombreMapa, { rutas = [], conexiones = [] }) {
+    this.panelRutas.replaceChildren();
+    if (!rutas.length && !conexiones.length) {
+      this.panelRutas.hidden = true;
+      return;
+    }
+    this.panelRutas.hidden = false;
+
+    const partes = [];
+    if (rutas.length) partes.push(`${rutas.length} ruta${rutas.length === 1 ? '' : 's'}`);
+    if (conexiones.length) partes.push(`${conexiones.length} conexi${conexiones.length === 1 ? 'ón' : 'ones'}`);
+
+    const cabecera = crearHtml('div', 'ventana__rutas-cabecera');
+    cabecera.append(
+      crearHtml('h3', null, 'Rutas de Avalon activas'),
+      crearHtml('span', 'ventana__rutas-resumen', partes.join(' · '))
+    );
+    this.panelRutas.appendChild(cabecera);
+
+    const irA = this.irACaminos ? (zona) => this.irACaminos(zona) : null;
+
+    for (const ruta of rutas) {
+      this.panelRutas.appendChild(
+        crearTarjetaRuta(ruta, {
+          usuario: this.obtenerSesion(),
+          resaltar: nombreMapa,
+          alElegirZona: irA,
+          alBorrar: async (r) => {
+            await api.borrarRuta(r.id);
+            this._cargarRutas(nombreMapa);
+            this.alCambiar();
+          },
+        })
+      );
+    }
+
+    if (conexiones.length) {
+      this.panelRutas.appendChild(crearHtml('p', 'rutas-hideout__subtitulo', 'Conexiones directas de este mapa'));
+      this.panelRutas.appendChild(crearListaConexiones(conexiones, { alElegirZona: irA }));
+    }
+
+    if (irA) {
+      const ir = crearHtml('button', 'boton boton--pequeno', 'Ir a la ruta en Caminos de Avalon →');
+      ir.type = 'button';
+      ir.addEventListener('click', () => irA(nombreMapa));
+      this.panelRutas.appendChild(ir);
+    }
   }
 
   async _recargar({ conservarFondo = true } = {}) {

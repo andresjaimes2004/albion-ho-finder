@@ -136,3 +136,35 @@ export function crearTarjetaRuta(ruta, { usuario = null, resaltar = null, alEleg
   tarjeta.append(cabecera, pasos);
   return tarjeta;
 }
+
+/**
+ * Lista de conexiones directas vigentes de un mapa.
+ * @param {Array} conexiones  [{ sentido, hacia:{nombre, tier, etiqueta}, cierraEn, fuente }]
+ * @param {object} opciones
+ *   - alElegirZona(nombre): al tocar el mapa del otro extremo
+ */
+export function crearListaConexiones(conexiones, { alElegirZona = null } = {}) {
+  const lista = crear('ul', 'rutas-hideout__conexiones');
+  for (const c of conexiones) {
+    const item = crear('li');
+    const meta = [c.hacia.tier ? `T${c.hacia.tier}` : null, c.hacia.etiqueta].filter(Boolean).join(' · ');
+    const nombre = c.hacia.nombre || 'Mapa desconocido';
+    let destino;
+    if (alElegirZona && c.hacia.nombre) {
+      destino = crear('button', 'rutas-hideout__destino ruta__nombre', nombre);
+      destino.type = 'button';
+      destino.addEventListener('click', () => alElegirZona(c.hacia.nombre));
+    } else {
+      destino = crear('span', 'rutas-hideout__destino', nombre);
+    }
+    item.append(
+      crear('span', 'rutas-hideout__sentido', c.sentido === 'salida' ? '→' : '←'),
+      destino,
+      crear('span', 'rutas-hideout__meta', meta),
+      c.cierraEn ? crearReloj(c.cierraEn) : crear('span', 'rutas-hideout__meta', 'sin hora de cierre'),
+      crear('span', `conexion__fuente conexion__fuente--${c.fuente}`, c.fuente === 'gremio' ? 'gremio' : 'smugden')
+    );
+    lista.appendChild(item);
+  }
+  return lista;
+}
