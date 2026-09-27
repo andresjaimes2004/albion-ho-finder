@@ -2483,3 +2483,94 @@ button.ruta__nombre:hover { color: var(--color-oro-claro); text-decoration: unde
   ::view-transition-new(*) { animation: none !important; }
   .vista-entrando { animation: none; }
 }
+
+/* ============================================================================
+   v10 — Transiciones suaves en todo lo accionable
+   ============================================================================ */
+
+/* Base: cualquier enlace, botón o campo cambia de color, borde o sombra con
+   suavidad. :where() no suma especificidad, así que cualquier regla propia
+   (que ya defina su transición) manda sobre esta. */
+:where(a, button, summary, select, input, textarea, label) {
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+/* Botones: además del borde dorado, se iluminan y suben un poco. */
+.boton:not(.boton--primario):not(.boton--contorno):not(.boton--sutil):not(:disabled):hover {
+  background: linear-gradient(180deg, #342c3b, #29232f);
+  transform: translateY(-1px);
+}
+.boton--sutil:not(:disabled):hover { background: rgba(255, 255, 255, 0.06); color: var(--color-texto); }
+.boton:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* Tarjetas de resultados de hideouts */
+.tarjeta-mapa { transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease; }
+.tarjeta-mapa:hover { box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35); }
+.tarjeta-mapa__nombre { transition: color 0.2s ease; }
+.tarjeta-mapa__accion { transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease; }
+.tarjeta-mapa__encabezado:hover .tarjeta-mapa__accion {
+  background: rgba(201, 162, 39, 0.14);
+  border-color: rgba(201, 162, 39, 0.5);
+  color: var(--color-oro-claro);
+}
+
+/* Filas de hideouts en la ventana del mapa */
+.hideout-fila { transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease; }
+.hideout-fila:hover { border-color: rgba(201, 162, 39, 0.4); background-color: rgba(255, 255, 255, 0.03); }
+
+/* Selector de fondo del mapa */
+.selector-fondo__boton:not(:disabled):not([aria-pressed='true']):hover { background: rgba(255, 255, 255, 0.05); color: var(--color-texto); }
+
+/* Historial de búsquedas y nombres enlazados de rutas y conexiones */
+.historial__item:hover { transform: translateX(2px); }
+
+/* Elementos del mapa (SVG) */
+.mapa__salida circle,
+.mapa__pin-cuerpo,
+.mundo__etiqueta { transition: fill 0.2s ease, opacity 0.2s ease, filter 0.2s ease; }
+.mapa__pin:hover .mapa__pin-cuerpo,
+.mapa__pin:focus-visible .mapa__pin-cuerpo { filter: brightness(1.25) drop-shadow(0 0 4px rgba(232, 201, 92, 0.6)); }
+.mundo__nodo rect { transition: fill 0.2s ease, stroke 0.2s ease; }
+
+/* Ventanas flotantes: aparecen y se van con un fundido y un leve zoom
+   (Chrome, Edge, Safari y Firefox recientes; en el resto, al instante). */
+.ventana {
+  opacity: 0;
+  transform: translateY(14px) scale(0.985);
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease,
+    overlay 0.25s ease allow-discrete,
+    display 0.25s ease allow-discrete;
+}
+.ventana[open] { opacity: 1; transform: none; }
+@starting-style {
+  .ventana[open] { opacity: 0; transform: translateY(14px) scale(0.985); }
+}
+
+.ventana::backdrop {
+  background-color: rgba(5, 4, 7, 0);
+  backdrop-filter: blur(0);
+  transition:
+    background-color 0.25s ease,
+    backdrop-filter 0.25s ease,
+    overlay 0.25s ease allow-discrete,
+    display 0.25s ease allow-discrete;
+}
+.ventana[open]::backdrop { background-color: rgba(5, 4, 7, 0.78); backdrop-filter: blur(3px); }
+@starting-style {
+  .ventana[open]::backdrop { background-color: rgba(5, 4, 7, 0); backdrop-filter: blur(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(a, button, summary, select, input, textarea, label) { transition: none; }
+  .ventana, .ventana::backdrop, .tarjeta-mapa, .hideout-fila { transition: none; }
+  .ventana { transform: none; }
+  .boton:hover, .historial__item:hover { transform: none !important; }
+}
