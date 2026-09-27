@@ -21,12 +21,37 @@ const { SEO, EN } = require('../i18n/pagina');
  *    (SITIO_URL), con los enlaces hreflang entre idiomas.
  *  - Cualquier otra ruta responde un 404 real (no la página principal),
  *    para no crear contenido duplicado.
+ *  - Donaciones: el enlace de Ko-fi y la llave Bre-B se configuran con
+ *    DONAR_KOFI_URL y DONAR_BREB_LLAVE (y el QR, si existe
+ *    public/assets/qr-breb.png). Se validan: un valor inválido o ausente
+ *    deja esa opción como "muy pronto" en vez de publicar algo raro.
  * ----------------------------------------------------------------------
  */
 
 const IDIOMAS = ['es', 'en'];
 const INICIO = { es: '/', en: '/en/' };
 const CARPETA_VISTAS = path.join(__dirname, '..', 'vistas');
+const QR_BREB = path.join(__dirname, '..', '..', 'public', 'assets', 'qr-breb.png');
+
+const PATRON_KOFI = /^https:\/\/ko-fi\.com\/[A-Za-z0-9_]{2,40}\/?$/;
+// Llave alfanumérica (@nombre), celular o correo: nada que pueda romper el HTML.
+const PATRON_LLAVE = /^[@A-Za-z0-9._+-]{3,60}$/;
+
+function donaciones() {
+  const kofi = (process.env.DONAR_KOFI_URL || '').trim();
+  const llave = (process.env.DONAR_BREB_LLAVE || '').trim();
+  const kofiValido = PATRON_KOFI.test(kofi);
+  const llaveValida = PATRON_LLAVE.test(llave);
+  return {
+    kofiHref: kofiValido ? kofi : '#apoyar',
+    kofiClase: kofiValido ? '' : ' donar--pendiente',
+    brebLlave: llaveValida ? llave : '—',
+    brebClase: llaveValida ? '' : ' donar--pendiente',
+    brebQr: llaveValida && fs.existsSync(QR_BREB)
+      ? '<img class="donar__qr" src="/assets/qr-breb.png" alt="QR Bre-B" width="180" height="180" loading="lazy" />'
+      : '',
+  };
+}
 
 function urlSitio() {
   return (process.env.SITIO_URL || 'https://albionho.duckdns.org').replace(/\/+$/, '');
@@ -106,6 +131,7 @@ function variables(idioma) {
     actualEs: idioma === 'es' ? actual : '',
     actualEn: idioma === 'en' ? actual : '',
     verificaciones: verificaciones(),
+    ...donaciones(),
   };
 }
 

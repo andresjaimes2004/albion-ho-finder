@@ -117,6 +117,11 @@ export class PanelRegistro {
     });
   }
 
+  /** Abre el panel (por ejemplo, desde la tarjeta "Registra conexiones"). */
+  abrir() {
+    if (!this.abierto) this._abrir();
+  }
+
   _abrir() {
     this.abierto = true;
     this.cuerpo.hidden = false;

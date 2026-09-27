@@ -8,6 +8,28 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v9 — Portada y donaciones
+
+- **Portada** (al estilo de HostGator): arte del juego en una tarjeta
+  redondeada, titular, qué es el sitio, que es gratis y sin anuncios, y dos
+  botones: "Buscar un gremio" y "Apoyar el proyecto". Debajo, una franja
+  con cifras reales (hideouts, mapas con hideouts, caminos y temporada) que
+  cuentan hacia arriba al cargar.
+- **"Todo lo que necesitas"**: tres tarjetas (buscar hideouts, seguir rutas,
+  registrar conexiones) que se expanden al pasar el ratón; en móvil se
+  apilan.
+- **"Mantén Albion Navigator en línea"**: en qué se usan las donaciones y
+  dos formas de donar: **Ko-fi** (tarjeta o PayPal, desde cualquier país) y
+  **Bre-B** (desde Colombia, sin comisiones, con botón para copiar la llave
+  y QR opcional). Botón "Apoyar" en la barra superior y enlace "Donar" en el
+  pie, junto a "Creado por TurnDark".
+- **Configuración** por entorno: `DONAR_KOFI_URL`, `DONAR_BREB_LLAVE` y el QR
+  en `public/assets/qr-breb.png`. Se validan antes de publicarse; sin
+  configurar, cada opción aparece como "muy pronto". El sitio nunca maneja
+  datos de pago: solo enlaza a Ko-fi y muestra la llave.
+- Animaciones suaves (entrada de la portada, aparición al desplazarse,
+  latido del corazón) que se desactivan con "reducir movimiento".
+
 ### v8 — SEO y versión en inglés
 
 - **Dos idiomas, dos URL:** `/` en español y `/en/` en inglés, con su

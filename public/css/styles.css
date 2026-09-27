@@ -1915,3 +1915,414 @@ button.ruta__nombre:hover { color: var(--color-oro-claro); text-decoration: unde
   .caminos-rutas { padding: 14px; }
   .ruta__cierre { margin-left: 0; }
 }
+
+/* ============================================================================
+   v9 — Portada, cifras, funciones y donaciones (al estilo de HostGator:
+   portada con arte, franja de cifras, tarjetas que se expanden al pasar el
+   ratón y una sección para apoyar el proyecto).
+   ============================================================================ */
+
+:root {
+  --color-apoyo: #ff5e7a;
+  --color-apoyo-oscuro: #d9435f;
+}
+
+#buscador, #apoyar { scroll-margin-top: 96px; }
+
+/* Botones de llamada a la acción */
+.boton--primario {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  color: #1a1206;
+  background: linear-gradient(180deg, var(--color-oro-claro), var(--color-oro));
+  box-shadow: 0 6px 20px rgba(201, 162, 39, 0.25);
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+.boton--primario:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(201, 162, 39, 0.4); filter: brightness(1.05); }
+.boton--primario svg { transition: transform 0.2s ease; }
+.boton--primario:hover svg { transform: translateY(2px); }
+
+.boton--contorno {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: var(--color-texto);
+  text-decoration: none;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.boton--contorno svg { color: var(--color-apoyo); }
+.boton--contorno:hover { transform: translateY(-2px); border-color: var(--color-apoyo); background: rgba(255, 94, 122, 0.08); }
+
+/* Botón "Apoyar" de la barra superior */
+.boton-apoyar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  background: linear-gradient(180deg, var(--color-apoyo), var(--color-apoyo-oscuro));
+  box-shadow: 0 4px 14px rgba(255, 94, 122, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.boton-apoyar:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255, 94, 122, 0.45); }
+.boton-apoyar:hover svg { animation: latido 0.8s ease-in-out infinite; }
+.boton-apoyar:focus-visible { outline: 2px solid var(--color-oro-claro); outline-offset: 2px; }
+
+@keyframes latido {
+  0%, 100% { transform: scale(1); }
+  30% { transform: scale(1.22); }
+  60% { transform: scale(0.95); }
+}
+
+/* Portada */
+.portada {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radio-lg);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 18px;
+  padding: clamp(36px, 6vw, 64px) clamp(20px, 5vw, 56px);
+  text-align: center;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(167, 123, 255, 0.22), transparent 60%),
+    linear-gradient(180deg, rgba(12, 10, 16, 0.55), rgba(12, 10, 16, 0.9)),
+    url('../assets/fondo-avalon.webp') 35% 15% / auto 135% no-repeat,
+    var(--color-fondo);
+  box-shadow: var(--sombra);
+}
+
+.portada__contenido { position: relative; max-width: 680px; margin: 0 auto; }
+
+.portada__insignia {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 6px rgba(201, 162, 39, 0.12), 0 0 40px rgba(201, 162, 39, 0.35);
+}
+
+@keyframes flotar {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.portada__titulo {
+  font-family: var(--fuente-titulos);
+  font-size: clamp(1.7rem, 1.1rem + 2.6vw, 2.9rem);
+  line-height: 1.12;
+  margin: 18px 0 14px;
+  color: #fff;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.7);
+}
+
+.portada__texto {
+  margin: 0 auto;
+  max-width: 58ch;
+  font-size: clamp(0.98rem, 0.92rem + 0.3vw, 1.1rem);
+  color: #e3dbe9;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
+}
+
+.portada__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.portada__acciones .boton { padding: 12px 22px; font-size: 0.98rem; }
+.portada__nota { margin: 16px 0 0; font-size: 0.82rem; color: var(--color-texto-suave); letter-spacing: 0.02em; }
+
+/* Entrada suave de la portada */
+.portada__contenido > * { animation: aparecer-arriba 0.7s ease both; }
+.portada__contenido > :nth-child(2) { animation-delay: 0.08s; }
+.portada__contenido > :nth-child(3) { animation-delay: 0.16s; }
+.portada__contenido > :nth-child(4) { animation-delay: 0.24s; }
+.portada__contenido > :nth-child(5) { animation-delay: 0.32s; }
+.portada__contenido > .portada__insignia { animation: aparecer-arriba 0.7s ease both, flotar 5s ease-in-out 0.7s infinite; }
+
+@keyframes aparecer-arriba {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Franja de cifras */
+.cifras {
+  list-style: none;
+  margin: 0 0 40px;
+  padding: 18px 8px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  background: var(--vidrio);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+}
+
+.cifras__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 16px;
+}
+.cifras__item + .cifras__item { border-left: 1px solid var(--color-borde); }
+.cifras__icono { color: var(--color-oro-claro); flex-shrink: 0; }
+.cifras__numero {
+  display: block;
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--color-texto);
+  font-variant-numeric: tabular-nums;
+}
+.cifras__texto { display: block; font-size: 0.78rem; color: var(--color-texto-suave); line-height: 1.35; }
+
+@media (max-width: 820px) {
+  .cifras { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 14px; }
+  .cifras__item:nth-child(3) { border-left: none; }
+}
+
+@media (max-width: 420px) {
+  .cifras__item { padding: 4px 10px; gap: 8px; }
+  .cifras__icono { width: 22px; height: 22px; }
+  .cifras__numero { font-size: 1.15rem; }
+}
+
+/* Encabezados de sección */
+.seccion__titulo {
+  font-family: var(--fuente-titulos);
+  font-size: clamp(1.4rem, 1.05rem + 1.4vw, 2rem);
+  line-height: 1.2;
+  margin: 0 0 10px;
+  text-align: center;
+  color: var(--color-texto);
+}
+
+.seccion__texto {
+  margin: 0 auto 26px;
+  max-width: 60ch;
+  text-align: center;
+  color: var(--color-texto-suave);
+}
+
+/* Funciones: tarjetas que se expanden al pasar el ratón */
+.funciones { margin-top: 64px; }
+
+.funciones__tarjetas { display: flex; gap: 14px; min-height: 300px; }
+
+.funcion {
+  position: relative;
+  flex: 1 1 0;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  border-radius: var(--radio-lg);
+  border: 1px solid var(--color-borde);
+  background-color: var(--color-fondo-tarjeta);
+  background-size: cover;
+  transition: flex-grow 0.45s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.funcion::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(12, 10, 16, 0.1) 0%, rgba(12, 10, 16, 0.92) 70%);
+}
+
+.funcion--hideouts { background-image: url('../assets/fondo-avalon-960.webp'); background-position: 8% 30%; }
+.funcion--caminos { background-image: url('../assets/fondo-avalon-960.webp'); background-position: 50% 15%; }
+.funcion--registro { background-image: url('../assets/fondo-avalon-960.webp'); background-position: 80% 35%; }
+
+.funcion__contenido { position: relative; padding: 22px; }
+.funcion__titulo { font-family: var(--fuente-titulos); font-size: 1.2rem; margin: 0 0 8px; color: var(--color-oro-claro); }
+.funcion__texto {
+  margin: 0 0 16px;
+  font-size: 0.9rem;
+  color: #d9d0df;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.45s ease, opacity 0.35s ease;
+}
+.funcion .boton { text-decoration: none; display: inline-block; }
+
+/* La tarjeta activa crece y muestra su descripción; las demás se encogen.
+   Sin ratón encima, la primera queda abierta. */
+.funcion:hover,
+.funcion:focus-within { flex-grow: 2; border-color: rgba(201, 162, 39, 0.55); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45); }
+.funcion:hover .funcion__texto,
+.funcion:focus-within .funcion__texto { max-height: 8em; opacity: 1; }
+.funciones__tarjetas:not(:hover):not(:focus-within) .funcion:first-child { flex-grow: 2; border-color: rgba(201, 162, 39, 0.4); }
+.funciones__tarjetas:not(:hover):not(:focus-within) .funcion:first-child .funcion__texto { max-height: 8em; opacity: 1; }
+
+/* En pantallas táctiles o estrechas no hay "hover": todo visible y apilado. */
+@media (max-width: 760px), (hover: none) {
+  .funciones__tarjetas { flex-direction: column; min-height: 0; }
+  .funcion { min-height: 190px; flex-grow: 1 !important; }
+  .funcion__texto { max-height: none; opacity: 1; }
+}
+
+/* Apoyar el proyecto */
+.apoyar {
+  margin-top: 72px;
+  padding: clamp(28px, 5vw, 48px) clamp(18px, 4vw, 40px);
+  border-radius: var(--radio-lg);
+  border: 1px solid rgba(255, 94, 122, 0.28);
+  background:
+    radial-gradient(ellipse at 50% -10%, rgba(255, 94, 122, 0.16), transparent 60%),
+    var(--vidrio);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.apoyar__cabecera { text-align: center; }
+.apoyar__icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 14px;
+  border-radius: 50%;
+  color: var(--color-apoyo);
+  background: rgba(255, 94, 122, 0.12);
+  border: 1px solid rgba(255, 94, 122, 0.35);
+  animation: latido 2.4s ease-in-out infinite;
+}
+
+.apoyar__destinos {
+  list-style: none;
+  margin: 0 0 28px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.apoyar__destinos li {
+  padding: 14px 16px;
+  border-radius: var(--radio);
+  border: 1px solid var(--color-borde-suave);
+  background: rgba(255, 255, 255, 0.02);
+}
+.apoyar__destinos strong { display: block; color: var(--color-texto); margin-bottom: 4px; }
+.apoyar__destinos span { font-size: 0.85rem; color: var(--color-texto-suave); }
+
+.apoyar__opciones { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+
+.donar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 24px;
+  border-radius: var(--radio-lg);
+  border: 1px solid var(--color-borde);
+  background: var(--color-fondo-tarjeta);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.donar:hover { transform: translateY(-4px); border-color: rgba(201, 162, 39, 0.5); box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45); }
+
+.donar__etiqueta {
+  margin: 0;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-apoyo);
+}
+.donar__titulo { margin: 0; font-size: 1.5rem; font-family: var(--fuente-titulos); color: var(--color-texto); }
+.donar__texto { margin: 0; color: var(--color-texto-suave); font-size: 0.92rem; }
+.donar__boton { margin-top: 6px; }
+.donar__boton svg { color: #7a1428; }
+
+.donar__qr {
+  align-self: center;
+  width: 180px;
+  height: 180px;
+  padding: 8px;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.donar__llave {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radio);
+  border: 1px dashed rgba(201, 162, 39, 0.5);
+  background: rgba(201, 162, 39, 0.06);
+}
+.donar__llave-etiqueta { font-size: 0.76rem; color: var(--color-texto-suave); }
+.donar__llave code { font-size: 1.05rem; font-weight: 700; color: var(--color-oro-claro); margin-right: auto; overflow-wrap: anywhere; }
+
+.donar__pasos { margin: 4px 0 0; padding-left: 20px; font-size: 0.86rem; color: var(--color-texto-suave); display: grid; gap: 4px; }
+
+/* Opción aún sin configurar: se muestra, pero sin acción. */
+.donar__pendiente { display: none; margin: 4px 0 0; font-size: 0.85rem; color: var(--color-advertencia); }
+.donar--pendiente .donar__pendiente { display: block; }
+.donar--pendiente .donar__boton,
+.donar--pendiente .donar__llave,
+.donar--pendiente .donar__pasos { display: none; }
+
+.apoyar__seguridad {
+  margin: 22px auto 0;
+  max-width: 70ch;
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--color-texto-tenue);
+}
+
+@media (max-width: 760px) {
+  .apoyar__destinos,
+  .apoyar__opciones { grid-template-columns: 1fr; }
+}
+
+/* Enlace de donación del pie */
+.pie__creditos { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.pie a.pie__donar { display: inline-flex; align-items: center; gap: 4px; color: var(--color-apoyo); font-weight: 600; }
+.pie a.pie__donar:hover { color: #ff8fa3; }
+
+/* Aparición al desplazarse (la clase la pone portada.js; sin JS se ve todo). */
+.js [data-revelar] { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.js [data-revelar].revelado { opacity: 1; transform: none; }
+
+/* Con el botón "Apoyar", "Crear cuenta" pasa al diálogo de inicio de sesión
+   antes, para que la barra siga en dos filas. */
+@media (max-width: 1000px) {
+  .cuenta__registro { display: none; }
+}
+
+/* Barra superior: en pantallas medianas el botón "Apoyar" queda solo con el
+   corazón; en móvil sale de la barra (siguen el botón de la portada y el
+   enlace "Donar" del pie) para que la barra no pase de dos filas. */
+@media (max-width: 1000px) {
+  .boton-apoyar { padding: 7px 10px; }
+  .boton-apoyar span { display: none; }
+}
+
+@media (max-width: 520px) {
+  .boton-apoyar { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portada__contenido > *,
+  .apoyar__icono,
+  .boton-apoyar:hover svg { animation: none !important; }
+  .js [data-revelar] { opacity: 1; transform: none; transition: none; }
+  .funcion, .funcion__texto, .donar, .boton--primario, .boton--contorno { transition: none; }
+}

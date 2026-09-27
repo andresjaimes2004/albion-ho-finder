@@ -9,6 +9,7 @@ import { PanelCaminos } from './tracking.js';
 import { PanelRegistro } from './registroCaminos.js';
 import { crear, crearListaConexiones, crearTarjetaRuta, iniciarRelojes } from './rutas.js';
 import { t, tn } from './i18n.js';
+import { Portada } from './portada.js';
 
 /**
  * app.js
@@ -80,6 +81,11 @@ class BuscadorUI {
       },
     });
 
+    this.portada = new Portada({
+      mostrarVista: (vista) => this._mostrarVista(vista),
+      abrirRegistro: () => this.panelRegistro.abrir(),
+    });
+
     iniciarRelojes();
     this.tarjetasPorMapa = new Map();
 
@@ -91,10 +97,21 @@ class BuscadorUI {
   async _iniciar() {
     await this.panelSesion.refrescar();
     try {
-      await this.mapaMundial.cargar();
+      const mundo = await this.mapaMundial.cargar();
+      this._mostrarCifras(mundo);
     } catch (error) {
       /* el mapa es un complemento: si falla, el buscador sigue sirviendo */
     }
+  }
+
+  /** Cifras de la portada a partir de los mapas de la Zona Negra. */
+  _mostrarCifras(mundo) {
+    const mapas = (mundo && mundo.mapas) || [];
+    this.portada.mostrarCifras({
+      hideouts: mapas.reduce((total, m) => total + (m.hideouts || 0), 0),
+      mapas: mapas.filter((m) => m.hideouts).length,
+      temporada: mundo && mundo.temporada,
+    });
   }
 
   _bindEventos() {
