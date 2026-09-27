@@ -8,6 +8,31 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v10 — Pulido de la interfaz, rutas con bifurcaciones y mapa global
+
+- **Rutas de Avalon con bifurcaciones:** las capturas pegadas en desorden
+  forman un grafo (zonas = nodos, portales = aristas) que se recorre en
+  árbol desde cada extremo (Zona Negra, ciudad…) por los caminos de
+  Avalon. Cada llegada a otro extremo es una ruta, así que un portal que
+  lleva a varios mapas genera rutas independientes que comparten tramos
+  (`public/js/capturas/encadenar.js`). Hasta 50 conexiones y 40 rutas por
+  envío.
+- **Lectura de capturas tolerante al color:** la barra del portal y el
+  título se buscan primero con los colores exactos y, si no aparecen, por
+  tono/saturación/brillo relativos a la propia captura (otro brillo,
+  gamma, saturación, HDR o luz nocturna).
+- **Mapa global de la Zona Negra** al estilo de ava.smugden.com: más
+  grande, puntos del color de su tier y etiquetas con el nombre al
+  acercar; los mapas del gremio buscado se resaltan.
+- **Ventana del mapa:** sin "Caminos de los datos" ni selector de fondos
+  (queda "Mapa"); tipos de hideout solo HQ y HO (los "P" antiguos se
+  muestran como HO sin tocar la base de datos).
+- **Interfaz:** transiciones suaves en todo lo accionable (también al abrir
+  y cerrar ventanas), tarjetas de "Todo lo que necesitas" navegables,
+  interruptor y selectores con estilo propio, iconos en botones, cajas
+  más translúcidas con bordes del color de cada fondo, y el scroll del
+  fondo bloqueado mientras hay una ventana abierta.
+
 ### v9 — Portada y donaciones
 
 - **Tres apartados:** Inicio (`/`, presentación del sitio), Hideouts
