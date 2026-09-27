@@ -130,10 +130,10 @@ const EN = {
   'Recursos': 'Resources',
   'Wiki oficial': 'Official wiki',
   'Datos del juego (ao-bin-dumps)': 'Game data (ao-bin-dumps)',
-  '© 2026 Albion Navigator · Datos actualizados por temporada.': '© 2026 Albion Navigator · Data updated every season.',
+  '© 2026 Albion Navigator. Todos los derechos reservados.': '© 2026 Albion Navigator. All rights reserved.',
   'Creado por <strong>TurnDark</strong>': 'Created by <strong>TurnDark</strong>',
-  'Albion Online es una marca registrada de Sandbox Interactive GmbH. Albion Navigator es un proyecto independiente y no está afiliado, aprobado ni patrocinado por Sandbox Interactive. Geografía de los mapas tomada de los dumps públicos del cliente del juego.':
-    'Albion Online is a registered trademark of Sandbox Interactive GmbH. Albion Navigator is an independent project and is not affiliated with, endorsed or sponsored by Sandbox Interactive. Map geography comes from the public game client data dumps.',
+  'Albion Online es una marca registrada de Sandbox Interactive GmbH. Albion Navigator es un proyecto independiente y no está afiliado, aprobado ni patrocinado por Sandbox Interactive. Datos actualizados por temporada; geografía de los mapas tomada de los dumps públicos del cliente del juego.':
+    'Albion Online is a registered trademark of Sandbox Interactive GmbH. Albion Navigator is an independent project and is not affiliated with, endorsed or sponsored by Sandbox Interactive. Data updated every season; map geography comes from the public game client data dumps.',
   'Detalle del mapa': 'Map details',
   'Centrar': 'Center',
   'Cerrar': 'Close',
