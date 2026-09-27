@@ -2797,3 +2797,24 @@ body[data-vista='caminos'] { --acento-rgb: 226, 190, 110; }  /* dorado de los ca
   background: rgba(22, 19, 28, 0.94);
   border-color: rgba(226, 208, 176, 0.18);
 }
+
+/* ============================================================================
+   v10 — Scroll con ventanas flotantes abiertas
+   ============================================================================ */
+
+/* Siempre se reserva el hueco de la barra de desplazamiento: así, al
+   bloquear el scroll, la página no se mueve de lado. */
+html { scrollbar-gutter: stable; }
+
+/* Con una ventana flotante abierta solo se desplaza la ventana: la página
+   de fondo queda quieta aunque el ratón esté sobre un accionable. */
+html:has(dialog[open]) { overflow: hidden; }
+
+/* La ventana tiene su propio scroll y no lo "pasa" al fondo al llegar al
+   final (ni en móvil con el gesto de arrastre). */
+.ventana {
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.ventana__lienzo svg { touch-action: none; }
