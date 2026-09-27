@@ -10,6 +10,11 @@ Avalon abiertas que registra la comunidad.
 
 ### v9 — Portada y donaciones
 
+- **Tres apartados:** Inicio (`/`, presentación del sitio), Hideouts
+  (`/#hideouts`, el buscador) y Caminos de Avalon (`/#caminos`). La marca
+  "Albion Navigator" lleva al inicio; el botón "atrás" del navegador vuelve
+  al apartado anterior.
+
 - **Portada** (al estilo de HostGator): arte del juego en una tarjeta
   redondeada, titular, qué es el sitio, que es gratis y sin anuncios, y dos
   botones: "Buscar un gremio" y "Apoyar el proyecto". Debajo, una franja

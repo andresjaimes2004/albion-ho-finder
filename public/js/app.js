@@ -76,13 +76,14 @@ class BuscadorUI {
         this.panelRegistro.establecerUsuario(usuario);
       },
       alElegirTermino: (termino) => {
+        this._irA('hideouts');
         this.input.value = termino;
         this._ejecutarBusqueda(termino);
       },
     });
 
     this.portada = new Portada({
-      mostrarVista: (vista) => this._mostrarVista(vista),
+      irA: (vista) => this._irA(vista),
       abrirRegistro: () => this.panelRegistro.abrir(),
     });
 
@@ -138,35 +139,61 @@ class BuscadorUI {
   }
 
   /** Pestañas Hideouts / Caminos de Avalon, enlazables con #caminos. */
+  /**
+   * Tres apartados en la misma página: Inicio (sin hash), Hideouts
+   * (#hideouts) y Caminos de Avalon (#caminos). Cada cambio deja una entrada
+   * en el historial, así "atrás" vuelve al apartado anterior.
+   */
   _bindPestanas() {
     this.pestanas = [...document.querySelectorAll('.pestanas__boton')];
+    this.paneles = [...document.querySelectorAll('[data-panel]')];
     for (const pestana of this.pestanas) {
-      pestana.addEventListener('click', () => {
-        history.replaceState(null, '', pestana.dataset.vista === 'caminos' ? '#caminos' : location.pathname);
-        this._mostrarVista(pestana.dataset.vista);
-      });
+      pestana.addEventListener('click', () => this._irA(pestana.dataset.vista));
     }
-    window.addEventListener('hashchange', () => this._mostrarVista(this._vistaDeUrl()));
+    // "hashchange" cubre los enlaces con #; "popstate", el botón atrás tras pushState.
+    const alCambiarUrl = () => {
+      const vista = this._vistaDeUrl();
+      if (vista === this.vistaActual) return;
+      this._mostrarVista(vista);
+      if (!location.hash.startsWith('#apoyar')) window.scrollTo(0, 0);
+    };
+    window.addEventListener('hashchange', alCambiarUrl);
+    window.addEventListener('popstate', alCambiarUrl);
     this._mostrarVista(this._vistaDeUrl());
   }
 
   _vistaDeUrl() {
-    return location.hash === '#caminos' ? 'caminos' : 'hideouts';
+    if (location.hash === '#caminos') return 'caminos';
+    if (location.hash === '#hideouts') return 'hideouts';
+    return 'inicio';
+  }
+
+  /** Cambia de apartado dejando entrada en el historial y vuelve arriba. */
+  _irA(vista) {
+    const destino = vista === 'inicio' ? location.pathname : `#${vista}`;
+    if (vista === this.vistaActual && (vista === 'inicio' ? !location.hash : location.hash === destino)) {
+      window.scrollTo(0, 0);
+      return;
+    }
+    history.pushState(null, '', destino);
+    this._mostrarVista(vista);
+    window.scrollTo(0, 0);
   }
 
   _mostrarVista(vista) {
+    this.vistaActual = vista;
+    for (const panel of this.paneles) panel.hidden = panel.dataset.panel !== vista;
     for (const pestana of this.pestanas) {
-      const activa = pestana.dataset.vista === vista;
-      pestana.setAttribute('aria-selected', String(activa));
-      document.getElementById(`vista-${pestana.dataset.vista}`).hidden = !activa;
+      pestana.setAttribute('aria-selected', String(pestana.dataset.vista === vista));
     }
+    document.body.dataset.vista = vista;
     if (vista === 'caminos') this.panelCaminos.activar();
     else this.panelCaminos.desactivar();
     this.panelRegistro.establecerVisible(vista === 'caminos');
 
-    // El selector de idioma lleva a la misma sección en el otro idioma.
+    // El selector de idioma lleva al mismo apartado en el otro idioma.
     for (const enlace of document.querySelectorAll('.idioma__opcion')) {
-      enlace.hash = vista === 'caminos' ? 'caminos' : '';
+      enlace.hash = vista === 'inicio' ? '' : vista;
     }
   }
 
@@ -363,8 +390,7 @@ class BuscadorUI {
 
   /** Cambia a la pestaña de caminos con la ficha de un mapa abierta. */
   _irACaminos(nombre) {
-    history.replaceState(null, '', '#caminos');
-    this._mostrarVista('caminos');
+    this._irA('caminos');
     this.panelCaminos.abrirDetalle(nombre);
   }
 

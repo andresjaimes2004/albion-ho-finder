@@ -5,14 +5,14 @@ import { regional } from './i18n.js';
 /**
  * portada.js
  * ----------------------------------------------------------------------
- * Comportamiento de la portada y de las secciones "Todo lo que
- * necesitas" y "Apoyar el proyecto":
+ * Comportamiento de la página de inicio y de los enlaces entre apartados:
  *
- *  - Enlaces internos (#buscador, #apoyar) con desplazamiento suave y sin
- *    tocar el hash: el hash lo usan las pestañas (#caminos) y cambiarlo
- *    cambiaría de sección.
- *  - Accesos a Caminos de Avalon desde las tarjetas (y abrir el panel de
- *    registro desde capturas).
+ *  - Enlaces con data-ir="inicio|hideouts|caminos" (marca, botones de la
+ *    portada, tarjetas y pie): cambian de apartado sin recargar. Con
+ *    data-enfocar ponen el foco en un campo (el buscador de gremios) y con
+ *    data-abrir-registro abren el panel de registro desde capturas.
+ *  - Enlaces a secciones del inicio (#apoyar) con desplazamiento suave: si
+ *    se está en otro apartado, primero se vuelve al inicio.
  *  - Cifras con cuenta ascendente cuando llegan los datos.
  *  - Botón para copiar la llave Bre-B.
  *  - Aparición suave de las secciones al desplazarse.
@@ -26,16 +26,16 @@ const sinMovimiento = () => window.matchMedia('(prefers-reduced-motion: reduce)'
 export class Portada {
   /**
    * @param {object} opciones
-   *   - mostrarVista(vista): cambia de pestaña ('hideouts' | 'caminos')
+   *   - irA(vista): cambia de apartado ('inicio' | 'hideouts' | 'caminos')
    *   - abrirRegistro(): abre el panel de registro desde capturas
    */
-  constructor({ mostrarVista, abrirRegistro }) {
-    this.mostrarVista = mostrarVista;
+  constructor({ irA, abrirRegistro }) {
+    this.irA = irA;
     this.abrirRegistro = abrirRegistro;
     document.documentElement.classList.add('js');
 
+    this._enlazarApartados();
     this._enlazarDesplazamientos();
-    this._enlazarCaminos();
     this._enlazarCopiar();
     this._revelarAlDesplazar();
   }
@@ -44,37 +44,33 @@ export class Portada {
     elemento.scrollIntoView({ behavior: sinMovimiento() ? 'auto' : 'smooth', block: 'start' });
   }
 
+  _enlazarApartados() {
+    for (const enlace of document.querySelectorAll('a[data-ir]')) {
+      enlace.addEventListener('click', (evento) => {
+        // Ctrl/Cmd + clic o clic central: que el navegador abra otra pestaña.
+        if (evento.ctrlKey || evento.metaKey || evento.shiftKey || evento.button !== 0) return;
+        evento.preventDefault();
+        this.irA(enlace.dataset.ir);
+        if (enlace.hasAttribute('data-abrir-registro')) {
+          this.abrirRegistro();
+          const registro = document.querySelector('.registro');
+          if (registro) this._desplazarA(registro);
+        }
+        const enfocar = enlace.dataset.enfocar && document.getElementById(enlace.dataset.enfocar);
+        if (enfocar) enfocar.focus({ preventScroll: true });
+      });
+    }
+  }
+
   _enlazarDesplazamientos() {
     for (const enlace of document.querySelectorAll('a[data-desplazar]')) {
       enlace.addEventListener('click', (evento) => {
         const destino = document.querySelector(enlace.getAttribute('href'));
         if (!destino) return;
         evento.preventDefault();
-        // El buscador está en la pestaña de hideouts: si está oculta, se muestra.
-        if (destino.closest('[role="tabpanel"][hidden]')) {
-          history.replaceState(null, '', location.pathname);
-          this.mostrarVista('hideouts');
-        }
+        const panel = destino.closest('[data-panel]');
+        if (panel && panel.hidden) this.irA(panel.dataset.panel);
         this._desplazarA(destino);
-        const enfocar = enlace.dataset.enfocar && document.getElementById(enlace.dataset.enfocar);
-        if (enfocar) setTimeout(() => enfocar.focus({ preventScroll: true }), sinMovimiento() ? 0 : 450);
-      });
-    }
-  }
-
-  _enlazarCaminos() {
-    for (const enlace of document.querySelectorAll('.funcion a[href$="#caminos"]')) {
-      enlace.addEventListener('click', (evento) => {
-        evento.preventDefault();
-        history.replaceState(null, '', '#caminos');
-        this.mostrarVista('caminos');
-        if (enlace.hasAttribute('data-abrir-registro')) {
-          this.abrirRegistro();
-          const registro = document.querySelector('.registro');
-          if (registro) this._desplazarA(registro);
-        } else {
-          window.scrollTo({ top: 0, behavior: sinMovimiento() ? 'auto' : 'smooth' });
-        }
       });
     }
   }
