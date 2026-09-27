@@ -19,7 +19,7 @@ const SEO = {
   es: {
     titulo: 'Albion Navigator — Buscador de hideouts de gremios y rutas de Avalon | Albion Online',
     descripcion:
-      'Busca en qué mapas de la Zona Negra tiene hideout cualquier gremio de Albion Online, con slot y tipo (HQ o personal), y consulta las rutas y caminos de Avalon abiertos ahora. Gratis.',
+      'Busca en qué mapas de la Zona Negra tiene hideout cualquier gremio de Albion Online, con su tipo (HQ o personal), y consulta las rutas y caminos de Avalon abiertos ahora. Gratis.',
     locale: 'es_ES',
     nombreApp: 'Albion Navigator — Buscador de hideouts y rutas de Avalon',
     palabrasClave: [
@@ -34,7 +34,7 @@ const SEO = {
   en: {
     titulo: 'Albion Navigator — Guild Hideout Finder & Avalonian Roads Tracker | Albion Online',
     descripcion:
-      'Find which Black Zone maps any Albion Online guild has a hideout in, with slot and type (HQ or personal), and check the Avalonian roads and routes open right now. Free.',
+      'Find which Black Zone maps any Albion Online guild has a hideout in, with its type (HQ or personal), and check the Avalonian roads and routes open right now. Free.',
     locale: 'en_US',
     nombreApp: 'Albion Navigator — Guild hideout finder and Avalonian roads tracker',
     palabrasClave: [
@@ -56,8 +56,8 @@ const EN = {
   'Caminos de Avalon': 'Avalonian Roads',
   'Idioma': 'Language',
   'Hideouts de la Zona Negra': 'Black Zone Guild Hideouts',
-  'Escribe el nombre de un gremio y descubre en qué mapas tiene hideout, con su slot, su tipo y las rutas de Avalon que llegan a ellos.':
-    'Type a guild name to see every map where it has a hideout, with its slot, its type and the Avalon routes that lead there.',
+  'Escribe el nombre de un gremio y descubre en qué mapas tiene hideout, su tipo y las rutas de Avalon que llegan a ellos.':
+    'Type a guild name to see every map where it has a hideout, its type and the Avalon routes that lead there.',
   'Buscador de gremio': 'Guild search',
   'Nombre del gremio': 'Guild name',
   'Ej: Gankers Letales, ARCH...': 'e.g. Gankers Letales, ARCH...',
@@ -141,6 +141,7 @@ const EN = {
   'Cerrar': 'Close',
   'Mapa del cluster': 'Cluster map',
   'Salida a mapa vecino': 'Exit to neighboring map',
+  'Ciudad o pasaje (no se abre)': 'City or passage (does not open)',
   'Rutas de Avalon de este mapa': 'Avalon routes for this map',
   'Hideouts en este mapa': 'Hideouts on this map',
   'Cuenta': 'Account',
@@ -167,8 +168,8 @@ const EN = {
   'Tres herramientas pensadas para gremios, exploradores y cazadores de la Zona Negra.':
     'Three tools built for guilds, scouts and Black Zone hunters.',
   'Busca hideouts': 'Find hideouts',
-  'Escribe el nombre de un gremio y mira todos sus hideouts, con slot y tipo, sobre el mapa del juego.':
-    'Type a guild name and see all its hideouts, with slot and type, on the game map.',
+  'Escribe el nombre de un gremio y mira todos sus hideouts, con su tipo, sobre el mapa del juego.':
+    'Type a guild name and see all its hideouts, with their type, on the game map.',
   'Sigue las rutas de Avalon': 'Follow Avalon routes',
   'Consulta los 400 caminos y los portales abiertos ahora, con la cuenta regresiva hasta que cierran.':
     'Check all 400 roads and the portals open right now, with a countdown until they close.',

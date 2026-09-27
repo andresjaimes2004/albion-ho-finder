@@ -28,7 +28,7 @@ const PREGUNTAS = {
     {
       pregunta: '¿Cómo encuentro los hideouts de un gremio?',
       respuesta:
-        'Entra en el apartado Hideouts y escribe el nombre del gremio, completo o solo una parte. Verás cada mapa donde tiene hideout, con su slot y su tipo (HQ, personal o estándar). Toca un mapa para abrirlo en detalle, con su ubicación y las rutas de Avalon que llegan a él.',
+        'Entra en el apartado Hideouts y escribe el nombre del gremio, completo o solo una parte. Verás cada mapa donde tiene hideout, con su tipo (HQ o HO). Toca un mapa para abrirlo en detalle, con su ubicación y las rutas de Avalon que llegan a él.',
     },
     {
       pregunta: '¿De dónde salen los datos de los hideouts y de los mapas?',
@@ -84,7 +84,7 @@ const PREGUNTAS = {
     {
       pregunta: 'How do I find a guild’s hideouts?',
       respuesta:
-        'Open the Hideouts section and type the guild name, in full or just part of it. You will see every map where it has a hideout, with its slot and type (HQ, personal or standard). Tap a map to open it in detail, with its location and the Avalon routes that lead there.',
+        'Open the Hideouts section and type the guild name, in full or just part of it. You will see every map where it has a hideout, with its type (HQ or HO). Tap a map to open it in detail, with its location and the Avalon routes that lead there.',
     },
     {
       pregunta: 'Where does the hideout and map data come from?',

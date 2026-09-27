@@ -38,7 +38,11 @@ const GEO_PRUEBA = {
   cuadrante: 'Q1',
   mundo: [10, 20],
   limites: { min: [-100, -100], max: [100, 100] },
-  salidas: [{ pos: [90, 10], destinoId: '9002', destino: 'Battlebrae Lake', tipo: 'Primary' }],
+  salidas: [
+    { pos: [90, 10], destinoId: '9002', destino: 'Battlebrae Lake', tipo: 'Primary' },
+    { pos: [-90, 10], destinoId: 'DNG-MOR-01-MAIN-04', destino: 'Cathedral of Light', tipo: 'Primary' },
+    { pos: [10, -90], destinoId: 'BLACKBANK-9001', destino: 'Smuggler\x27s Den', tipo: 'Primary' },
+  ],
   caminos: { nodos: [[0, 0], [10, 10]], enlaces: [[0, 1]] },
   territorios: [],
 };
@@ -100,6 +104,8 @@ test.before(async () => {
   const temporada = temporadaRepo.crear('S-API', { activar: true });
   const mapa = mapaRepo.obtenerOCrear('Deepwood Copse');
   mapaRepo.guardarGeo(mapa.id, GEO_PRUEBA);
+  const vecino = mapaRepo.obtenerOCrear('Battlebrae Lake');
+  mapaRepo.guardarGeo(vecino.id, { ...GEO_PRUEBA, id: '9002', nombre: 'Battlebrae Lake', salidas: [] });
 
   const gremio = gremioRepo.obtenerOCrear('Gankers Letales');
   hideoutRepo.insertarLote(temporada.id, mapa.id, [{ gremioId: gremio.id, slot: 1, tipo: 'HQ' }]);
@@ -139,6 +145,12 @@ test('el detalle del mapa entrega la geografía real y sus hideouts', async () =
 
   assert.equal(json.ok, true);
   assert.equal(json.mapa.salidas[0].destino, 'Battlebrae Lake');
+  // Las mazmorras estáticas se omiten; lo que no es un mapa de Zona Negra
+  // se muestra, pero no se puede abrir.
+  assert.deepEqual(
+    json.mapa.salidas.map((s) => [s.destino, s.navegable]),
+    [['Battlebrae Lake', true], ["Smuggler's Den", false]]
+  );
   assert.equal(json.mapa.caminos.enlaces.length, 1);
   assert.equal(json.hideouts.length, 1);
   assert.equal(json.hideouts[0].pos, null);

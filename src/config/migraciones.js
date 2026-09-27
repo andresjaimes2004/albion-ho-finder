@@ -25,6 +25,11 @@ const COLUMNAS_NUEVAS = [
   { tabla: 'hideouts', columna: 'pos_y', definicion: 'REAL' },
   { tabla: 'hideouts', columna: 'nota', definicion: 'TEXT' },
   { tabla: 'hideouts', columna: 'actualizado_en', definicion: 'TEXT' },
+  // Cómo está dibujada la imagen de fondo de un mapa: 'diamante' = ya girada
+  // como se ve en el juego (una captura), 'juego' = la textura cuadrada del
+  // minimapa en coordenadas del mapa (archivos del cliente). Las imágenes
+  // anteriores a esta columna eran capturas.
+  { tabla: 'mapas_imagen', columna: 'proyeccion', definicion: "TEXT NOT NULL DEFAULT 'diamante'" },
 ];
 
 function columnasDe(conexion, tabla) {

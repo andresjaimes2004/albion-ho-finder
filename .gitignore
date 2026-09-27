@@ -8,3 +8,5 @@ npm-debug.log*
 # Capturas de muestra del juego (contienen datos de la sesión)
 muestras-ocr/
 .DS_Store
+# Imágenes de los mapas para npm run db:imagenes (pesan mucho; van a la BD)
+imagenes-mapas/

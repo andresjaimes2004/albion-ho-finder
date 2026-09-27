@@ -399,16 +399,10 @@ body[data-vista='caminos'] .fondo__capa--caminos { opacity: 1; }
 }
 
 .item-hideout__gremio {
+  margin-right: auto;
   font-weight: 600;
   color: var(--color-texto);
   overflow-wrap: anywhere;
-}
-
-.item-hideout__slot {
-  color: var(--color-texto-tenue);
-  font-size: 0.78rem;
-  margin-right: auto;
-  margin-left: 12px;
 }
 
 .etiqueta-tipo {
@@ -529,12 +523,6 @@ body[data-vista='caminos'] .fondo__capa--caminos { opacity: 1; }
 
   .item-hideout {
     flex-wrap: wrap;
-  }
-
-  .item-hideout__slot {
-    margin-left: 0;
-    order: 3;
-    width: 100%;
   }
 }
 
@@ -913,14 +901,6 @@ body[data-vista='caminos'] .fondo__capa--caminos { opacity: 1; }
 
 .tarjeta-mapa__encabezado:hover .tarjeta-mapa__nombre { color: var(--color-oro-claro); }
 .tarjeta-mapa__meta { font-size: 0.78rem; color: var(--color-texto-tenue); }
-.tarjeta-mapa__accion {
-  margin-left: auto;
-  font-size: 0.78rem;
-  color: var(--color-oro);
-  border: 1px solid var(--color-borde);
-  border-radius: 999px;
-  padding: 3px 10px;
-}
 
 .item-hideout__logo { border-radius: 5px; object-fit: cover; }
 .item-hideout__ubicado { font-size: 0.8rem; }
@@ -2501,12 +2481,6 @@ button.ruta__nombre:hover { color: var(--color-oro-claro); text-decoration: unde
 .tarjeta-mapa { transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease; }
 .tarjeta-mapa:hover { box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35); }
 .tarjeta-mapa__nombre { transition: color 0.2s ease; }
-.tarjeta-mapa__accion { transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease; }
-.tarjeta-mapa__encabezado:hover .tarjeta-mapa__accion {
-  background: rgba(201, 162, 39, 0.14);
-  border-color: rgba(201, 162, 39, 0.5);
-  color: var(--color-oro-claro);
-}
 
 /* Filas de hideouts en la ventana del mapa */
 .hideout-fila { transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease; }
@@ -2602,8 +2576,6 @@ button.ruta__nombre:hover { color: var(--color-oro-claro); text-decoration: unde
 /* Botones que abren o despliegan algo: la flecha gira al abrirse. */
 .icono-abajo[aria-expanded='true']::before { transform: rotate(180deg); }
 .caminos-mas.con-icono { display: flex; margin: 16px auto 0; }
-.tarjeta-mapa__accion.con-icono { gap: 5px; }
-.tarjeta-mapa__accion.con-icono::before { width: 13px; height: 13px; }
 .con-icono:hover::before { transform: translateY(1px); }
 #registro-alternar.con-icono:hover::before { transform: none; }
 
@@ -2983,3 +2955,171 @@ html:has(dialog[open]) { overflow: hidden; }
   .tarjeta-camino { transition: none; }
   .tarjeta-camino:hover, .tarjeta-camino:focus-visible, .tarjeta-camino:active { transform: none; }
 }
+
+/* ============================================================================
+   v11 — Tarjetas de resultados, saltos entre mapas y ventana del mapa
+   ============================================================================ */
+
+/* Tarjetas de resultados: toda la tarjeta abre el mapa, como las de "Todo
+   lo que necesitas". El botón del encabezado se estira sobre la tarjeta
+   (::after); las rutas de Avalon quedan por encima y se abren aparte. */
+.tarjeta-mapa {
+  position: relative;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+}
+.tarjeta-mapa__encabezado { padding-right: 48px; }
+.tarjeta-mapa__encabezado::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+}
+.tarjeta-mapa__encabezado:focus-visible { outline: none; }
+.tarjeta-mapa .rutas-hideout { position: relative; z-index: 2; }
+
+.tarjeta-mapa:hover,
+.tarjeta-mapa:has(.tarjeta-mapa__encabezado:focus-visible) {
+  transform: translateY(-3px);
+  background-color: rgba(38, 33, 48, 0.74);
+  border-color: rgba(var(--acento-rgb), 0.45);
+  border-left-color: rgba(var(--acento-rgb), 1);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.42), 0 0 18px rgba(var(--acento-rgb), 0.1);
+}
+.tarjeta-mapa:has(.tarjeta-mapa__encabezado:focus-visible) { outline: 2px solid var(--color-oro-claro); outline-offset: 3px; }
+.tarjeta-mapa:active { transform: translateY(-1px); }
+.tarjeta-mapa:hover .tarjeta-mapa__nombre { color: var(--color-oro-claro); }
+
+/* Flecha de la esquina: mismo gesto que en las tarjetas de la portada. */
+.tarjeta-mapa__ir {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: var(--color-oro-claro);
+  background: rgba(12, 10, 16, 0.45);
+  border: 1px solid rgba(201, 162, 39, 0.35);
+  transition: transform 0.25s ease, background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+.tarjeta-mapa:hover .tarjeta-mapa__ir,
+.tarjeta-mapa:has(.tarjeta-mapa__encabezado:focus-visible) .tarjeta-mapa__ir {
+  transform: translateX(3px);
+  background: var(--color-oro);
+  border-color: var(--color-oro);
+  color: #1a1206;
+}
+.tarjeta-mapa .item-hideout { transition: background-color 0.25s ease; }
+.tarjeta-mapa:hover .item-hideout { background: rgba(255, 255, 255, 0.05); }
+
+/* Salto a un mapa vecino: el mapa y su información se funden (220 ms,
+   igual que FUNDIDO_MS en mapaDetalle.js). */
+#ventana-mapa :is(.ventana__cabecera > :first-child, .ventana__cuerpo, .ventana__pie) {
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+#ventana-mapa .ventana__lienzo svg { transition: transform 0.28s ease, filter 0.28s ease; }
+#ventana-mapa .ventana__contenido--cambiando :is(.ventana__cabecera > :first-child, .ventana__cuerpo, .ventana__pie) {
+  opacity: 0;
+}
+#ventana-mapa .ventana__contenido--cambiando .ventana__cabecera > :first-child { transform: translateY(-4px); }
+#ventana-mapa .ventana__contenido--cambiando .ventana__lienzo svg { transform: scale(0.97); filter: blur(3px); }
+
+/* Salidas que no llevan a un mapa de Zona Negra (ciudades, Smuggler's
+   Den, pasajes): se ven como referencia, sin aspecto de botón. */
+.mapa__salida--fija { cursor: inherit; }
+.mapa__salida--fija circle,
+.mapa__salida--fija:hover circle { fill: rgba(20, 16, 12, 0.5); stroke: rgba(226, 208, 176, 0.6); stroke-dasharray: 3 3; }
+.mapa__salida--fija .mapa__salida-centro { fill: rgba(226, 208, 176, 0.75) !important; }
+.mapa__salida--fija .mapa__etiqueta--salida { fill: #ddd3c6; font-weight: 500; }
+.punto--fija { background: rgba(20, 16, 12, 0.5); border: 2px dashed rgba(226, 208, 176, 0.7); }
+
+/* Ventana del mapa: vidrio translúcido con el acento del apartado, como
+   los paneles de Hideouts, en vez del panel casi negro. El fondo se
+   oscurece menos para que se intuya el arte de la página. */
+#ventana-mapa[open]::backdrop { background-color: rgba(8, 7, 12, 0.5); backdrop-filter: blur(6px); }
+#ventana-mapa .ventana__contenido {
+  background: linear-gradient(180deg, rgba(38, 33, 50, 0.88) 0%, rgba(24, 21, 32, 0.9) 100%);
+  backdrop-filter: blur(14px) saturate(130%);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  border-color: rgba(var(--acento-rgb), 0.3);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), 0 0 28px rgba(var(--acento-rgb), 0.08);
+}
+#ventana-mapa .ventana__cabecera {
+  background: linear-gradient(90deg, rgba(var(--acento-rgb), 0.14) 0%, rgba(var(--acento-rgb), 0) 70%);
+  border-bottom-color: rgba(var(--acento-rgb), 0.18);
+}
+#ventana-mapa .ventana__pie { border-top-color: rgba(var(--acento-rgb), 0.14); }
+#ventana-mapa .insignia { background: rgba(255, 255, 255, 0.05); border-color: rgba(226, 208, 176, 0.2); color: var(--color-texto); }
+#ventana-mapa .hideout-fila { background: rgba(48, 42, 62, 0.55); border-color: rgba(226, 208, 176, 0.12); }
+#ventana-mapa .hideout-fila:hover { background: rgba(58, 51, 74, 0.65); border-color: rgba(var(--acento-rgb), 0.45); }
+
+/* Fondo del mapa: el mismo arte del apartado Hideouts, con un velo suave
+   para que el rombo destaque. */
+#ventana-mapa .lienzo--mapa {
+  background:
+    linear-gradient(180deg, rgba(12, 10, 16, 0.2) 0%, rgba(12, 10, 16, 0.45) 100%),
+    url('../assets/fondo-hideouts.webp') 50% 45% / cover no-repeat,
+    var(--color-fondo);
+  border-color: rgba(var(--acento-rgb), 0.28);
+}
+.lienzo--con-imagen .mapa__mascara { fill: rgba(9, 8, 11, 0.12); }
+
+@media (prefers-reduced-motion: reduce) {
+  .tarjeta-mapa, .tarjeta-mapa__ir, #ventana-mapa .ventana__lienzo svg,
+  #ventana-mapa :is(.ventana__cabecera > :first-child, .ventana__cuerpo, .ventana__pie) { transition: none; }
+  .tarjeta-mapa:hover, .tarjeta-mapa:active, .tarjeta-mapa:hover .tarjeta-mapa__ir,
+  #ventana-mapa .ventana__contenido--cambiando .ventana__lienzo svg { transform: none; filter: none; }
+}
+
+/* Los mapas se mueven arrastrando: sus imágenes no se arrastran como
+   archivos ni se selecciona texto al mover el ratón. */
+.lienzo { user-select: none; -webkit-user-select: none; }
+.lienzo image { -webkit-user-drag: none; }
+
+/* Ventana del mapa con un solo scroll. Antes se desplazaban a la vez la
+   ventana y la lista de hideouts, y en mapas con muchos hideouts (p. ej.
+   Timbertop Escarp) había dos barras solapadas. */
+#ventana-mapa .lista-hideouts-detalle { max-height: none; overflow: visible; }
+
+/* En escritorio la ventana cabe en la pantalla: el mapa queda fijo a la
+   izquierda y solo se desplaza la columna de la derecha. */
+@media (min-width: 901px) and (min-height: 640px) {
+  #ventana-mapa { overflow: hidden; }
+  #ventana-mapa .ventana__contenido {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100dvh - 32px);
+  }
+  #ventana-mapa .ventana__cabecera,
+  #ventana-mapa .ventana__pie,
+  #ventana-mapa #ventana-mapa__aviso { flex: 0 0 auto; }
+  #ventana-mapa .ventana__cuerpo {
+    flex: 1 1 auto;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+  }
+  #ventana-mapa .lienzo--mapa { height: clamp(300px, calc(100dvh - 300px), 540px); }
+  #ventana-mapa .ventana__panel {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: 8px;
+    margin-right: -8px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(var(--acento-rgb), 0.45) transparent;
+  }
+}
+
+/* Textos del mapa: los mapas vecinos destacan; torres, castillos y
+   salidas a ciudades o Smuggler's Den quedan en segundo plano. */
+.mapa__etiqueta--salida { letter-spacing: 0.01em; }
+.mapa__etiqueta--territorio { font-weight: 500; opacity: 0.85; }
+.mapa__salida--fija .mapa__etiqueta--salida { fill: #d6ccbf; font-weight: 500; opacity: 0.85; }
+.mapa__salida--fija { opacity: 0.9; }
+/* Texto secundario que no cabía: aparece al pasar el ratón por su marcador. */
+.mapa__etiqueta--oculta { opacity: 0; transition: opacity 0.2s ease; }
+.mapa__salida--fija:hover .mapa__etiqueta--oculta { opacity: 0.9; }

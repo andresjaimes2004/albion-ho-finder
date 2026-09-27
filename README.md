@@ -3,10 +3,35 @@
 Aplicación web que reemplaza el Excel "Buscador de Gremio — Hideouts Zona Negra":
 el usuario escribe el nombre (completo o parcial) de un gremio y la página
 devuelve todos los mapas de Zona Negra donde ese gremio tiene un Hideout,
-con el slot y el tipo (HQ, personal o estándar). También sigue las rutas de
+con su tipo (HQ o HO) sobre la imagen real del mapa. También sigue las rutas de
 Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
+
+### v11 — Imágenes de los mapas y ventana del mapa renovada
+
+- **Imagen real de cada mapa:** los 276 mapas de la Zona Negra muestran la
+  textura del minimapa del juego, girada a diamante con la misma
+  transformación que las salidas y los hideouts, así que encaja sin
+  ajustes. Se cargan por lotes con `npm run db:imagenes` (ver "Imágenes
+  de los mapas por lotes") y se pueden pasar antes a WebP con
+  `herramientas/convertir-webp.html`. La imagen guarda su tipo
+  (`mapas_imagen.proyeccion`: `juego` o `diamante`) y el administrador
+  puede cambiarlo junto a la escala y la rotación.
+- **Salidas:** se omiten las mazmorras estáticas (Cathedral of Light,
+  Exalted Crypt…). Las que llevan a ciudades, Smuggler's Den, Rests o
+  pasajes se muestran como referencia, punteadas y sin poder abrirse.
+- **Ventana del mapa:** fundido suave al saltar a un mapa vecino (el nuevo
+  aparece con su imagen ya descargada), estética de vidrio con el acento
+  del apartado y el arte de Hideouts de fondo, un solo scroll (en
+  escritorio el mapa queda fijo y solo se desplaza la lista) y textos con
+  jerarquía: los mapas vecinos destacan, lo secundario es más pequeño y
+  los textos que chocan se recolocan.
+- **Tarjetas de resultados:** toda la tarjeta abre el mapa, con elevación
+  y flecha al pasar el ratón. Se quitó el "Slot n": era el número de fila
+  del Excel original y no aportaba información.
+- **Arrastre de los mapas:** ya no se queda "bloqueado" al arrastrar sobre
+  las imágenes (el navegador intentaba arrastrarlas como archivos).
 
 ### v10 — Pulido de la interfaz, rutas con bifurcaciones y mapa global
 
@@ -344,7 +369,9 @@ hosting de Node.js sin pasos extra:
 │   ├── importarSeed.js             Carga inicial desde el JSON
 │   ├── importarExcel.js            Importa un Excel nuevo como temporada nueva
 │   ├── importarGeo.js              Carga data/mapas_geo.json a la BD
+│   ├── importarImagenesMapas.js    Carga por lotes las imágenes de los mapas
 │   └── generarGeoDesdeDumps.js     Regenera mapas_geo.json desde los dumps
+├── herramientas/convertir-webp.html  Conversor por lotes a WebP (local)
 ├── public/                         Frontend (HTML/CSS/JS por módulos)
 └── tests/                          Pruebas automatizadas
 ```
@@ -372,6 +399,36 @@ El catálogo de caminos de Avalon se regenera desde el mismo archivo:
 npm run db:generar-caminos -- ao-bin-dumps/cluster/world.json
 npm run db:generar-zonas -- ao-bin-dumps/cluster/world.json
 ```
+
+## Imágenes de los mapas por lotes
+
+Cada mapa puede tener una imagen de fondo propia (la que sube un
+administrador desde la ventana del mapa). Para cargarlas todas de una vez,
+deja los archivos (PNG, JPG o WebP, máximo 4 MB cada uno) en una carpeta
+y ejecuta:
+
+```bash
+npm run db:imagenes -- ./imagenes-mapas --simular   # revisa qué haría
+npm run db:imagenes -- ./imagenes-mapas             # importa
+```
+
+El mapa se reconoce por el nombre del archivo: el número inicial es el id
+del cluster en los dumps, que es como el cliente del juego nombra cada mapa
+(`1353_WRL_FR_AUTO_T8_MOR_OUT_Q1.png` → Timbertop Escarp). También vale el
+nombre del mapa (`Avalanche Incline.png`). Los mapas que ya tienen imagen
+no se tocan, para no perder ajustes hechos a mano; `--reemplazar` los
+sustituye. Se tratan como la textura cuadrada del minimapa del juego: la
+ventana del mapa la gira a diamante con la misma transformación que las
+salidas y los hideouts, así que encaja sin ajustes. En producción se
+ejecuta en el servidor, con la carpeta subida
+allí. Después, cada imagen se puede afinar con el ajuste de escala,
+desplazamiento y rotación.
+
+Para que pesen poco (el plan gratuito de Google Cloud solo incluye 1 GB de
+tráfico al mes), conviértelas antes a WebP con
+`herramientas/convertir-webp.html`: se abre con doble clic en Chrome o Edge,
+convierte por lotes en el propio navegador conservando cada nombre y entrega
+un ZIP o guarda el resultado en una carpeta.
 
 ## Uso local
 

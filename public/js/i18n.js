@@ -165,17 +165,17 @@ export const EN = {
   'Salida': 'Exit',
   'Ir a {destino}': 'Go to {destino}',
   'mapa vecino': 'neighboring map',
-  '{gremio} — {tipo} (slot {slot})': '{gremio} — {tipo} (slot {slot})',
+  '{gremio} — {tipo}': '{gremio} — {tipo}',
   'Este mapa no tiene hideouts registrados en la temporada activa.':
     'This map has no hideouts registered for the current season.',
-  'Slot {slot} · ubicado en el mapa': 'Slot {slot} · placed on the map',
-  'Slot {slot} · sin ubicar en el mapa': 'Slot {slot} · not placed on the map',
-  'Slot {slot}': 'Slot {slot}',
+  'Ubicado en el mapa': 'Placed on the map',
+  'Sin ubicar en el mapa': 'Not placed on the map',
+  'Salida a {destino} (no es un mapa de Zona Negra)': 'Exit to {destino} (not a Black Zone map)',
   'Haz clic en el mapa...': 'Click on the map...',
   'Marcar en el mapa': 'Mark on the map',
   'Quitar ubicación': 'Remove location',
   'Eliminar': 'Delete',
-  '¿Eliminar el hideout de "{gremio}" (slot {slot})?': 'Delete the hideout of "{gremio}" (slot {slot})?',
+  '¿Eliminar el hideout de "{gremio}"?': 'Delete the hideout of "{gremio}"?',
   'Haz clic sobre el mapa para fijar la ubicación del hideout seleccionado.':
     'Click on the map to set the location of the selected hideout.',
   'Modo administrador: elige un hideout de la lista para marcar su ubicación, o añade uno nuevo.':
@@ -187,9 +187,12 @@ export const EN = {
   'Imagen de fondo propia': 'Custom background image',
   'Ajusta la imagen hasta que las salidas y el borde coincidan con el mapa. Se guarda para todos los visitantes.':
     'Adjust the image until the exits and the border match the map. It is saved for all visitors.',
-  'Sube una captura del mapa completo en diamante (PNG, JPG o WebP, máx. 4 MB). Después podrás ajustarla.':
-    'Upload a screenshot of the full diamond-shaped map (PNG, JPG or WebP, max. 4 MB). You can adjust it afterwards.',
+  'Sube la imagen del minimapa del juego o una captura del mapa en diamante (PNG, JPG o WebP, máx. 4 MB). Después podrás ajustarla.':
+    'Upload the game minimap image or a screenshot of the diamond-shaped map (PNG, JPG or WebP, max. 4 MB). You can adjust it afterwards.',
+  'Minimapa del juego (cuadrado)': 'Game minimap (square)',
+  'Captura en diamante': 'Diamond screenshot',
   'Subir imagen de fondo': 'Upload background image',
+  'Tipo': 'Type',
   'Escala': 'Scale',
   'Mover X': 'Move X',
   'Mover Y': 'Move Y',

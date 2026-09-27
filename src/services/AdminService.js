@@ -170,9 +170,10 @@ class AdminService {
    * (metros del juego girados 45°), la escala es un factor y la rotación
    * solo admite cuartos de vuelta.
    */
-  ajustarImagenMapa(usuarioId, id, { escala, dx, dy, rotacion }) {
+  ajustarImagenMapa(usuarioId, id, { escala, dx, dy, rotacion, proyeccion }) {
     const mapa = this._mapaExistente(id);
-    if (!this.mapas.obtenerImagenMeta(mapa.id)) {
+    const actual = this.mapas.obtenerImagenMeta(mapa.id);
+    if (!actual) {
       throw new ErrorValidacion('Ese mapa todavía no tiene una imagen subida.');
     }
 
@@ -181,9 +182,13 @@ class AdminService {
       dx: decimal(dx, 'dx', { min: -2000, max: 2000 }),
       dy: decimal(dy, 'dy', { min: -2000, max: 2000 }),
       rotacion: entero(rotacion, 'rotacion', { min: 0, max: 270 }),
+      proyeccion: proyeccion === undefined ? actual.proyeccion : proyeccion,
     };
     if (![0, 90, 180, 270].includes(ajuste.rotacion)) {
       throw new ErrorValidacion('La rotación solo admite 0, 90, 180 o 270 grados.');
+    }
+    if (!['diamante', 'juego'].includes(ajuste.proyeccion)) {
+      throw new ErrorValidacion('El tipo de imagen no es válido.');
     }
 
     const meta = this.mapas.guardarAjusteImagen(mapa.id, ajuste);
