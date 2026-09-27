@@ -130,10 +130,10 @@ const EN = {
   'Recursos': 'Resources',
   'Wiki oficial': 'Official wiki',
   'Datos del juego (ao-bin-dumps)': 'Game data (ao-bin-dumps)',
-  '© 2026 Albion Navigator · Datos actualizados por temporada.': '© 2026 Albion Navigator · Data updated every season.',
+  '© 2026 Albion Navigator. Todos los derechos reservados.': '© 2026 Albion Navigator. All rights reserved.',
   'Creado por <strong>TurnDark</strong>': 'Created by <strong>TurnDark</strong>',
-  'Albion Online es una marca registrada de Sandbox Interactive GmbH. Albion Navigator es un proyecto independiente y no está afiliado, aprobado ni patrocinado por Sandbox Interactive. Geografía de los mapas tomada de los dumps públicos del cliente del juego.':
-    'Albion Online is a registered trademark of Sandbox Interactive GmbH. Albion Navigator is an independent project and is not affiliated with, endorsed or sponsored by Sandbox Interactive. Map geography comes from the public game client data dumps.',
+  'Albion Online es una marca registrada de Sandbox Interactive GmbH. Albion Navigator es un proyecto independiente y no está afiliado, aprobado ni patrocinado por Sandbox Interactive. Datos actualizados por temporada; geografía de los mapas tomada de los dumps públicos del cliente del juego.':
+    'Albion Online is a registered trademark of Sandbox Interactive GmbH. Albion Navigator is an independent project and is not affiliated with, endorsed or sponsored by Sandbox Interactive. Data updated every season; map geography comes from the public game client data dumps.',
   'Detalle del mapa': 'Map details',
   'Centrar': 'Center',
   'Cerrar': 'Close',
@@ -148,6 +148,62 @@ const EN = {
   'Contraseña': 'Password',
   'Entrar': 'Sign in',
   '¿No tienes cuenta? Regístrate': 'No account? Sign up',
+
+  // Portada, cifras, funciones y donaciones
+  'Apoyar': 'Support',
+  'Encuentra cualquier hideout. Sigue cada ruta de Avalon.': 'Find any hideout. Follow every Avalon route.',
+  'Albion Navigator reúne los hideouts de la Zona Negra y las rutas de Avalon que registra la comunidad de Albion Online. Es gratis, sin anuncios y no necesitas cuenta para buscar.':
+    'Albion Navigator brings together Black Zone hideouts and the Avalon routes logged by the Albion Online community. It is free, ad-free and you do not need an account to search.',
+  'Buscar un gremio': 'Search a guild',
+  'Apoyar el proyecto': 'Support the project',
+  '100 % gratis · Sin anuncios · Español e inglés': '100% free · No ads · English and Spanish',
+  'Albion Navigator en cifras': 'Albion Navigator in numbers',
+  'hideouts registrados': 'hideouts registered',
+  'mapas de la Zona Negra con hideouts': 'Black Zone maps with hideouts',
+  'caminos de Avalon en el catálogo': 'Avalonian roads in the catalog',
+  'temporada actual, datos al día': 'current season, up-to-date data',
+  'Todo lo que necesitas para moverte por Albion': 'Everything you need to find your way in Albion',
+  'Tres herramientas pensadas para gremios, exploradores y cazadores de la Zona Negra.':
+    'Three tools built for guilds, scouts and Black Zone hunters.',
+  'Busca hideouts': 'Find hideouts',
+  'Escribe el nombre de un gremio y mira todos sus hideouts, con slot y tipo, sobre el mapa del juego.':
+    'Type a guild name and see all its hideouts, with slot and type, on the game map.',
+  'Buscar gremio': 'Search guild',
+  'Sigue las rutas de Avalon': 'Follow Avalon routes',
+  'Consulta los 400 caminos y los portales abiertos ahora, con la cuenta regresiva hasta que cierran.':
+    'Check all 400 roads and the portals open right now, with a countdown until they close.',
+  'Ver caminos': 'View roads',
+  'Registra conexiones': 'Log connections',
+  'Pega una captura del juego y el lector la convierte en conexiones y rutas para tu gremio.':
+    'Paste an in-game screenshot and the reader turns it into connections and routes for your guild.',
+  'Registrar': 'Log them',
+  'Mantén Albion Navigator en línea': 'Keep Albion Navigator online',
+  'Albion Navigator es gratis y sin anuncios. Si te sirve, puedes donar lo que quieras: cada aporte ayuda a mantenerlo en línea y con actualizaciones constantes.':
+    'Albion Navigator is free and ad-free. If it helps you, you can donate any amount: every contribution keeps it online and regularly updated.',
+  'Servidor 24/7': 'Server 24/7',
+  'Para que el buscador y las rutas estén siempre disponibles.': 'So the finder and the routes are always available.',
+  'Dominio propio': 'Own domain',
+  'Una dirección fácil de recordar y mejor posicionada.': 'An address that is easy to remember and ranks better.',
+  'Datos al día': 'Up-to-date data',
+  'Hideouts y mapas actualizados en cada temporada, y funciones nuevas.': 'Hideouts and maps updated every season, plus new features.',
+  'Desde cualquier país': 'From any country',
+  'Con tarjeta de crédito o débito, o con PayPal. En dólares y sin crear cuenta.':
+    'With a credit or debit card, or with PayPal. In US dollars, no account needed.',
+  'Donar con Ko-fi': 'Donate on Ko-fi',
+  'Muy pronto podrás donar desde aquí.': 'Donations will be available here very soon.',
+  'Desde Colombia': 'From Colombia',
+  'Sin comisiones y al instante, desde Nequi, Bancolombia, Daviplata o cualquier banco.':
+    'Instant and fee-free, from Nequi, Bancolombia, Daviplata or any Colombian bank.',
+  'Llave Bre-B': 'Bre-B key',
+  '¡Copiada!': 'Copied!',
+  'Copiar': 'Copy',
+  'Abre la app de tu banco o billetera.': 'Open your bank or wallet app.',
+  'Elige enviar con llave Bre-B (o escanea el QR).': 'Choose to send with a Bre-B key (or scan the QR code).',
+  'Pega la llave y escribe el valor que quieras donar.': 'Paste the key and enter the amount you want to donate.',
+  'Los pagos se hacen en Ko-fi, PayPal o la app de tu banco. Albion Navigator nunca ve ni guarda datos de tarjetas ni de cuentas.':
+    'Payments happen on Ko-fi, PayPal or your banking app. Albion Navigator never sees or stores card or account details.',
+  'Donar': 'Donate',
+  'Preguntas frecuentes': 'Frequently asked questions',
 
   // Página 404
   'Página no encontrada': 'Page not found',

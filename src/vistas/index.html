@@ -32,8 +32,8 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <link rel="manifest" href="/manifest.webmanifest" />
   <meta name="theme-color" content="#0c0a10" />
-  <link rel="preload" as="image" href="/assets/fondo-avalon.webp" media="(min-width: 961px)" />
-  <link rel="preload" as="image" href="/assets/fondo-avalon-960.webp" media="(max-width: 960px)" />
+  <link rel="preload" as="image" href="/assets/fondo-inicio.webp" media="(min-width: 961px)" />
+  <link rel="preload" as="image" href="/assets/fondo-inicio-960.webp" media="(max-width: 960px)" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -41,11 +41,17 @@
   <script type="application/ld+json">{{@datosEstructurados}}</script>
 </head>
 <body>
-  <div class="fondo-arte" aria-hidden="true"></div>
+  <!-- Fondo fijo: se queda quieto al desplazarse y cambia según el apartado. -->
+  <div class="fondo" aria-hidden="true">
+    <div class="fondo__capa fondo__capa--inicio"></div>
+    <div class="fondo__capa fondo__capa--hideouts"></div>
+    <div class="fondo__capa fondo__capa--caminos"></div>
+    <div class="fondo__velo"></div>
+  </div>
 
   <header class="cabecera">
     <div class="contenedor contenedor--ancho cabecera__contenido">
-      <a class="marca" href="{{@inicio}}" aria-label="{{Albion Navigator, inicio}}">
+      <a class="marca" href="{{@inicio}}" data-ir="inicio" aria-label="{{Albion Navigator, inicio}}">
         <img class="marca__icono" src="/assets/marca-96.webp" alt="" width="40" height="40" />
         <span class="marca__texto">
           <span class="marca__titulo">Albion Navigator</span>
@@ -54,7 +60,7 @@
       </a>
 
       <nav class="pestanas" role="tablist" aria-label="{{Secciones}}">
-        <button id="pestana-hideouts" type="button" class="pestanas__boton" role="tab" data-vista="hideouts" aria-selected="true" aria-controls="vista-hideouts">
+        <button id="pestana-hideouts" type="button" class="pestanas__boton" role="tab" data-vista="hideouts" aria-selected="false" aria-controls="vista-hideouts">
           <svg class="pestanas__icono" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.5" stroke="currentColor" stroke-width="2"/></svg>
           Hideouts
         </button>
@@ -66,6 +72,7 @@
 
       <div class="cabecera__derecha">
         <span id="badge-temporada" class="badge-temporada" hidden></span>
+        <a class="boton-apoyar" href="#apoyar" data-desplazar><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.8 3.9 4.5 7.3 4.5c2 0 3.6 1.1 4.7 2.7 1.1-1.6 2.7-2.7 4.7-2.7 3.4 0 5.7 3.3 4.5 6.7-1.7 4.7-9.2 9.3-9.2 9.3Z" fill="currentColor"/></svg><span>{{Apoyar}}</span></a>
         <nav class="idioma" aria-label="{{Idioma}}">
           <a class="idioma__opcion" href="{{@inicioEs}}" hreflang="es" lang="es" {{@actualEs}}>ES</a>
           <a class="idioma__opcion" href="{{@inicioEn}}" hreflang="en" lang="en" {{@actualEn}}>EN</a>
@@ -76,13 +83,131 @@
   </header>
 
   <main class="contenedor principal">
-    <div id="vista-hideouts" role="tabpanel" aria-labelledby="pestana-hideouts">
-    <header class="titulo-vista">
+    <div id="vista-inicio" data-panel="inicio">
+    <section class="portada" aria-labelledby="portada-titulo">
+      <div class="portada__contenido">
+        <img class="portada__insignia" src="/assets/marca-96.webp" alt="" width="72" height="72" />
+        <h1 id="portada-titulo" class="portada__titulo">{{Encuentra cualquier hideout. Sigue cada ruta de Avalon.}}</h1>
+        <p class="portada__texto">{{Albion Navigator reúne los hideouts de la Zona Negra y las rutas de Avalon que registra la comunidad de Albion Online. Es gratis, sin anuncios y no necesitas cuenta para buscar.}}</p>
+        <div class="portada__acciones">
+          <a class="boton boton--primario" href="{{@inicio}}#hideouts" data-ir="hideouts" data-enfocar="input-gremio">
+            {{Buscar un gremio}}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14m0 0-6-6m6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a class="boton boton--contorno" href="#apoyar" data-desplazar><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.8 3.9 4.5 7.3 4.5c2 0 3.6 1.1 4.7 2.7 1.1-1.6 2.7-2.7 4.7-2.7 3.4 0 5.7 3.3 4.5 6.7-1.7 4.7-9.2 9.3-9.2 9.3Z" fill="currentColor"/></svg> {{Apoyar el proyecto}}</a>
+        </div>
+        <p class="portada__nota">{{100 % gratis · Sin anuncios · Español e inglés}}</p>
+      </div>
+    </section>
+
+    <ul class="cifras" aria-label="{{Albion Navigator en cifras}}">
+      <li class="cifras__item">
+        <svg class="cifras__icono" width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.5" stroke="currentColor" stroke-width="1.8"/></svg>
+        <div><strong class="cifras__numero" data-cifra="hideouts">—</strong><span class="cifras__texto">{{hideouts registrados}}</span></div>
+      </li>
+      <li class="cifras__item">
+        <svg class="cifras__icono" width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 4 3 6.5v13.5l6-2.5 6 2.5 6-2.5V4l-6 2.5L9 4Zm0 0v13.5m6-11v13.5" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        <div><strong class="cifras__numero" data-cifra="mapas">—</strong><span class="cifras__texto">{{mapas de la Zona Negra con hideouts}}</span></div>
+      </li>
+      <li class="cifras__item">
+        <svg class="cifras__icono" width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="6" cy="18" r="2.5" stroke="currentColor" stroke-width="1.8"/><circle cx="18" cy="6" r="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <div><strong class="cifras__numero" data-cifra="caminos" data-valor="400">400</strong><span class="cifras__texto">{{caminos de Avalon en el catálogo}}</span></div>
+      </li>
+      <li class="cifras__item">
+        <svg class="cifras__icono" width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 7v5l3 2m6-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div><strong class="cifras__numero" data-cifra="temporada">—</strong><span class="cifras__texto">{{temporada actual, datos al día}}</span></div>
+      </li>
+    </ul>
+
+    <section class="funciones" aria-labelledby="funciones-titulo" data-revelar>
+      <h2 id="funciones-titulo" class="seccion__titulo">{{Todo lo que necesitas para moverte por Albion}}</h2>
+      <p class="seccion__texto">{{Tres herramientas pensadas para gremios, exploradores y cazadores de la Zona Negra.}}</p>
+      <div class="funciones__tarjetas">
+        <article class="funcion funcion--hideouts">
+          <div class="funcion__contenido">
+            <h3 class="funcion__titulo">{{Busca hideouts}}</h3>
+            <p class="funcion__texto">{{Escribe el nombre de un gremio y mira todos sus hideouts, con slot y tipo, sobre el mapa del juego.}}</p>
+            <a class="boton boton--pequeno" href="{{@inicio}}#hideouts" data-ir="hideouts" data-enfocar="input-gremio">{{Buscar gremio}}</a>
+          </div>
+        </article>
+        <article class="funcion funcion--caminos">
+          <div class="funcion__contenido">
+            <h3 class="funcion__titulo">{{Sigue las rutas de Avalon}}</h3>
+            <p class="funcion__texto">{{Consulta los 400 caminos y los portales abiertos ahora, con la cuenta regresiva hasta que cierran.}}</p>
+            <a class="boton boton--pequeno" href="{{@inicio}}#caminos" data-ir="caminos">{{Ver caminos}}</a>
+          </div>
+        </article>
+        <article class="funcion funcion--registro">
+          <div class="funcion__contenido">
+            <h3 class="funcion__titulo">{{Registra conexiones}}</h3>
+            <p class="funcion__texto">{{Pega una captura del juego y el lector la convierte en conexiones y rutas para tu gremio.}}</p>
+            <a class="boton boton--pequeno" href="{{@inicio}}#caminos" data-ir="caminos" data-abrir-registro>{{Registrar}}</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="apoyar" class="apoyar" aria-labelledby="apoyar-titulo" data-revelar>
+      <div class="apoyar__cabecera">
+        <span class="apoyar__icono" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.8 3.9 4.5 7.3 4.5c2 0 3.6 1.1 4.7 2.7 1.1-1.6 2.7-2.7 4.7-2.7 3.4 0 5.7 3.3 4.5 6.7-1.7 4.7-9.2 9.3-9.2 9.3Z" fill="currentColor"/></svg></span>
+        <h2 id="apoyar-titulo" class="seccion__titulo">{{Mantén Albion Navigator en línea}}</h2>
+        <p class="seccion__texto">{{Albion Navigator es gratis y sin anuncios. Si te sirve, puedes donar lo que quieras: cada aporte ayuda a mantenerlo en línea y con actualizaciones constantes.}}</p>
+      </div>
+
+      <ul class="apoyar__destinos">
+        <li><strong>{{Servidor 24/7}}</strong><span>{{Para que el buscador y las rutas estén siempre disponibles.}}</span></li>
+        <li><strong>{{Dominio propio}}</strong><span>{{Una dirección fácil de recordar y mejor posicionada.}}</span></li>
+        <li><strong>{{Datos al día}}</strong><span>{{Hideouts y mapas actualizados en cada temporada, y funciones nuevas.}}</span></li>
+      </ul>
+
+      <div class="apoyar__opciones">
+        <article class="donar{{@kofiClase}}">
+          <p class="donar__etiqueta">{{Desde cualquier país}}</p>
+          <h3 class="donar__titulo">Ko-fi</h3>
+          <p class="donar__texto">{{Con tarjeta de crédito o débito, o con PayPal. En dólares y sin crear cuenta.}}</p>
+          <a class="boton boton--primario donar__boton" href="{{@kofiHref}}" target="_blank" rel="noopener noreferrer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.8 3.9 4.5 7.3 4.5c2 0 3.6 1.1 4.7 2.7 1.1-1.6 2.7-2.7 4.7-2.7 3.4 0 5.7 3.3 4.5 6.7-1.7 4.7-9.2 9.3-9.2 9.3Z" fill="currentColor"/></svg> {{Donar con Ko-fi}}</a>
+          <p class="donar__pendiente">{{Muy pronto podrás donar desde aquí.}}</p>
+        </article>
+
+        <article class="donar donar--breb{{@brebClase}}">
+          <p class="donar__etiqueta">{{Desde Colombia}}</p>
+          <h3 class="donar__titulo">Bre-B</h3>
+          <p class="donar__texto">{{Sin comisiones y al instante, desde Nequi, Bancolombia, Daviplata o cualquier banco.}}</p>
+          {{@brebQr}}
+          <div class="donar__llave">
+            <span class="donar__llave-etiqueta">{{Llave Bre-B}}</span>
+            <code id="llave-breb">{{@brebLlave}}</code>
+            <button type="button" class="boton boton--pequeno" data-copiar="llave-breb" data-copiado="{{¡Copiada!}}">{{Copiar}}</button>
+          </div>
+          <ol class="donar__pasos">
+            <li>{{Abre la app de tu banco o billetera.}}</li>
+            <li>{{Elige enviar con llave Bre-B (o escanea el QR).}}</li>
+            <li>{{Pega la llave y escribe el valor que quieras donar.}}</li>
+          </ol>
+          <p class="donar__pendiente">{{Muy pronto podrás donar desde aquí.}}</p>
+        </article>
+      </div>
+
+      <p class="apoyar__seguridad">{{Los pagos se hacen en Ko-fi, PayPal o la app de tu banco. Albion Navigator nunca ve ni guarda datos de tarjetas ni de cuentas.}}</p>
+    </section>
+
+    <section id="preguntas" class="preguntas" aria-labelledby="preguntas-titulo" data-revelar>
+      <h2 id="preguntas-titulo" class="preguntas__titulo">{{Preguntas frecuentes}}</h2>
+
+      <div class="preguntas__lista">
+        {{@preguntas}}
+      </div>
+    </section>
+    </div>
+
+    <div id="vista-hideouts" role="tabpanel" aria-labelledby="pestana-hideouts" data-panel="hideouts" hidden>
+
+    <header id="buscador" class="titulo-vista">
       <span class="titulo-vista__icono" aria-hidden="true">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.5" stroke="currentColor" stroke-width="2"/></svg>
       </span>
       <div>
-        <h1 class="titulo-vista__titulo">{{Hideouts de la Zona Negra}}</h1>
+        <h2 class="titulo-vista__titulo">{{Hideouts de la Zona Negra}}</h2>
         <p class="titulo-vista__texto">{{Escribe el nombre de un gremio y descubre en qué mapas tiene hideout, con su slot, su tipo y las rutas de Avalon que llegan a ellos.}}</p>
       </div>
     </header>
@@ -177,7 +302,7 @@
     </section>
     </div>
 
-    <div id="vista-caminos" role="tabpanel" aria-labelledby="pestana-caminos" hidden>
+    <div id="vista-caminos" role="tabpanel" aria-labelledby="pestana-caminos" data-panel="caminos" hidden>
       <header class="titulo-vista">
         <span class="titulo-vista__icono" aria-hidden="true">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="6" cy="18" r="2.5" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="6" r="2.5" stroke="currentColor" stroke-width="2"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -289,7 +414,7 @@
   <footer class="pie">
     <div class="contenedor contenedor--ancho pie__rejilla">
       <div class="pie__marca">
-        <a class="marca" href="{{@inicio}}" aria-label="{{Albion Navigator, inicio}}">
+        <a class="marca" href="{{@inicio}}" data-ir="inicio" aria-label="{{Albion Navigator, inicio}}">
           <img class="marca__icono" src="/assets/marca-96.webp" alt="" width="36" height="36" loading="lazy" />
           <span class="marca__titulo">Albion Navigator</span>
         </a>
@@ -299,8 +424,10 @@
       <nav class="pie__columna" aria-label="{{Herramientas}}">
         <h2 class="pie__titulo">{{Herramientas}}</h2>
         <ul>
-          <li><a href="{{@inicio}}">{{Buscador de hideouts}}</a></li>
-          <li><a href="{{@inicio}}#caminos">{{Caminos de Avalon}}</a></li>
+          <li><a href="{{@inicio}}#hideouts" data-ir="hideouts">{{Buscador de hideouts}}</a></li>
+          <li><a href="{{@inicio}}#caminos" data-ir="caminos">{{Caminos de Avalon}}</a></li>
+          <li><a href="#apoyar" data-desplazar>{{Apoyar el proyecto}}</a></li>
+          <li><a href="#preguntas" data-desplazar>{{Preguntas frecuentes}}</a></li>
         </ul>
       </nav>
 
@@ -315,12 +442,12 @@
     </div>
 
     <div class="contenedor contenedor--ancho pie__inferior">
-      <p>{{© 2026 Albion Navigator · Datos actualizados por temporada.}}</p>
-      <p class="pie__creditos">{{Creado por <strong>TurnDark</strong>}}</p>
+      <p>{{© 2026 Albion Navigator. Todos los derechos reservados.}}</p>
+      <p class="pie__creditos">{{Creado por <strong>TurnDark</strong>}} · <a class="pie__donar" href="#apoyar" data-desplazar><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.8 3.9 4.5 7.3 4.5c2 0 3.6 1.1 4.7 2.7 1.1-1.6 2.7-2.7 4.7-2.7 3.4 0 5.7 3.3 4.5 6.7-1.7 4.7-9.2 9.3-9.2 9.3Z" fill="currentColor"/></svg> {{Donar}}</a></p>
     </div>
 
     <div class="contenedor contenedor--ancho">
-      <p class="pie__aviso">{{Albion Online es una marca registrada de Sandbox Interactive GmbH. Albion Navigator es un proyecto independiente y no está afiliado, aprobado ni patrocinado por Sandbox Interactive. Geografía de los mapas tomada de los dumps públicos del cliente del juego.}}</p>
+      <p class="pie__aviso">{{Albion Online es una marca registrada de Sandbox Interactive GmbH. Albion Navigator es un proyecto independiente y no está afiliado, aprobado ni patrocinado por Sandbox Interactive. Datos actualizados por temporada; geografía de los mapas tomada de los dumps públicos del cliente del juego.}}</p>
     </div>
   </footer>
 

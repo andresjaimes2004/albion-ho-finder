@@ -9,6 +9,7 @@ import { PanelCaminos } from './tracking.js';
 import { PanelRegistro } from './registroCaminos.js';
 import { crear, crearListaConexiones, crearTarjetaRuta, iniciarRelojes } from './rutas.js';
 import { t, tn } from './i18n.js';
+import { Portada } from './portada.js';
 
 /**
  * app.js
@@ -23,6 +24,8 @@ import { t, tn } from './i18n.js';
  * gremio arbitrarios.
  * ----------------------------------------------------------------------
  */
+const sinMovimiento = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 class BuscadorUI {
   constructor() {
     this.input = document.getElementById('input-gremio');
@@ -75,9 +78,15 @@ class BuscadorUI {
         this.panelRegistro.establecerUsuario(usuario);
       },
       alElegirTermino: (termino) => {
+        this._irA('hideouts');
         this.input.value = termino;
         this._ejecutarBusqueda(termino);
       },
+    });
+
+    this.portada = new Portada({
+      irA: (vista, opciones) => this._irA(vista, opciones),
+      abrirRegistro: () => this.panelRegistro.abrir(),
     });
 
     iniciarRelojes();
@@ -91,10 +100,21 @@ class BuscadorUI {
   async _iniciar() {
     await this.panelSesion.refrescar();
     try {
-      await this.mapaMundial.cargar();
+      const mundo = await this.mapaMundial.cargar();
+      this._mostrarCifras(mundo);
     } catch (error) {
       /* el mapa es un complemento: si falla, el buscador sigue sirviendo */
     }
+  }
+
+  /** Cifras de la portada a partir de los mapas de la Zona Negra. */
+  _mostrarCifras(mundo) {
+    const mapas = (mundo && mundo.mapas) || [];
+    this.portada.mostrarCifras({
+      hideouts: mapas.reduce((total, m) => total + (m.hideouts || 0), 0),
+      mapas: mapas.filter((m) => m.hideouts).length,
+      temporada: mundo && mundo.temporada,
+    });
   }
 
   _bindEventos() {
@@ -121,35 +141,107 @@ class BuscadorUI {
   }
 
   /** Pestañas Hideouts / Caminos de Avalon, enlazables con #caminos. */
+  /**
+   * Tres apartados en la misma página: Inicio (sin hash), Hideouts
+   * (#hideouts) y Caminos de Avalon (#caminos). Cada cambio deja una entrada
+   * en el historial, así "atrás" vuelve al apartado anterior.
+   */
   _bindPestanas() {
     this.pestanas = [...document.querySelectorAll('.pestanas__boton')];
+    this.paneles = [...document.querySelectorAll('[data-panel]')];
     for (const pestana of this.pestanas) {
-      pestana.addEventListener('click', () => {
-        history.replaceState(null, '', pestana.dataset.vista === 'caminos' ? '#caminos' : location.pathname);
-        this._mostrarVista(pestana.dataset.vista);
-      });
+      pestana.addEventListener('click', () => this._irA(pestana.dataset.vista));
     }
-    window.addEventListener('hashchange', () => this._mostrarVista(this._vistaDeUrl()));
+    // "hashchange" cubre los enlaces con #; "popstate", el botón atrás tras pushState.
+    const alCambiarUrl = () => {
+      const vista = this._vistaDeUrl();
+      if (vista === this.vistaActual) return;
+      this._transicion(() => {
+        this._mostrarVista(vista);
+        if (!location.hash.startsWith('#apoyar')) window.scrollTo({ top: 0, behavior: 'instant' });
+      });
+    };
+    window.addEventListener('hashchange', alCambiarUrl);
+    window.addEventListener('popstate', alCambiarUrl);
     this._mostrarVista(this._vistaDeUrl());
   }
 
   _vistaDeUrl() {
-    return location.hash === '#caminos' ? 'caminos' : 'hideouts';
+    if (location.hash === '#caminos') return 'caminos';
+    if (location.hash === '#hideouts') return 'hideouts';
+    return 'inicio';
+  }
+
+  /**
+   * Cambia de apartado dejando entrada en el historial.
+   *  - Si ya se está en ese apartado, sube (o baja a `destino`) con
+   *    desplazamiento suave.
+   *  - Si no, cambia con un fundido (_transicion): el salto de posición
+   *    queda oculto dentro del fundido, así no se ve brusco.
+   * @param {object} opciones
+   *   - destino: elemento al que ir dentro del apartado (si no, arriba)
+   *   - alTerminar(): se ejecuta ya con el apartado visible
+   */
+  _irA(vista, { destino = null, alTerminar = null } = {}) {
+    const url = vista === 'inicio' ? location.pathname : `#${vista}`;
+    const yaEsta = vista === this.vistaActual && (vista === 'inicio' ? !location.hash : location.hash === url);
+    if (yaEsta) {
+      const suave = sinMovimiento() ? 'auto' : 'smooth';
+      if (destino) destino.scrollIntoView({ behavior: suave, block: 'start' });
+      else window.scrollTo({ top: 0, behavior: suave });
+      if (alTerminar) alTerminar();
+      return;
+    }
+    this._transicion(() => {
+      history.pushState(null, '', url);
+      this._mostrarVista(vista);
+      if (destino) destino.scrollIntoView({ behavior: 'instant', block: 'start' });
+      else window.scrollTo({ top: 0, behavior: 'instant' });
+      if (alTerminar) alTerminar();
+    });
+  }
+
+  /**
+   * Aplica un cambio de apartado con fundido. Usa la View Transitions API
+   * donde existe (Chrome, Edge, Safari): la barra superior queda quieta y
+   * el resto se funde. En los demás navegadores el apartado nuevo aparece
+   * con una animación CSS. Sin animación si el usuario pide reducirla.
+   */
+  _transicion(actualizar) {
+    if (sinMovimiento()) {
+      actualizar();
+      return;
+    }
+    if (typeof document.startViewTransition === 'function') {
+      const transicion = document.startViewTransition(actualizar);
+      // Si el navegador omite la animación (pestaña oculta, otra transición
+      // en curso...) el cambio se aplica igual; solo se evita el error.
+      transicion.ready.catch(() => {});
+      return;
+    }
+    actualizar();
+    const panel = this.paneles.find((p) => !p.hidden);
+    if (panel) {
+      panel.classList.remove('vista-entrando');
+      void panel.offsetWidth; // reinicia la animación si se repite
+      panel.classList.add('vista-entrando');
+    }
   }
 
   _mostrarVista(vista) {
+    this.vistaActual = vista;
+    for (const panel of this.paneles) panel.hidden = panel.dataset.panel !== vista;
     for (const pestana of this.pestanas) {
-      const activa = pestana.dataset.vista === vista;
-      pestana.setAttribute('aria-selected', String(activa));
-      document.getElementById(`vista-${pestana.dataset.vista}`).hidden = !activa;
+      pestana.setAttribute('aria-selected', String(pestana.dataset.vista === vista));
     }
+    document.body.dataset.vista = vista;
     if (vista === 'caminos') this.panelCaminos.activar();
     else this.panelCaminos.desactivar();
     this.panelRegistro.establecerVisible(vista === 'caminos');
 
-    // El selector de idioma lleva a la misma sección en el otro idioma.
+    // El selector de idioma lleva al mismo apartado en el otro idioma.
     for (const enlace of document.querySelectorAll('.idioma__opcion')) {
-      enlace.hash = vista === 'caminos' ? 'caminos' : '';
+      enlace.hash = vista === 'inicio' ? '' : vista;
     }
   }
 
@@ -346,9 +438,7 @@ class BuscadorUI {
 
   /** Cambia a la pestaña de caminos con la ficha de un mapa abierta. */
   _irACaminos(nombre) {
-    history.replaceState(null, '', '#caminos');
-    this._mostrarVista('caminos');
-    this.panelCaminos.abrirDetalle(nombre);
+    this._irA('caminos', { alTerminar: () => this.panelCaminos.abrirDetalle(nombre) });
   }
 
   _crearItemHideout(hideout) {

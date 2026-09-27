@@ -73,8 +73,9 @@ test('las páginas en español e inglés se generan sin marcas pendientes', () =
   }
 
   const { es, en } = paginas;
-  assert.match(es.principal, /<h1 class="titulo-vista__titulo">Hideouts de la Zona Negra<\/h1>/);
-  assert.match(en.principal, /<h1 class="titulo-vista__titulo">Black Zone Guild Hideouts<\/h1>/);
+  assert.match(es.principal, /<h1 id="portada-titulo" class="portada__titulo">Encuentra cualquier hideout\. Sigue cada ruta de Avalon\.<\/h1>/);
+  assert.match(en.principal, /<h1 id="portada-titulo" class="portada__titulo">Find any hideout\. Follow every Avalon route\.<\/h1>/);
+  assert.equal((es.principal.match(/<h1\b/g) || []).length, 1, 'un solo h1 por página');
   assert.match(en.principal, /<link rel="canonical" href="https:\/\/albionho\.duckdns\.org\/en\/" \/>/);
   assert.match(es.principal, /hreflang="en" href="https:\/\/albionho\.duckdns\.org\/en\/"/);
   assert.equal(/Buscar gremio|Caminos de Avalon<\/h2>/.test(en.principal), false, 'no quedan textos en español');
@@ -92,4 +93,48 @@ test('robots.txt y sitemap.xml apuntan al dominio público con ambos idiomas', (
   assert.match(mapa, /<loc>https:\/\/albionho\.duckdns\.org\/<\/loc>/);
   assert.match(mapa, /<loc>https:\/\/albionho\.duckdns\.org\/en\/<\/loc>/);
   assert.equal((mapa.match(/hreflang="x-default"/g) || []).length, 2);
+});
+
+test('las donaciones se configuran por entorno y los valores inválidos no se publican', () => {
+  const anterior = { kofi: process.env.DONAR_KOFI_URL, llave: process.env.DONAR_BREB_LLAVE };
+  try {
+    delete process.env.DONAR_KOFI_URL;
+    delete process.env.DONAR_BREB_LLAVE;
+    let { es } = generarPaginas();
+    assert.equal((es.principal.match(/donar--pendiente/g) || []).length, 2, 'sin configurar: ambas opciones "muy pronto"');
+
+    process.env.DONAR_KOFI_URL = 'https://ko-fi.com/turndark';
+    process.env.DONAR_BREB_LLAVE = '@turndark';
+    ({ es } = generarPaginas());
+    assert.equal(/donar--pendiente/.test(es.principal), false);
+    assert.match(es.principal, /href="https:\/\/ko-fi\.com\/turndark"/);
+    assert.match(es.principal, /<code id="llave-breb">@turndark<\/code>/);
+
+    process.env.DONAR_KOFI_URL = 'https://evil.example/ko-fi.com/x';
+    process.env.DONAR_BREB_LLAVE = '<script>alert(1)</script>';
+    ({ es } = generarPaginas());
+    assert.equal(es.principal.includes('evil.example'), false);
+    assert.equal(es.principal.includes('<script>alert'), false);
+    assert.equal((es.principal.match(/donar--pendiente/g) || []).length, 2);
+  } finally {
+    for (const [clave, valor] of [['DONAR_KOFI_URL', anterior.kofi], ['DONAR_BREB_LLAVE', anterior.llave]]) {
+      if (valor === undefined) delete process.env[clave];
+      else process.env[clave] = valor;
+    }
+  }
+});
+
+test('las preguntas frecuentes están en ambos idiomas y como datos estructurados', () => {
+  const { PREGUNTAS } = require('../src/i18n/preguntas');
+  assert.ok(PREGUNTAS.es.length >= 8);
+  assert.equal(PREGUNTAS.en.length, PREGUNTAS.es.length, 'misma cantidad de preguntas en ambos idiomas');
+
+  for (const [idioma, { principal }] of Object.entries(generarPaginas())) {
+    assert.equal((principal.match(/<details class="pregunta"/g) || []).length, PREGUNTAS[idioma].length);
+    assert.equal((principal.match(/<details class="pregunta" name="preguntas" open>/g) || []).length, 1, 'solo la primera abierta');
+    const datos = JSON.parse(principal.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
+    const faq = datos.find((d) => d['@type'] === 'FAQPage');
+    assert.equal(faq.mainEntity.length, PREGUNTAS[idioma].length);
+    assert.equal(faq.mainEntity[0].name, PREGUNTAS[idioma][0].pregunta);
+  }
 });

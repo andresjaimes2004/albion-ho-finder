@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const { SEO, EN } = require('../i18n/pagina');
+const { PREGUNTAS } = require('../i18n/preguntas');
 
 /**
  * paginas.js
@@ -21,12 +22,37 @@ const { SEO, EN } = require('../i18n/pagina');
  *    (SITIO_URL), con los enlaces hreflang entre idiomas.
  *  - Cualquier otra ruta responde un 404 real (no la página principal),
  *    para no crear contenido duplicado.
+ *  - Donaciones: el enlace de Ko-fi y la llave Bre-B se configuran con
+ *    DONAR_KOFI_URL y DONAR_BREB_LLAVE (y el QR, si existe
+ *    public/assets/qr-breb.png). Se validan: un valor inválido o ausente
+ *    deja esa opción como "muy pronto" en vez de publicar algo raro.
  * ----------------------------------------------------------------------
  */
 
 const IDIOMAS = ['es', 'en'];
 const INICIO = { es: '/', en: '/en/' };
 const CARPETA_VISTAS = path.join(__dirname, '..', 'vistas');
+const QR_BREB = path.join(__dirname, '..', '..', 'public', 'assets', 'qr-breb.png');
+
+const PATRON_KOFI = /^https:\/\/ko-fi\.com\/[A-Za-z0-9_]{2,40}\/?$/;
+// Llave alfanumérica (@nombre), celular o correo: nada que pueda romper el HTML.
+const PATRON_LLAVE = /^[@A-Za-z0-9._+-]{3,60}$/;
+
+function donaciones() {
+  const kofi = (process.env.DONAR_KOFI_URL || '').trim();
+  const llave = (process.env.DONAR_BREB_LLAVE || '').trim();
+  const kofiValido = PATRON_KOFI.test(kofi);
+  const llaveValida = PATRON_LLAVE.test(llave);
+  return {
+    kofiHref: kofiValido ? kofi : '#apoyar',
+    kofiClase: kofiValido ? '' : ' donar--pendiente',
+    brebLlave: llaveValida ? llave : '—',
+    brebClase: llaveValida ? '' : ' donar--pendiente',
+    brebQr: llaveValida && fs.existsSync(QR_BREB)
+      ? '<img class="donar__qr" src="/assets/qr-breb.png" alt="QR Bre-B" width="180" height="180" loading="lazy" />'
+      : '',
+  };
+}
 
 function urlSitio() {
   return (process.env.SITIO_URL || 'https://albionho.duckdns.org').replace(/\/+$/, '');
@@ -34,6 +60,28 @@ function urlSitio() {
 
 function escaparAtributo(texto) {
   return String(texto).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function escaparHtml(texto) {
+  return String(texto).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+const FLECHA = '<svg class="pregunta__flecha" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+/**
+ * Acordeón de preguntas frecuentes con <details>: funciona sin JavaScript,
+ * con teclado y lector de pantalla. name="preguntas" deja una sola abierta
+ * a la vez (como en HostGator); la primera empieza abierta.
+ */
+function htmlPreguntas(idioma) {
+  return PREGUNTAS[idioma]
+    .map(
+      ({ pregunta, respuesta }, i) => `<details class="pregunta" name="preguntas"${i === 0 ? ' open' : ''}>
+          <summary class="pregunta__titulo"><span>${escaparHtml(pregunta)}</span>${FLECHA}</summary>
+          <div class="pregunta__respuesta"><p>${escaparHtml(respuesta)}</p></div>
+        </details>`
+    )
+    .join('\n        ');
 }
 
 /** JSON dentro de <script>: sin "<" para que no pueda cerrar la etiqueta. */
@@ -68,6 +116,16 @@ function datosEstructurados(idioma, url) {
       image: `${sitio}/assets/og-albion-navigator.jpg`,
       author: { '@type': 'Person', name: 'TurnDark' },
       about: { '@type': 'VideoGame', name: 'Albion Online' },
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      inLanguage: idioma,
+      mainEntity: PREGUNTAS[idioma].map(({ pregunta, respuesta }) => ({
+        '@type': 'Question',
+        name: pregunta,
+        acceptedAnswer: { '@type': 'Answer', text: respuesta },
+      })),
     },
   ];
 }
@@ -106,6 +164,8 @@ function variables(idioma) {
     actualEs: idioma === 'es' ? actual : '',
     actualEn: idioma === 'en' ? actual : '',
     verificaciones: verificaciones(),
+    preguntas: htmlPreguntas(idioma),
+    ...donaciones(),
   };
 }
 
