@@ -2963,3 +2963,23 @@ html:has(dialog[open]) { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
   select::picker(select), select::picker-icon { transition: none; }
 }
+
+/* Tarjetas de Caminos de Avalon: se elevan y se iluminan al pasar el ratón. */
+.tarjeta-camino {
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+}
+.tarjeta-camino:hover,
+.tarjeta-camino:focus-visible {
+  transform: translateY(-3px);
+  background-color: rgba(40, 34, 50, 0.82);
+  border-color: rgba(var(--acento-rgb), 0.55);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.4), 0 0 18px rgba(var(--acento-rgb), 0.12);
+}
+.tarjeta-camino:active { transform: translateY(-1px); }
+.tarjeta-camino__nombre { transition: color 0.2s ease; }
+.tarjeta-camino:hover .tarjeta-camino__nombre,
+.tarjeta-camino:focus-visible .tarjeta-camino__nombre { color: var(--color-oro-claro); }
+@media (prefers-reduced-motion: reduce) {
+  .tarjeta-camino { transition: none; }
+  .tarjeta-camino:hover, .tarjeta-camino:focus-visible, .tarjeta-camino:active { transform: none; }
+}
