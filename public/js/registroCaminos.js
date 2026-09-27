@@ -4,6 +4,7 @@ import api from './api.js';
 import { crearIndiceZonas, buscarZona, MAX_MINUTOS } from './capturas/lectura.js';
 import { agruparEnRutas, invertirRuta, claveRuta } from './capturas/encadenar.js';
 import { t, tn } from './i18n.js';
+import { mostrarSuave, ocultarSuave } from './animar.js';
 
 /**
  * registroCaminos.js
@@ -124,7 +125,7 @@ export class PanelRegistro {
 
   _abrir() {
     this.abierto = true;
-    this.cuerpo.hidden = false;
+    mostrarSuave(this.cuerpo);
     this.alternar.textContent = t('Cerrar');
     this.alternar.setAttribute('aria-expanded', 'true');
     this._cargarZonas();
@@ -136,7 +137,7 @@ export class PanelRegistro {
 
   _cerrar() {
     this.abierto = false;
-    this.cuerpo.hidden = true;
+    ocultarSuave(this.cuerpo);
     this.alternar.textContent = t('Abrir');
     this.alternar.setAttribute('aria-expanded', 'false');
   }
