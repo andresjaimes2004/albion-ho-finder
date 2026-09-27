@@ -247,3 +247,21 @@ test('sin catálogo de zonas usa como extremos las zonas con un solo portal', as
   const ciclo = [{ origen: 'A', destino: 'B' }, { origen: 'B', destino: 'C' }, { origen: 'C', destino: 'A' }];
   assert.deepEqual(agruparEnRutas(ciclo).rutas, [], 'un ciclo cerrado no tiene extremos');
 });
+
+test('detecta barra y título con colores alterados (brillo, saturación, luz nocturna)', () => {
+  // Juego más apagado: barra y pergamino con menos saturación y brillo.
+  const apagada = imagen(1920, 1080, [
+    [545, 155, 1375, 205, [212, 178, 128]],
+    [900, 700, 1036, 707, [214, 160, 64]],
+  ]);
+  const barra = det.detectarBarra(apagada);
+  assert.deepEqual([barra.x0, barra.y0], [900, 700], 'la barra, no el pergamino');
+  assert.equal(det.regionTitulo(apagada).y, 155);
+
+  // Luz nocturna: casi sin azul; el pergamino deja de cumplir el criterio exacto.
+  const nocturna = imagen(1920, 1080, [[545, 155, 1375, 205, [250, 190, 70]]]);
+  assert.equal(det.regionTitulo(nocturna).y, 155);
+
+  // Un elemento dorado grueso (no una barra) no se toma por la barra.
+  assert.equal(det.detectarBarra(imagen(400, 300, [[50, 50, 250, 200, [200, 150, 40]]])), null);
+});

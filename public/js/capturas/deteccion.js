@@ -14,6 +14,14 @@
  * del pergamino, así que funciona con cualquier resolución o escala de
  * interfaz, y también con recortes parciales de la pantalla.
  *
+ * Los colores dependen de la configuración de cada jugador (brillo y
+ * gamma del juego, saturación o "vibración digital" de la tarjeta de
+ * video, HDR, luz nocturna de Windows...). Por eso cada región se busca
+ * por niveles: primero con los colores exactos por defecto y, si no
+ * aparece, por tono/saturación/brillo (HSV) con umbrales relativos a los
+ * colores más intensos de la propia captura. Así un juego más apagado o
+ * más vivo sigue funcionando y lo que ya funcionaba no cambia.
+ *
  * Funciones puras sobre { width, height, data } (RGBA, como ImageData),
  * sin DOM: se prueban en Node.
  * ----------------------------------------------------------------------
@@ -21,12 +29,82 @@
 
 const MIN_LARGO_BARRA = 24;
 
+/** Colores exactos con la configuración por defecto del juego. */
 function esAmarilloBarra(r, g, b) {
   return r > 230 && g > 150 && g < 205 && b < 70;
 }
 
 function esPergamino(r, g, b) {
   return r > 215 && g > 160 && g < 225 && b > 95 && b < 175 && r - b > 70;
+}
+
+/** Tono (0-360), saturación y brillo (0-1). */
+export function aHsv(r, g, b) {
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const d = max - min;
+  let h = 0;
+  if (d) {
+    if (max === r) h = ((g - b) / d) % 6;
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    h *= 60;
+    if (h < 0) h += 360;
+  }
+  return { h, s: max ? d / max : 0, v: max / 255 };
+}
+
+/** Percentil p (0-1) de una lista de números. */
+function percentil(valores, p) {
+  if (!valores.length) return 0;
+  const orden = Float32Array.from(valores).sort();
+  return orden[Math.min(orden.length - 1, Math.floor(p * orden.length))];
+}
+
+/** Muestra de píxeles (hasta ~60 000) para calcular estadísticas rápido. */
+function muestrear(imagen, filtro) {
+  const { width, height, data } = imagen;
+  const paso = Math.max(1, Math.floor(Math.sqrt((width * height) / 60000)));
+  const salida = [];
+  for (let y = 0; y < height; y += paso) {
+    for (let x = 0; x < width; x += paso) {
+      const i = (y * width + x) * 4;
+      const c = aHsv(data[i], data[i + 1], data[i + 2]);
+      if (filtro(c)) salida.push(c);
+    }
+  }
+  return salida;
+}
+
+/**
+ * Criterio tolerante para la barra: tono amarillo-anaranjado y saturación
+ * y brillo cercanos a los más intensos de la captura (la barra es lo más
+ * saturado de ese tono; el pergamino, mucho menos).
+ */
+function amarilloAdaptativo(imagen) {
+  const candidatos = muestrear(imagen, (c) => c.h >= 24 && c.h <= 58 && c.s >= 0.4 && c.v >= 0.45);
+  if (candidatos.length < 20) return null;
+  const sRef = percentil(candidatos.map((c) => c.s), 0.98);
+  const vRef = percentil(candidatos.map((c) => c.v), 0.98);
+  const sMin = Math.max(0.45, sRef * 0.8);
+  const vMin = Math.max(0.5, vRef * 0.78);
+  return (r, g, b) => {
+    const c = aHsv(r, g, b);
+    return c.h >= 24 && c.h <= 58 && c.s >= sMin && c.v >= vMin;
+  };
+}
+
+/** Criterio tolerante para el pergamino: claro, cálido y poco saturado. */
+function pergaminoAdaptativo(imagen, limiteAlto) {
+  const recorte = { ...imagen, height: limiteAlto };
+  const claros = muestrear(recorte, (c) => c.h >= 18 && c.h <= 55 && c.s >= 0.12 && c.s <= 0.75 && c.v >= 0.55);
+  if (claros.length < 20) return null;
+  const vRef = percentil(claros.map((c) => c.v), 0.95);
+  const vMin = Math.max(0.55, vRef * 0.82);
+  return (r, g, b) => {
+    const c = aHsv(r, g, b);
+    return c.h >= 18 && c.h <= 55 && c.s >= 0.12 && c.s <= 0.75 && c.v >= vMin;
+  };
 }
 
 /**
@@ -37,6 +115,13 @@ function esPergamino(r, g, b) {
  * @returns {{x0:number, x1:number, y0:number, y1:number} | null}
  */
 export function detectarBarra(imagen) {
+  const estricta = buscarBarra(imagen, esAmarilloBarra);
+  if (estricta) return estricta;
+  const tolerante = amarilloAdaptativo(imagen);
+  return tolerante ? buscarBarra(imagen, tolerante, { exigirForma: true }) : null;
+}
+
+function buscarBarra(imagen, esAmarillo, { exigirForma = false } = {}) {
   const { width, height, data } = imagen;
   let mejor = null;
 
@@ -45,7 +130,7 @@ export function detectarBarra(imagen) {
     let inicio = -1;
     for (let x = 0; x <= width; x++) {
       const i = (y * width + x) * 4;
-      const amarillo = x < width && esAmarilloBarra(data[i], data[i + 1], data[i + 2]);
+      const amarillo = x < width && esAmarillo(data[i], data[i + 1], data[i + 2]);
       if (amarillo && inicio < 0) inicio = x;
       if (!amarillo && inicio >= 0) {
         const previo = tramos[tramos.length - 1];
@@ -73,11 +158,18 @@ export function detectarBarra(imagen) {
   const esFila = (y) => {
     if (y < 0 || y >= height) return false;
     const i = (y * width + centro) * 4;
-    return esAmarilloBarra(data[i], data[i + 1], data[i + 2]);
+    return esAmarillo(data[i], data[i + 1], data[i + 2]);
   };
   while (esFila(mejor.y0 - 1)) mejor.y0 -= 1;
   while (esFila(mejor.y1 + 1)) mejor.y1 += 1;
 
+  // Con el criterio tolerante se exige la forma de la barra (larga y
+  // delgada) para no confundirla con otros elementos dorados.
+  if (exigirForma) {
+    const largo = mejor.x1 - mejor.x0 + 1;
+    const alto = mejor.y1 - mejor.y0 + 1;
+    if (alto < 2 || alto > Math.max(6, largo * 0.2)) return null;
+  }
   return mejor;
 }
 
@@ -128,10 +220,19 @@ export function regionesRecuadro(barra, imagen) {
  * de su panel izquierdo, donde van el tier y el nombre del camino.
  */
 export function regionTitulo(imagen) {
-  const { width, height, data } = imagen;
   // En capturas de pantalla completa el título está en la mitad superior;
   // un recorte pequeño (solo el título) se revisa entero.
-  const limite = height >= 400 ? Math.floor(height * 0.5) : height;
+  const limite = imagen.height >= 400 ? Math.floor(imagen.height * 0.5) : imagen.height;
+  const estricta = buscarPergamino(imagen, esPergamino, limite);
+  if (estricta) return estricta;
+  const tolerante = pergaminoAdaptativo(imagen, limite);
+  // Tolerante: la banda debe ser gruesa (≥ 2 % del alto) para no tomar la
+  // barra de capacidad por el pergamino.
+  return tolerante ? buscarPergamino(imagen, tolerante, limite, Math.max(8, Math.round(imagen.height * 0.02))) : null;
+}
+
+function buscarPergamino(imagen, esPergaminoColor, limite, minFilas = 8) {
+  const { width, data } = imagen;
   const filas = [];
 
   for (let y = 0; y < limite; y++) {
@@ -140,7 +241,7 @@ export function regionTitulo(imagen) {
     let derecha = -1;
     for (let x = 0; x < width; x++) {
       const i = (y * width + x) * 4;
-      if (esPergamino(data[i], data[i + 1], data[i + 2])) {
+      if (esPergaminoColor(data[i], data[i + 1], data[i + 2])) {
         cuenta += 1;
         if (izquierda < 0) izquierda = x;
         derecha = x;
@@ -154,10 +255,10 @@ export function regionTitulo(imagen) {
   const banda = [];
   for (const fila of filas) {
     if (fila.cuenta >= umbral) banda.push(fila);
-    else if (banda.length >= 8) break;
+    else if (banda.length >= minFilas) break;
     else banda.length = 0;
   }
-  if (banda.length < 8) return null;
+  if (banda.length < minFilas) return null;
 
   const izquierda = Math.min(...banda.map((f) => f.izquierda));
   const derecha = Math.max(...banda.map((f) => f.derecha));
