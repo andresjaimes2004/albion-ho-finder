@@ -345,7 +345,7 @@ class BuscadorUI {
     }
 
     const verMapa = document.createElement('span');
-    verMapa.className = 'tarjeta-mapa__accion';
+    verMapa.className = 'tarjeta-mapa__accion con-icono icono-mapa';
     verMapa.textContent = t('Ver mapa');
     encabezado.appendChild(verMapa);
 

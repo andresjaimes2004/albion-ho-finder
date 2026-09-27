@@ -230,7 +230,7 @@
       <p class="panel-busqueda__ayuda">
         {{Escribe el nombre completo o solo una parte. Toca cualquier mapa del resultado para abrirlo en detalle.}}
       </p>
-      <button id="alternar-mapa" type="button" class="boton boton--sutil" aria-expanded="false">
+      <button id="alternar-mapa" type="button" class="boton boton--sutil con-icono icono-mapa" aria-expanded="false">
         {{Ver mapa de la Zona Negra}}
       </button>
     </section>
@@ -238,7 +238,7 @@
     <section id="historial" class="panel-historial" hidden>
       <div class="panel-historial__cabecera">
         <h2>{{Tus últimas búsquedas}}</h2>
-        <button id="historial-limpiar" type="button" class="boton boton--pequeno boton--sutil">{{Limpiar}}</button>
+        <button id="historial-limpiar" type="button" class="boton boton--pequeno boton--sutil con-icono icono-papelera">{{Limpiar}}</button>
       </div>
       <ul id="historial-lista" class="historial"></ul>
     </section>
@@ -353,7 +353,7 @@
             <h2 id="registro-titulo" class="registro__titulo">{{Registrar conexiones desde capturas}}</h2>
             <p class="registro__subtitulo">{{Suma al mapa las conexiones que ve tu gremio.}}</p>
           </div>
-          <button id="registro-alternar" type="button" class="boton boton--pequeno" aria-expanded="false" aria-controls="registro-cuerpo">{{Abrir}}</button>
+          <button id="registro-alternar" type="button" class="boton boton--pequeno con-icono icono-abajo" aria-expanded="false" aria-controls="registro-cuerpo">{{Abrir}}</button>
         </div>
 
         <div id="registro-cuerpo" class="registro__cuerpo" hidden>
@@ -372,7 +372,7 @@
             <div id="registro-zona" class="registro__zona" tabindex="0">
               <strong>{{Pega aquí tus capturas (Ctrl+V)}}</strong>
               <span>{{o arrástralas, o}}</span>
-              <label class="boton boton--pequeno boton--sutil registro__archivos">
+              <label class="boton boton--pequeno boton--sutil registro__archivos con-icono icono-subir">
                 {{elige archivos}}
                 <input id="registro-archivos" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden />
               </label>
@@ -383,8 +383,8 @@
             <div id="registro-rutas" class="registro__rutas" hidden aria-live="polite"></div>
 
             <div id="registro-acciones" class="registro__acciones" hidden>
-              <button id="registro-guardar" type="button" class="boton">{{Guardar conexiones}}</button>
-              <button id="registro-vaciar" type="button" class="boton boton--sutil">{{Vaciar}}</button>
+              <button id="registro-guardar" type="button" class="boton con-icono icono-guardar">{{Guardar conexiones}}</button>
+              <button id="registro-vaciar" type="button" class="boton boton--sutil con-icono icono-papelera">{{Vaciar}}</button>
             </div>
             <p class="registro__privacidad">{{Las capturas se leen en tu navegador y no se suben: solo se guarda lo que confirmas.}}</p>
           </div>
@@ -402,7 +402,7 @@
       <p id="caminos-error" class="estado estado--error" hidden></p>
       <div id="caminos-resumen" class="resumen-resultados" hidden></div>
       <div id="caminos-lista" class="caminos-lista"></div>
-      <button id="caminos-mas" type="button" class="boton boton--sutil caminos-mas" hidden>{{Mostrar más}}</button>
+      <button id="caminos-mas" type="button" class="boton boton--sutil caminos-mas con-icono icono-abajo" hidden>{{Mostrar más}}</button>
 
       <p class="caminos-atribucion">
         {{Catálogo de caminos: dumps oficiales del cliente de Albion Online (Sandbox Interactive).}}

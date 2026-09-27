@@ -111,7 +111,7 @@ export class PanelSesion {
     if (!this.usuario) {
       const entrar = document.createElement('button');
       entrar.type = 'button';
-      entrar.className = 'boton';
+      entrar.className = 'boton con-icono icono-usuario';
       entrar.textContent = t('Iniciar sesión');
       entrar.addEventListener('click', () => this.abrir('login'));
 
@@ -139,7 +139,7 @@ export class PanelSesion {
 
     const salir = document.createElement('button');
     salir.type = 'button';
-    salir.className = 'boton boton--sutil';
+    salir.className = 'boton boton--sutil con-icono icono-salir';
     salir.textContent = t('Salir');
     salir.addEventListener('click', async () => {
       await api.logout();

@@ -2599,3 +2599,122 @@ button.ruta__nombre:hover { color: var(--color-oro-claro); text-decoration: unde
   .ventana { transform: none; }
   .boton:hover, .historial__item:hover { transform: none !important; }
 }
+
+/* ============================================================================
+   v10 — Estilo de los accionables: iconos, selectores e interruptor
+   ============================================================================ */
+
+:root {
+  --icono-mapa: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Cpath%20d%3D'M9%204%203%206.5v13.5l6-2.5%206%202.5%206-2.5V4l-6%202.5L9%204Zm0%200v13.5m6-11v13.5'%2F%3E%3C%2Fsvg%3E");
+  --icono-papelera: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Cpath%20d%3D'M4%207h16M10%2011v6M14%2011v6M6%207l1%2013h10l1-13M9%207V4h6v3'%2F%3E%3C%2Fsvg%3E");
+  --icono-guardar: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Cpath%20d%3D'M5%2012.5l4.5%204.5L19%207.5'%2F%3E%3C%2Fsvg%3E");
+  --icono-abajo: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Cpath%20d%3D'm6%209%206%206%206-6'%2F%3E%3C%2Fsvg%3E");
+  --icono-subir: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Cpath%20d%3D'M12%2016V4m0%200-4%204m4-4%204%204M4%2016v3a1%201%200%200%200%201%201h14a1%201%200%200%200%201-1v-3'%2F%3E%3C%2Fsvg%3E");
+  --icono-usuario: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Ccircle%20cx%3D'12'%20cy%3D'8'%20r%3D'4'%2F%3E%3Cpath%20d%3D'M4%2020c1.5-4%204.5-6%208-6s6.5%202%208%206'%2F%3E%3C%2Fsvg%3E");
+  --icono-salir: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Cpath%20d%3D'M15%2012H4m0%200%204-4m-4%204%204%204M10%205V4h10v16H10v-1'%2F%3E%3C%2Fsvg%3E");
+  --icono-registro: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Cpath%20d%3D'M12%205v14M5%2012h14'%2F%3E%3C%2Fsvg%3E");
+  --flecha-select: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'%23e8c95c'%20stroke-width%3D'2.4'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Cpath%20d%3D'm6%209%206%206%206-6'%2F%3E%3C%2Fsvg%3E");
+}
+
+/* Icono delante del texto, pintado con el color del botón (máscara SVG).
+   Va por CSS para no depender del texto, que el JavaScript cambia. */
+.con-icono { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.con-icono::before {
+  content: '';
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  background-color: currentColor;
+  -webkit-mask: var(--icono) center / contain no-repeat;
+  mask: var(--icono) center / contain no-repeat;
+  transition: transform 0.25s ease;
+}
+.icono-mapa { --icono: var(--icono-mapa); }
+.icono-papelera { --icono: var(--icono-papelera); }
+.icono-guardar { --icono: var(--icono-guardar); }
+.icono-abajo { --icono: var(--icono-abajo); }
+.icono-subir { --icono: var(--icono-subir); }
+.icono-usuario { --icono: var(--icono-usuario); }
+.icono-salir { --icono: var(--icono-salir); }
+.icono-registro { --icono: var(--icono-registro); }
+
+/* Botones que abren o despliegan algo: la flecha gira al abrirse. */
+.icono-abajo[aria-expanded='true']::before { transform: rotate(180deg); }
+.caminos-mas.con-icono { display: flex; margin: 16px auto 0; }
+.tarjeta-mapa__accion.con-icono { gap: 5px; }
+.tarjeta-mapa__accion.con-icono::before { width: 13px; height: 13px; }
+.con-icono:hover::before { transform: translateY(1px); }
+#registro-alternar.con-icono:hover::before { transform: none; }
+
+/* Selectores (filtros de caminos y formularios de administración) */
+.caminos-filtros select,
+.formulario-linea select,
+.admin-fila select,
+.ajuste-imagen__fila select {
+  -webkit-appearance: none;
+  appearance: none;
+  padding: 9px 38px 9px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--color-borde);
+  background: var(--vidrio-fuerte) var(--flecha-select) no-repeat right 14px center / 14px;
+  color: var(--color-texto);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.caminos-filtros select:hover,
+.formulario-linea select:hover,
+.admin-fila select:hover,
+.ajuste-imagen__fila select:hover { border-color: rgba(201, 162, 39, 0.5); }
+select option { background: #16131c; color: var(--color-texto); }
+
+/* Casillas como interruptor en forma de píldora ("Solo con conexiones activas") */
+.casilla {
+  gap: 10px;
+  padding: 6px 16px 6px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--color-borde);
+  background: var(--vidrio-fuerte);
+  font-weight: 600;
+  user-select: none;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+.casilla:hover { border-color: rgba(201, 162, 39, 0.5); color: var(--color-texto); }
+.casilla input {
+  -webkit-appearance: none;
+  appearance: none;
+  position: relative;
+  flex-shrink: 0;
+  width: 36px;
+  height: 20px;
+  margin: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+}
+.casilla input::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #d9d0df;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  transition: transform 0.25s ease, background-color 0.25s ease;
+}
+.casilla input:checked { background: var(--color-oro); }
+.casilla input:checked::after { transform: translateX(16px); background: #1a1206; }
+.casilla input:focus-visible { outline: 2px solid var(--color-oro-claro); outline-offset: 3px; }
+.casilla:has(input:checked) {
+  border-color: rgba(201, 162, 39, 0.55);
+  background: rgba(201, 162, 39, 0.12);
+  color: var(--color-oro-claro);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .con-icono::before, .casilla, .casilla input, .casilla input::after { transition: none; }
+}
