@@ -14,6 +14,11 @@ Avalon abiertas que registra la comunidad.
   (`/#hideouts`, el buscador) y Caminos de Avalon (`/#caminos`). La marca
   "Albion Navigator" lleva al inicio; el botón "atrás" del navegador vuelve
   al apartado anterior.
+- **Fondo fijo por apartado** (como AlbionOnlineBuilds): la imagen se queda
+  quieta al desplazarse y el pie, sólido, la tapa al final. Inicio usa el
+  arte morado, Hideouts `fondo-hideouts.webp` y Caminos
+  `fondo-caminos.webp`, con un fundido al cambiar de apartado. A las
+  imágenes se les recortó la franja con el logo de Albion.
 
 - **Portada** (al estilo de HostGator): arte del juego en una tarjeta
   redondeada, titular, qué es el sitio, que es gratis y sin anuncios, y dos

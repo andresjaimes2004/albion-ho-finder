@@ -32,8 +32,8 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <link rel="manifest" href="/manifest.webmanifest" />
   <meta name="theme-color" content="#0c0a10" />
-  <link rel="preload" as="image" href="/assets/fondo-avalon.webp" media="(min-width: 961px)" />
-  <link rel="preload" as="image" href="/assets/fondo-avalon-960.webp" media="(max-width: 960px)" />
+  <link rel="preload" as="image" href="/assets/fondo-inicio.webp" media="(min-width: 961px)" />
+  <link rel="preload" as="image" href="/assets/fondo-inicio-960.webp" media="(max-width: 960px)" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -41,7 +41,13 @@
   <script type="application/ld+json">{{@datosEstructurados}}</script>
 </head>
 <body>
-  <div class="fondo-arte" aria-hidden="true"></div>
+  <!-- Fondo fijo: se queda quieto al desplazarse y cambia según el apartado. -->
+  <div class="fondo" aria-hidden="true">
+    <div class="fondo__capa fondo__capa--inicio"></div>
+    <div class="fondo__capa fondo__capa--hideouts"></div>
+    <div class="fondo__capa fondo__capa--caminos"></div>
+    <div class="fondo__velo"></div>
+  </div>
 
   <header class="cabecera">
     <div class="contenedor contenedor--ancho cabecera__contenido">

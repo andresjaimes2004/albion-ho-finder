@@ -65,28 +65,51 @@ body {
   line-height: 1.5;
 }
 
-/* Arte de fondo: arriba de la página, oscurecido y fundido con el fondo
-   (como una portada), para que el contenido se lea siempre bien. */
-.fondo-arte {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: min(100vh, 920px);
+/* Fondo fijo a pantalla completa (como AlbionOnlineBuilds): la imagen se
+   queda quieta y el contenido se desplaza por encima; el pie, sólido, la
+   tapa al final. Cada apartado tiene su imagen y se cambia con un fundido. */
+.fondo {
+  position: fixed;
+  inset: 0;
   z-index: -1;
   pointer-events: none;
-  background:
-    linear-gradient(180deg, rgba(12, 10, 16, 0.5) 0%, rgba(12, 10, 16, 0.74) 45%, var(--color-fondo) 82%),
-    radial-gradient(ellipse at 20% 10%, rgba(167, 123, 255, 0.14), transparent 60%),
-    url('../assets/fondo-avalon.webp') center 20% / cover no-repeat;
+  background: var(--color-fondo);
 }
 
+.fondo__capa {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.fondo__capa--inicio { background-image: url('../assets/fondo-inicio.webp'); background-position: 35% 30%; }
+.fondo__capa--hideouts { background-image: url('../assets/fondo-hideouts.webp'); background-position: 40% 30%; }
+.fondo__capa--caminos { background-image: url('../assets/fondo-caminos.webp'); background-position: 25% 50%; }
+
 @media (max-width: 960px) {
-  .fondo-arte {
-    background:
-      linear-gradient(180deg, rgba(12, 10, 16, 0.55) 0%, rgba(12, 10, 16, 0.78) 45%, var(--color-fondo) 85%),
-      url('../assets/fondo-avalon-960.webp') 30% top / cover no-repeat;
-  }
+  .fondo__capa--inicio { background-image: url('../assets/fondo-inicio-960.webp'); }
+}
+
+/* Sin JavaScript (o antes de que cargue) se ve el fondo del inicio. */
+body:not([data-vista]) .fondo__capa--inicio,
+body[data-vista='inicio'] .fondo__capa--inicio,
+body[data-vista='hideouts'] .fondo__capa--hideouts,
+body[data-vista='caminos'] .fondo__capa--caminos { opacity: 1; }
+
+.fondo__velo {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(167, 123, 255, 0.1), transparent 60%),
+    linear-gradient(180deg, rgba(12, 10, 16, 0.62) 0%, rgba(12, 10, 16, 0.8) 55%, rgba(12, 10, 16, 0.9) 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fondo__capa { transition: none; }
 }
 
 .contenedor {
@@ -1995,7 +2018,7 @@ button.ruta__nombre:hover { color: var(--color-oro-claro); text-decoration: unde
   background:
     radial-gradient(ellipse at 50% 0%, rgba(167, 123, 255, 0.22), transparent 60%),
     linear-gradient(180deg, rgba(12, 10, 16, 0.55), rgba(12, 10, 16, 0.9)),
-    url('../assets/fondo-avalon.webp') 35% 15% / auto 135% no-repeat,
+    url('../assets/fondo-inicio.webp') 35% 15% / auto 135% no-repeat,
     var(--color-fondo);
   box-shadow: var(--sombra);
 }
