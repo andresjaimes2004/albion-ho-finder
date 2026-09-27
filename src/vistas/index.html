@@ -123,27 +123,27 @@
       <h2 id="funciones-titulo" class="seccion__titulo">{{Todo lo que necesitas para moverte por Albion}}</h2>
       <p class="seccion__texto">{{Tres herramientas pensadas para gremios, exploradores y cazadores de la Zona Negra.}}</p>
       <div class="funciones__tarjetas">
-        <article class="funcion funcion--hideouts">
+        <a class="funcion funcion--hideouts" href="{{@inicio}}#hideouts" data-ir="hideouts" data-enfocar="input-gremio">
+          <span class="funcion__ir" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m0 0-6-6m6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           <div class="funcion__contenido">
             <h3 class="funcion__titulo">{{Busca hideouts}}</h3>
             <p class="funcion__texto">{{Escribe el nombre de un gremio y mira todos sus hideouts, con slot y tipo, sobre el mapa del juego.}}</p>
-            <a class="boton boton--pequeno" href="{{@inicio}}#hideouts" data-ir="hideouts" data-enfocar="input-gremio">{{Buscar gremio}}</a>
           </div>
-        </article>
-        <article class="funcion funcion--caminos">
+        </a>
+        <a class="funcion funcion--caminos" href="{{@inicio}}#caminos" data-ir="caminos">
+          <span class="funcion__ir" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m0 0-6-6m6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           <div class="funcion__contenido">
             <h3 class="funcion__titulo">{{Sigue las rutas de Avalon}}</h3>
             <p class="funcion__texto">{{Consulta los 400 caminos y los portales abiertos ahora, con la cuenta regresiva hasta que cierran.}}</p>
-            <a class="boton boton--pequeno" href="{{@inicio}}#caminos" data-ir="caminos">{{Ver caminos}}</a>
           </div>
-        </article>
-        <article class="funcion funcion--registro">
+        </a>
+        <a class="funcion funcion--registro" href="{{@inicio}}#caminos" data-ir="caminos" data-abrir-registro>
+          <span class="funcion__ir" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m0 0-6-6m6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           <div class="funcion__contenido">
             <h3 class="funcion__titulo">{{Registra conexiones}}</h3>
             <p class="funcion__texto">{{Pega una captura del juego y el lector la convierte en conexiones y rutas para tu gremio.}}</p>
-            <a class="boton boton--pequeno" href="{{@inicio}}#caminos" data-ir="caminos" data-abrir-registro>{{Registrar}}</a>
           </div>
-        </article>
+        </a>
       </div>
     </section>
 

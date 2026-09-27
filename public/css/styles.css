@@ -2153,6 +2153,10 @@ button.ruta__nombre:hover { color: var(--color-oro-claro); text-decoration: unde
   display: flex;
   align-items: flex-end;
   overflow: hidden;
+  /* Toda la tarjeta es un enlace a su apartado. */
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
   border-radius: var(--radio-lg);
   border: 1px solid var(--color-borde);
   background-color: var(--color-fondo-tarjeta);
@@ -2188,7 +2192,28 @@ button.ruta__nombre:hover { color: var(--color-oro-claro); text-decoration: unde
   overflow: hidden;
   transition: max-height 0.45s ease, opacity 0.35s ease;
 }
-.funcion .boton { text-decoration: none; display: inline-block; }
+/* Flecha de la esquina: indica que la tarjeta lleva a otro apartado. */
+.funcion__ir {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: var(--color-oro-claro);
+  background: rgba(12, 10, 16, 0.55);
+  border: 1px solid rgba(201, 162, 39, 0.35);
+  backdrop-filter: blur(4px);
+  transition: transform 0.25s ease, background-color 0.25s ease, color 0.25s ease;
+}
+.funcion:hover .funcion__ir,
+.funcion:focus-visible .funcion__ir { transform: translateX(3px); background: var(--color-oro); color: #1a1206; }
+.funcion:focus-visible { outline: 2px solid var(--color-oro-claro); outline-offset: 3px; }
+.funcion__texto { margin-bottom: 0; }
 
 /* La tarjeta activa crece y muestra su descripción; las demás se encogen.
    Sin ratón encima, la primera queda abierta. */
