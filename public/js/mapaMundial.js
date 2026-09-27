@@ -17,10 +17,19 @@ import { t } from './i18n.js';
  * nodos y el fondo comparten el mismo sistema de coordenadas y no pueden
  * desalinearse al hacer zoom.
  *
- * Al buscar un gremio, los mapas donde tiene hideout se resaltan y la
- * vista se centra en ellos. Clic en un mapa → ventana con su detalle.
+ * Cada mapa es un punto del color de su tier (su anillo dentro de la
+ * Zona Negra), con un área de clic amplia. Al acercar lo suficiente, cada
+ * punto muestra una etiqueta con el nombre del mapa en ese mismo color
+ * (como el mapa de ava.smugden.com), fácil de leer y de pulsar.
+ *
+ * Al buscar un gremio, los mapas donde tiene hideout se resaltan (con su
+ * etiqueta siempre visible) y la vista se centra en ellos. Clic en un
+ * mapa → ventana con su detalle.
  * ----------------------------------------------------------------------
  */
+
+// A partir de este zoom se ven las etiquetas de todos los mapas.
+const ESCALA_ETIQUETAS = 2.6;
 export class MapaMundial {
   constructor({ alSeleccionar } = {}) {
     this.svg = document.getElementById('mapa-mundial__svg');
@@ -99,39 +108,40 @@ export class MapaMundial {
     }
     capa.appendChild(aristas);
 
-    const capaNodos = crear('g', { class: 'mundo__nodos', 'stroke-width': unidad * 0.35 });
+    const capaNodos = crear('g', { class: 'mundo__nodos' });
     for (const mapa of mapas) {
       const [x, y] = this.posiciones.get(mapa.nombre);
+      const tier = Math.min(8, Math.max(4, mapa.tier || 4));
       const grupo = crear('g', {
-        class: `mundo__nodo mundo__nodo--t${mapa.tier || 0}${mapa.hideouts ? ' mundo__nodo--ocupado' : ''}`,
+        class: `mundo__nodo mundo__nodo--t${tier}${mapa.hideouts ? ' mundo__nodo--ocupado' : ''}`,
         'data-interactivo': '',
         'data-mapa': mapa.nombre,
         tabindex: '0',
         role: 'button',
+        'aria-label': t('{nombre} — T{tier} · {n} hideout(s)', { nombre: mapa.nombre, tier: mapa.tier, n: mapa.hideouts }),
         transform: `translate(${x} ${y})`,
       });
       grupo.dataset.x = String(x);
       grupo.dataset.y = String(y);
-
-      const lado = unidad * (mapa.hideouts ? 2.4 + Math.min(mapa.hideouts, 6) * 0.25 : 1.8);
-      grupo.appendChild(
-        crear('rect', { x: -lado / 2, y: -lado / 2, width: lado, height: lado, rx: lado * 0.18 })
-      );
       grupo.appendChild(crear('title', {}, t('{nombre} — T{tier} · {n} hideout(s)', { nombre: mapa.nombre, tier: mapa.tier, n: mapa.hideouts })));
-      grupo.appendChild(
-        crear(
-          'text',
-          {
-            x: 0,
-            y: -lado * 0.9,
-            'text-anchor': 'middle',
-            class: 'mundo__etiqueta',
-            'font-size': unidad * 3,
-            'stroke-width': unidad * 0.8,
-          },
-          mapa.nombre
-        )
+
+      // Área de clic amplia e invisible, halo de resaltado y punto.
+      grupo.appendChild(crear('circle', { r: unidad * 3.6, class: 'mundo__zona-clic' }));
+      grupo.appendChild(crear('circle', { r: unidad * 3, class: 'mundo__halo', 'stroke-width': unidad * 0.6 }));
+      grupo.appendChild(crear('circle', { r: unidad * (mapa.hideouts ? 1.6 : 1.3), class: 'mundo__punto', 'stroke-width': unidad * 0.45 }));
+
+      // Etiqueta con el nombre (se muestra al acercar, al pasar el ratón o si está resaltado).
+      const letra = unidad * 3.1;
+      const anchoTexto = mapa.nombre.length * letra * 0.56;
+      const altoChip = letra * 1.7;
+      const anchoChip = anchoTexto + letra * 1.3;
+      const yChip = -(unidad * 2 + altoChip);
+      const chip = crear('g', { class: 'mundo__chip' });
+      chip.appendChild(crear('rect', { x: -anchoChip / 2, y: yChip, width: anchoChip, height: altoChip, rx: letra * 0.35, 'stroke-width': unidad * 0.3 }));
+      chip.appendChild(
+        crear('text', { x: 0, y: yChip + altoChip * 0.7, 'text-anchor': 'middle', 'font-size': letra, class: 'mundo__etiqueta' }, mapa.nombre)
       );
+      grupo.appendChild(chip);
 
       const abrir = () => this.alSeleccionar(mapa.nombre);
       grupo.addEventListener('click', abrir);
@@ -175,6 +185,7 @@ export class MapaMundial {
   _ajustarNodos(escala) {
     if (this._escalaNodos === escala) return;
     this._escalaNodos = escala;
+    this.svg.classList.toggle('mundo--cerca', escala >= ESCALA_ETIQUETAS);
     const factor = 1 / escala ** 0.8;
     for (const nodo of this.nodos.values()) {
       nodo.setAttribute('transform', `translate(${nodo.dataset.x} ${nodo.dataset.y}) scale(${factor})`);

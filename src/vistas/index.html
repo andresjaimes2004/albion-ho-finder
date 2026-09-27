@@ -248,10 +248,18 @@
         <h2>{{Mapa de la Zona Negra}}</h2>
         <p id="mapa-mundial__leyenda" class="mapa-mundial__leyenda"></p>
       </div>
+      <ul class="mundo-leyenda" aria-label="{{Colores por tier}}">
+        <li><span class="mundo-leyenda__punto mundo__nodo--t4"></span> T4</li>
+        <li><span class="mundo-leyenda__punto mundo__nodo--t5"></span> T5</li>
+        <li><span class="mundo-leyenda__punto mundo__nodo--t6"></span> T6</li>
+        <li><span class="mundo-leyenda__punto mundo__nodo--t7"></span> T7</li>
+        <li><span class="mundo-leyenda__punto mundo__nodo--t8"></span> T8</li>
+        <li><span class="mundo-leyenda__punto mundo-leyenda__punto--ocupado"></span> {{Con hideouts}}</li>
+      </ul>
       <p id="mapa-mundial__estado" class="estado estado--info" hidden></p>
       <svg id="mapa-mundial__svg" class="lienzo" role="img" aria-label="{{Mapa de clusters de la Zona Negra}}"></svg>
       <p class="mapa-mundial__pie">
-        {{Arrastra para moverte y usa la rueda para acercar. Los mapas resaltados son los del gremio buscado.}}
+        {{Arrastra para moverte y usa la rueda para acercar: al acercar aparecen los nombres de los mapas. Los mapas resaltados son los del gremio buscado.}}
       </p>
       <p id="mapa-mundial__atribucion" class="mapa-mundial__pie mapa-mundial__atribucion"></p>
     </section>

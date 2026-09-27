@@ -69,8 +69,10 @@ const EN = {
   'Mapa interactivo de la Zona Negra': 'Interactive Black Zone map',
   'Mapa de la Zona Negra': 'Black Zone map',
   'Mapa de clusters de la Zona Negra': 'Black Zone cluster map',
-  'Arrastra para moverte y usa la rueda para acercar. Los mapas resaltados son los del gremio buscado.':
-    'Drag to move and use the wheel to zoom. Highlighted maps belong to the guild you searched for.',
+  'Arrastra para moverte y usa la rueda para acercar: al acercar aparecen los nombres de los mapas. Los mapas resaltados son los del gremio buscado.':
+    'Drag to move and use the wheel to zoom: map names appear as you zoom in. Highlighted maps belong to the guild you searched for.',
+  'Colores por tier': 'Colors by tier',
+  'Con hideouts': 'With hideouts',
   'Escribe al menos 2 caracteres para empezar a buscar.': 'Type at least 2 characters to start searching.',
   'Buscando en la Zona Negra...': 'Searching the Black Zone...',
   'No se encontró ningún Hideout para ese gremio.': 'No hideout was found for that guild.',

@@ -717,28 +717,6 @@ body[data-vista='caminos'] .fondo__capa--caminos { opacity: 1; }
 /* Mapa mundial (sobre el mapa del juego) */
 .mundo__fondo image { image-rendering: auto; }
 .mundo__aristas line { stroke: rgba(20, 16, 12, 0.55); }
-.mundo__nodo rect {
-  fill: rgba(16, 14, 18, 0.82);
-  stroke: rgba(236, 231, 224, 0.55);
-  transition: fill 0.15s ease;
-}
-.mundo__nodo--ocupado rect { fill: #121014; stroke: var(--color-oro); }
-.mundo__nodo:hover rect,
-.mundo__nodo:focus-visible rect { fill: var(--color-oro-claro); }
-.mundo__nodo--destacado rect { fill: var(--color-carmesi-claro); stroke: #fff4c8; }
-.mundo__etiqueta {
-  /* El tamaño y el grosor del contorno los fija el JS en unidades del mapa. */
-  fill: #fff7e6;
-  font-family: var(--fuente-texto);
-  font-weight: 600;
-  paint-order: stroke;
-  stroke: rgba(10, 8, 12, 0.9);
-  opacity: 0;
-  pointer-events: none;
-}
-.mundo__nodo:hover .mundo__etiqueta,
-.mundo__nodo:focus-visible .mundo__etiqueta,
-.mundo__nodo--destacado .mundo__etiqueta { opacity: 1; }
 .mapa-mundial__atribucion { font-size: 0.72rem; margin-top: 2px; }
 
 /* Mapa de un cluster */
@@ -2543,10 +2521,8 @@ button.ruta__nombre:hover { color: var(--color-oro-claro); text-decoration: unde
 /* Elementos del mapa (SVG) */
 .mapa__salida circle,
 .mapa__pin-cuerpo,
-.mundo__etiqueta { transition: fill 0.2s ease, opacity 0.2s ease, filter 0.2s ease; }
 .mapa__pin:hover .mapa__pin-cuerpo,
 .mapa__pin:focus-visible .mapa__pin-cuerpo { filter: brightness(1.25) drop-shadow(0 0 4px rgba(232, 201, 92, 0.6)); }
-.mundo__nodo rect { transition: fill 0.2s ease, stroke 0.2s ease; }
 
 /* Ventanas flotantes: aparecen y se van con un fundido y un leve zoom
    (Chrome, Edge, Safari y Firefox recientes; en el resto, al instante). */
@@ -2817,3 +2793,83 @@ html:has(dialog[open]) { overflow: hidden; }
 
 /* Aviso cuando las bifurcaciones superan el tope de rutas del registro. */
 .registro__ruta-tope { margin: 0 0 8px; font-size: 0.84rem; color: var(--advertencia-suave); }
+
+/* ============================================================================
+   v10 — Mapa global de la Zona Negra (al estilo de ava.smugden.com)
+   ============================================================================ */
+
+/* Más grande: casi todo el alto de la pantalla. */
+.mapa-mundial .lienzo { height: min(74vh, 760px); }
+@media (max-width: 700px) { .mapa-mundial .lienzo { height: 64vh; } }
+
+/* Color de cada mapa según su tier (su anillo dentro de la Zona Negra). */
+.mundo__nodo--t4 { --tier: #5b9bd5; --tier-texto: #08131f; }
+.mundo__nodo--t5 { --tier: #5fbf7f; --tier-texto: #081a0f; }
+.mundo__nodo--t6 { --tier: #e6c229; --tier-texto: #1d1603; }
+.mundo__nodo--t7 { --tier: #ea8a3c; --tier-texto: #1f0e02; }
+.mundo__nodo--t8 { --tier: #e0484f; --tier-texto: #ffffff; }
+
+.mundo__nodo { cursor: pointer; outline: none; }
+.mundo__zona-clic { fill: transparent; }
+.mundo__punto {
+  fill: var(--tier);
+  stroke: rgba(10, 8, 12, 0.85);
+  transition: fill 0.2s ease, stroke 0.2s ease;
+}
+/* Mapas con hideouts: aro dorado. */
+.mundo__nodo--ocupado .mundo__punto { stroke: var(--color-oro-claro); }
+
+.mundo__halo { fill: none; stroke: var(--color-oro-claro); opacity: 0; transition: opacity 0.25s ease; }
+
+/* Etiqueta con el nombre del mapa, del color de su anillo. */
+.mundo__chip { opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+.mundo__chip rect { fill: var(--tier); stroke: rgba(10, 8, 12, 0.85); }
+.mundo__etiqueta {
+  fill: var(--tier-texto);
+  font-family: var(--fuente-texto);
+  font-weight: 700;
+}
+
+/* Se ven al acercar, al pasar el ratón o con el teclado, y siempre en los
+   mapas del gremio buscado. Visibles, también se pueden pulsar. */
+.mundo--cerca .mundo__chip,
+.mundo__nodo:hover .mundo__chip,
+.mundo__nodo:focus-visible .mundo__chip,
+.mundo__nodo--destacado .mundo__chip { opacity: 1; pointer-events: auto; }
+
+.mundo__nodo:hover .mundo__punto,
+.mundo__nodo:focus-visible .mundo__punto { fill: #fff4c8; }
+.mundo__nodo:hover .mundo__chip rect,
+.mundo__nodo:focus-visible .mundo__chip rect { stroke: #fff4c8; }
+
+/* Mapas del gremio buscado: halo dorado que late. */
+.mundo__nodo--destacado .mundo__halo {
+  opacity: 1;
+  animation: latido-mapa 1.8s ease-in-out infinite;
+}
+.mundo__nodo--destacado .mundo__punto { stroke: #fff4c8; }
+@keyframes latido-mapa {
+  0%, 100% { stroke-opacity: 0.9; }
+  50% { stroke-opacity: 0.25; }
+}
+
+/* Leyenda de colores por tier. */
+.mundo-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  list-style: none;
+  margin: 4px 0 12px;
+  padding: 0;
+  font-size: 0.8rem;
+  color: var(--color-texto-suave);
+}
+.mundo-leyenda li { display: inline-flex; align-items: center; gap: 6px; }
+.mundo-leyenda__punto { width: 11px; height: 11px; border-radius: 50%; border: 1px solid rgba(10, 8, 12, 0.8); background: var(--tier); }
+.mundo-leyenda__punto--ocupado { background: transparent; border: 2px solid var(--color-oro-claro); }
+
+@media (prefers-reduced-motion: reduce) {
+  .mundo__nodo--destacado .mundo__halo { animation: none; }
+  .mundo__chip, .mundo__punto, .mundo__halo { transition: none; }
+}
