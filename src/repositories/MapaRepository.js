@@ -175,6 +175,16 @@ class MapaRepository extends BaseRepository {
     return conexiones;
   }
 
+  /** Mapas con geografía cargada, con su id de cluster en los dumps. */
+  listarClusters() {
+    return this.db
+      .prepare(
+        `SELECT m.id AS id, m.nombre AS nombre, g.cluster_id AS clusterId
+         FROM mapas m INNER JOIN mapas_geo g ON g.mapa_id = m.id`
+      )
+      .all();
+  }
+
   contarGeo() {
     return this.db.prepare('SELECT COUNT(*) AS total FROM mapas_geo').get().total;
   }
@@ -186,7 +196,7 @@ class MapaRepository extends BaseRepository {
     const fila = this.db
       .prepare(
         `SELECT mime, bytes, escala, desplazamiento_x AS dx, desplazamiento_y AS dy,
-                rotacion, actualizado_en AS actualizadoEn
+                rotacion, proyeccion, actualizado_en AS actualizadoEn
          FROM mapas_imagen WHERE mapa_id = $mapaId`
       )
       .get({ $mapaId: mapaId });
@@ -202,28 +212,30 @@ class MapaRepository extends BaseRepository {
   /**
    * Guarda (o reemplaza) la imagen de un mapa. Al reemplazar la imagen se
    * reinicia el ajuste, porque el de la imagen anterior ya no aplica.
+   * Por defecto se asume la textura del minimapa del juego (ver migraciones).
    */
-  guardarImagen(mapaId, { mime, datos, usuarioId }) {
+  guardarImagen(mapaId, { mime, datos, usuarioId, proyeccion = 'juego' }) {
     this.db
       .prepare(
-        `INSERT INTO mapas_imagen (mapa_id, mime, datos, bytes, usuario_id, actualizado_en)
-         VALUES ($mapaId, $mime, $datos, $bytes, $usuario, datetime('now'))
+        `INSERT INTO mapas_imagen (mapa_id, mime, datos, bytes, usuario_id, proyeccion, actualizado_en)
+         VALUES ($mapaId, $mime, $datos, $bytes, $usuario, $proyeccion, datetime('now'))
          ON CONFLICT (mapa_id) DO UPDATE SET
             mime = excluded.mime,
             datos = excluded.datos,
             bytes = excluded.bytes,
             usuario_id = excluded.usuario_id,
+            proyeccion = excluded.proyeccion,
             escala = 1,
             desplazamiento_x = 0,
             desplazamiento_y = 0,
             rotacion = 0,
             actualizado_en = datetime('now')`
       )
-      .run({ $mapaId: mapaId, $mime: mime, $datos: datos, $bytes: datos.length, $usuario: usuarioId });
+      .run({ $mapaId: mapaId, $mime: mime, $datos: datos, $bytes: datos.length, $usuario: usuarioId, $proyeccion: proyeccion });
     return this.obtenerImagenMeta(mapaId);
   }
 
-  guardarAjusteImagen(mapaId, { escala, dx, dy, rotacion }) {
+  guardarAjusteImagen(mapaId, { escala, dx, dy, rotacion, proyeccion }) {
     this.db
       .prepare(
         `UPDATE mapas_imagen SET
@@ -231,10 +243,11 @@ class MapaRepository extends BaseRepository {
             desplazamiento_x = $dx,
             desplazamiento_y = $dy,
             rotacion = $rotacion,
+            proyeccion = COALESCE($proyeccion, proyeccion),
             actualizado_en = datetime('now')
          WHERE mapa_id = $mapaId`
       )
-      .run({ $mapaId: mapaId, $escala: escala, $dx: dx, $dy: dy, $rotacion: rotacion });
+      .run({ $mapaId: mapaId, $escala: escala, $dx: dx, $dy: dy, $rotacion: rotacion, $proyeccion: proyeccion ?? null });
     return this.obtenerImagenMeta(mapaId);
   }
 

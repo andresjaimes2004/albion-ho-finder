@@ -87,6 +87,7 @@ class MapaService {
           dx: meta.dx,
           dy: meta.dy,
           rotacion: meta.rotacion,
+          proyeccion: meta.proyeccion,
           actualizadoEn: meta.actualizadoEn,
         }
       : null;
@@ -94,12 +95,27 @@ class MapaService {
     return {
       ok: true,
       temporada: temporada ? temporada.codigo : null,
-      mapa: geo,
+      mapa: { ...geo, salidas: this._salidasVisibles(geo.salidas) },
       imagen,
       hideouts: hideouts.map((h) => h.toJSON()),
       totalHideouts: hideouts.length,
       ubicados: hideouts.filter((h) => h.ubicado).length,
     };
+  }
+
+  /**
+   * Salidas que se dibujan en el mapa. Las mazmorras estáticas (Cathedral
+   * of Light, Exalted Crypt…; en los dumps su id empieza por "DNG-") no
+   * tienen ficha ni imagen, así que se omiten. El resto se conserva y se
+   * marca si lleva a un mapa de Zona Negra que se pueda abrir: las que
+   * llevan a ciudades, Smuggler's Den o pasajes se muestran como
+   * referencia, pero no son navegables.
+   */
+  _salidasVisibles(salidas = []) {
+    const navegables = new Set(this.mapas.listarClusters().map((m) => m.nombre));
+    return salidas
+      .filter((s) => !String(s.destinoId || '').startsWith('DNG-'))
+      .map((s) => ({ ...s, navegable: navegables.has(s.destino) }));
   }
 }
 
