@@ -15,6 +15,8 @@
  * ----------------------------------------------------------------------
  */
 
+import { t, tn, regional } from './i18n.js';
+
 export function crear(etiqueta, clase, texto) {
   const el = document.createElement(etiqueta);
   if (clase) el.className = clase;
@@ -36,8 +38,8 @@ export function formatearRestante(ms) {
 
 export function pintarReloj(el, ahora = Date.now()) {
   const restante = Number(el.dataset.cierra) - ahora;
-  const prefijo = el.dataset.prefijo === undefined ? 'cierra en ' : el.dataset.prefijo;
-  el.textContent = restante > 0 ? `${prefijo}${formatearRestante(restante)}` : 'cerrada';
+  const prefijo = el.dataset.prefijo === undefined ? t('cierra en ') : el.dataset.prefijo;
+  el.textContent = restante > 0 ? `${prefijo}${formatearRestante(restante)}` : t('cerrada');
   el.classList.toggle('reloj--urgente', restante > 0 && restante < 30 * 60_000);
   el.classList.toggle('reloj--pronto', restante >= 30 * 60_000 && restante < 60 * 60_000);
   el.classList.toggle('reloj--cerrado', restante <= 0);
@@ -48,7 +50,7 @@ export function crearReloj(cierraEn, { clase = 'reloj', prefijo } = {}) {
   const el = crear('span', clase);
   el.dataset.cierra = String(cierraEn);
   if (prefijo !== undefined) el.dataset.prefijo = prefijo;
-  el.title = `Cierra a las ${new Date(cierraEn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  el.title = t('Cierra a las {hora}', { hora: new Date(cierraEn).toLocaleTimeString(regional, { hour: '2-digit', minute: '2-digit' }) });
   pintarReloj(el);
   return el;
 }
@@ -83,24 +85,24 @@ export function crearTarjetaRuta(ruta, { usuario = null, resaltar = null, alEleg
   const tramos = ruta.tramos.length;
   cabecera.append(
     crear('span', 'ruta__titulo', `${ruta.zonas[0].nombre} → ${ruta.zonas[ruta.zonas.length - 1].nombre}`),
-    crear('span', 'ruta__tramos', `${tramos} tramo${tramos === 1 ? '' : 's'}`),
+    crear('span', 'ruta__tramos', tn(tramos, '{n} tramo', '{n} tramos')),
     crearReloj(ruta.cierraEn, { clase: 'reloj ruta__cierre' })
   );
 
-  const fuente = crear('span', 'conexion__fuente conexion__fuente--gremio', ruta.reportadoPor ? `gremio · ${ruta.reportadoPor}` : 'gremio');
+  const fuente = crear('span', 'conexion__fuente conexion__fuente--gremio', ruta.reportadoPor ? t('gremio · {usuario}', { usuario: ruta.reportadoPor }) : t('gremio'));
   const puedeBorrar = alBorrar && usuario && (usuario.id === ruta.reportadoPorId || usuario.rol === 'ADMIN');
   if (puedeBorrar) {
     const borrar = crear('button', 'conexion__borrar', '✕');
     borrar.type = 'button';
-    borrar.title = 'Borrar esta ruta';
-    borrar.setAttribute('aria-label', 'Borrar esta ruta');
+    borrar.title = t('Borrar esta ruta');
+    borrar.setAttribute('aria-label', t('Borrar esta ruta'));
     borrar.addEventListener('click', async () => {
       borrar.disabled = true;
       try {
         await alBorrar(ruta);
       } catch (error) {
         borrar.disabled = false;
-        borrar.title = error.message || 'No se pudo borrar.';
+        borrar.title = error.message || t('No se pudo borrar.');
       }
     });
     fuente.append(' ', borrar);
@@ -112,7 +114,7 @@ export function crearTarjetaRuta(ruta, { usuario = null, resaltar = null, alEleg
     const paso = crear('li', 'ruta__zona');
     if (resaltar && zona.nombre === resaltar) paso.classList.add('ruta__zona--resaltada');
 
-    const nombre = zona.nombre || 'Zona desconocida';
+    const nombre = zona.nombre || t('Zona desconocida');
     if (alElegirZona && zona.nombre) {
       const boton = crear('button', 'ruta__nombre', nombre);
       boton.type = 'button';
@@ -121,13 +123,13 @@ export function crearTarjetaRuta(ruta, { usuario = null, resaltar = null, alEleg
     } else {
       paso.append(crear('span', 'ruta__nombre', nombre));
     }
-    const meta = [zona.tier ? `T${zona.tier}` : null, zona.etiqueta].filter(Boolean).join(' · ');
+    const meta = [zona.tier ? `T${zona.tier}` : null, zona.etiqueta && t(zona.etiqueta)].filter(Boolean).join(' · ');
     if (meta) paso.append(crear('span', 'ruta__meta', meta));
     pasos.append(paso);
 
     if (k < ruta.tramos.length) {
       const tramo = crear('li', 'ruta__tramo');
-      tramo.setAttribute('aria-label', 'Portal');
+      tramo.setAttribute('aria-label', t('Portal'));
       tramo.append(crearReloj(ruta.tramos[k].cierraEn, { prefijo: '' }));
       pasos.append(tramo);
     }
@@ -147,8 +149,8 @@ export function crearListaConexiones(conexiones, { alElegirZona = null } = {}) {
   const lista = crear('ul', 'rutas-hideout__conexiones');
   for (const c of conexiones) {
     const item = crear('li');
-    const meta = [c.hacia.tier ? `T${c.hacia.tier}` : null, c.hacia.etiqueta].filter(Boolean).join(' · ');
-    const nombre = c.hacia.nombre || 'Mapa desconocido';
+    const meta = [c.hacia.tier ? `T${c.hacia.tier}` : null, c.hacia.etiqueta && t(c.hacia.etiqueta)].filter(Boolean).join(' · ');
+    const nombre = c.hacia.nombre || t('Mapa desconocido');
     let destino;
     if (alElegirZona && c.hacia.nombre) {
       destino = crear('button', 'rutas-hideout__destino ruta__nombre', nombre);
@@ -161,8 +163,8 @@ export function crearListaConexiones(conexiones, { alElegirZona = null } = {}) {
       crear('span', 'rutas-hideout__sentido', c.sentido === 'salida' ? '→' : '←'),
       destino,
       crear('span', 'rutas-hideout__meta', meta),
-      c.cierraEn ? crearReloj(c.cierraEn) : crear('span', 'rutas-hideout__meta', 'sin hora de cierre'),
-      crear('span', 'conexion__fuente conexion__fuente--gremio', c.reportadoPor ? `gremio · ${c.reportadoPor}` : 'gremio')
+      c.cierraEn ? crearReloj(c.cierraEn) : crear('span', 'rutas-hideout__meta', t('sin hora de cierre')),
+      crear('span', 'conexion__fuente conexion__fuente--gremio', c.reportadoPor ? t('gremio · {usuario}', { usuario: c.reportadoPor }) : t('gremio'))
     );
     lista.appendChild(item);
   }

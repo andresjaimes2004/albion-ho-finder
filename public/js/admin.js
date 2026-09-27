@@ -1,6 +1,7 @@
 'use strict';
 
 import api from './api.js';
+import { t } from './i18n.js';
 
 /**
  * admin.js
@@ -64,12 +65,12 @@ export class PanelAdmin {
   _pintarResumen(resumen) {
     this.resumen.replaceChildren();
     const campos = [
-      ['Temporada', resumen.temporada || '—'],
-      ['Mapas', resumen.totalMapas],
-      ['Mapas con geografía', resumen.totalMapasConGeo],
-      ['Gremios', resumen.totalGremios],
-      ['Hideouts', resumen.totalHideouts],
-      ['Administradores', resumen.totalAdmins],
+      [t('Temporada'), resumen.temporada || '—'],
+      [t('Mapas'), resumen.totalMapas],
+      [t('Mapas con geografía'), resumen.totalMapasConGeo],
+      [t('Gremios'), resumen.totalGremios],
+      [t('Hideouts'), resumen.totalHideouts],
+      [t('Administradores'), resumen.totalAdmins],
     ];
 
     for (const [etiqueta, valor] of campos) {
@@ -103,7 +104,7 @@ export class PanelAdmin {
 
     if (!gremios.length) {
       const vacio = document.createElement('li');
-      vacio.textContent = 'Ningún gremio coincide con la búsqueda.';
+      vacio.textContent = t('Ningún gremio coincide con la búsqueda.');
       this.listaGremios.appendChild(vacio);
       return;
     }
@@ -117,7 +118,7 @@ export class PanelAdmin {
       logo.alt = '';
       logo.width = 36;
       logo.height = 36;
-      logo.src = gremio.tieneLogo ? `/api/gremios/${gremio.id}/logo?t=${Date.now()}` : 'assets/logo.svg';
+      logo.src = gremio.tieneLogo ? `/api/gremios/${gremio.id}/logo?t=${Date.now()}` : '/assets/logo.svg';
 
       const nombre = document.createElement('input');
       nombre.type = 'text';
@@ -132,11 +133,11 @@ export class PanelAdmin {
       const guardar = document.createElement('button');
       guardar.type = 'button';
       guardar.className = 'boton boton--pequeno';
-      guardar.textContent = 'Guardar nombre';
+      guardar.textContent = t('Guardar nombre');
       guardar.addEventListener('click', async () => {
         try {
           await api.admin.renombrarGremio(gremio.id, nombre.value);
-          this.mensaje.textContent = `Gremio actualizado: ${nombre.value}`;
+          this.mensaje.textContent = t('Gremio actualizado: {nombre}', { nombre: nombre.value });
         } catch (error) {
           this.mensaje.textContent = error.message;
         }
@@ -152,7 +153,7 @@ export class PanelAdmin {
         try {
           await api.admin.subirLogo(gremio.id, fichero);
           logo.src = `/api/gremios/${gremio.id}/logo?t=${Date.now()}`;
-          this.mensaje.textContent = `Logo actualizado para ${gremio.nombre}.`;
+          this.mensaje.textContent = t('Logo actualizado para {nombre}.', { nombre: gremio.nombre });
         } catch (error) {
           this.mensaje.textContent = error.message;
         } finally {
@@ -166,10 +167,10 @@ export class PanelAdmin {
         const borrar = document.createElement('button');
         borrar.type = 'button';
         borrar.className = 'boton boton--pequeno boton--sutil';
-        borrar.textContent = 'Quitar logo';
+        borrar.textContent = t('Quitar logo');
         borrar.addEventListener('click', async () => {
           await api.admin.borrarLogo(gremio.id);
-          logo.src = 'assets/logo.svg';
+          logo.src = '/assets/logo.svg';
         });
         item.appendChild(borrar);
       }
@@ -192,14 +193,14 @@ export class PanelAdmin {
       for (const valor of ['USUARIO', 'ADMIN']) {
         const opcion = document.createElement('option');
         opcion.value = valor;
-        opcion.textContent = valor === 'ADMIN' ? 'Administrador' : 'Usuario';
+        opcion.textContent = valor === 'ADMIN' ? t('Administrador') : t('Usuario');
         opcion.selected = usuario.rol === valor;
         rol.appendChild(opcion);
       }
       rol.addEventListener('change', async () => {
         try {
           await api.admin.cambiarRolUsuario(usuario.id, rol.value);
-          this.mensaje.textContent = `Rol actualizado para ${usuario.usuario}.`;
+          this.mensaje.textContent = t('Rol actualizado para {usuario}.', { usuario: usuario.usuario });
         } catch (error) {
           this.mensaje.textContent = error.message;
           await this.refrescar();
@@ -209,7 +210,7 @@ export class PanelAdmin {
       const estado = document.createElement('button');
       estado.type = 'button';
       estado.className = 'boton boton--pequeno boton--sutil';
-      estado.textContent = usuario.activo ? 'Desactivar' : 'Activar';
+      estado.textContent = usuario.activo ? t('Desactivar') : t('Activar');
       estado.addEventListener('click', async () => {
         try {
           await api.admin.cambiarEstadoUsuario(usuario.id, !usuario.activo);
@@ -221,7 +222,7 @@ export class PanelAdmin {
 
       const acceso = document.createElement('span');
       acceso.className = 'admin-fila__conteo';
-      acceso.textContent = usuario.ultimoAccesoEn ? `Último acceso: ${usuario.ultimoAccesoEn}` : 'Sin accesos';
+      acceso.textContent = usuario.ultimoAccesoEn ? t('Último acceso: {fecha}', { fecha: usuario.ultimoAccesoEn }) : t('Sin accesos');
 
       item.append(nombre, rol, estado, acceso);
       this.listaUsuarios.appendChild(item);
@@ -233,7 +234,7 @@ export class PanelAdmin {
 
     if (!registros.length) {
       const vacio = document.createElement('li');
-      vacio.textContent = 'Sin cambios registrados.';
+      vacio.textContent = t('Sin cambios registrados.');
       this.listaAuditoria.appendChild(vacio);
       return;
     }
@@ -241,7 +242,7 @@ export class PanelAdmin {
     for (const registro of registros.slice(0, 25)) {
       const item = document.createElement('li');
       item.className = 'admin-auditoria__fila';
-      item.textContent = `${registro.creadoEn} · ${registro.usuario || 'sistema'} · ${registro.accion} ${registro.entidad} #${registro.entidadId || '-'}`;
+      item.textContent = `${registro.creadoEn} · ${registro.usuario || t('sistema')} · ${registro.accion} ${registro.entidad} #${registro.entidadId || '-'}`;
       this.listaAuditoria.appendChild(item);
     }
   }

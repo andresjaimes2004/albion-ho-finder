@@ -8,6 +8,7 @@ import { PanelAdmin } from './admin.js';
 import { PanelCaminos } from './tracking.js';
 import { PanelRegistro } from './registroCaminos.js';
 import { crear, crearListaConexiones, crearTarjetaRuta, iniciarRelojes } from './rutas.js';
+import { t, tn } from './i18n.js';
 
 /**
  * app.js
@@ -114,7 +115,7 @@ class BuscadorUI {
       const seccion = document.getElementById('mapa-mundial');
       seccion.hidden = !seccion.hidden;
       evento.currentTarget.setAttribute('aria-expanded', String(!seccion.hidden));
-      evento.currentTarget.textContent = seccion.hidden ? 'Ver mapa de la Zona Negra' : 'Ocultar mapa';
+      evento.currentTarget.textContent = seccion.hidden ? t('Ver mapa de la Zona Negra') : t('Ocultar mapa');
       if (!seccion.hidden) this.mapaMundial.cargar().catch(() => {});
     });
   }
@@ -145,6 +146,11 @@ class BuscadorUI {
     if (vista === 'caminos') this.panelCaminos.activar();
     else this.panelCaminos.desactivar();
     this.panelRegistro.establecerVisible(vista === 'caminos');
+
+    // El selector de idioma lleva a la misma sección en el otro idioma.
+    for (const enlace of document.querySelectorAll('.idioma__opcion')) {
+      enlace.hash = vista === 'caminos' ? 'caminos' : '';
+    }
   }
 
   _mostrarEstado(nombreEstado) {
@@ -185,14 +191,14 @@ class BuscadorUI {
       this.panelSesion.refrescarHistorial();
     } catch (error) {
       if (error.name === 'AbortError') return;
-      this.errorTexto.textContent = error.message || 'No se pudo conectar con el servidor.';
+      this.errorTexto.textContent = error.message || t('No se pudo conectar con el servidor.');
       this._mostrarEstado('error');
     }
   }
 
   _actualizarBadgeTemporada(codigo) {
     if (!codigo) return;
-    this.badgeTemporada.textContent = `Temporada ${codigo}`;
+    this.badgeTemporada.textContent = t('Temporada {codigo}', { codigo });
     this.badgeTemporada.hidden = false;
   }
 
@@ -201,8 +207,8 @@ class BuscadorUI {
 
     this.resumen.hidden = false;
     this.resumen.replaceChildren(
-      this._crearSpanResumen(`${datos.totalMapas} mapa${datos.totalMapas === 1 ? '' : 's'}`),
-      this._crearSpanResumen(`${datos.totalHideouts} hideout${datos.totalHideouts === 1 ? '' : 's'}`)
+      this._crearSpanResumen(tn(datos.totalMapas, '{n} mapa', '{n} mapas')),
+      this._crearSpanResumen(tn(datos.totalHideouts, '{n} hideout', '{n} hideouts'))
     );
 
     this.listaMapas.replaceChildren();
@@ -229,7 +235,7 @@ class BuscadorUI {
     const encabezado = document.createElement('button');
     encabezado.type = 'button';
     encabezado.className = 'tarjeta-mapa__encabezado';
-    encabezado.setAttribute('aria-label', `Ver el mapa ${grupo.mapa} en detalle`);
+    encabezado.setAttribute('aria-label', t('Ver el mapa {mapa} en detalle', { mapa: grupo.mapa }));
 
     const titulo = document.createElement('h3');
     titulo.className = 'tarjeta-mapa__nombre';
@@ -248,7 +254,7 @@ class BuscadorUI {
 
     const verMapa = document.createElement('span');
     verMapa.className = 'tarjeta-mapa__accion';
-    verMapa.textContent = 'Ver mapa';
+    verMapa.textContent = t('Ver mapa');
     encabezado.appendChild(verMapa);
 
     encabezado.addEventListener('click', () =>
@@ -293,8 +299,8 @@ class BuscadorUI {
   _crearSeccionRutas(nombre, { rutas, conexiones }) {
     const seccion = crear('div', 'rutas-hideout');
     const partes = [];
-    if (rutas.length) partes.push(`${rutas.length} ruta${rutas.length === 1 ? '' : 's'}`);
-    if (conexiones.length) partes.push(`${conexiones.length} conexi${conexiones.length === 1 ? 'ón' : 'ones'}`);
+    if (rutas.length) partes.push(tn(rutas.length, '{n} ruta', '{n} rutas'));
+    if (conexiones.length) partes.push(tn(conexiones.length, '{n} conexión', '{n} conexiones'));
 
     const alternar = crear('button', 'rutas-hideout__alternar', `Avalon: ${partes.join(' · ')}`);
     alternar.type = 'button';
@@ -328,11 +334,11 @@ class BuscadorUI {
     }
 
     if (conexiones.length) {
-      panel.appendChild(crear('p', 'rutas-hideout__subtitulo', 'Conexiones directas de este mapa'));
+      panel.appendChild(crear('p', 'rutas-hideout__subtitulo', t('Conexiones directas de este mapa')));
       panel.appendChild(crearListaConexiones(conexiones));
     }
 
-    const ver = crear('button', 'boton boton--pequeno boton--sutil', 'Ver en Caminos de Avalon');
+    const ver = crear('button', 'boton boton--pequeno boton--sutil', t('Ver en Caminos de Avalon'));
     ver.type = 'button';
     ver.addEventListener('click', () => this._irACaminos(nombre));
     panel.appendChild(ver);
@@ -365,7 +371,7 @@ class BuscadorUI {
 
     const slot = document.createElement('span');
     slot.className = 'item-hideout__slot';
-    slot.textContent = `Slot ${hideout.slot}`;
+    slot.textContent = t('Slot {slot}', { slot: hideout.slot });
 
     const etiqueta = document.createElement('span');
     etiqueta.className = `etiqueta-tipo etiqueta-tipo--${hideout.tipo.toLowerCase()}`;
@@ -376,7 +382,7 @@ class BuscadorUI {
     if (hideout.ubicado) {
       const ubicado = document.createElement('span');
       ubicado.className = 'item-hideout__ubicado';
-      ubicado.title = 'Ubicación marcada en el mapa';
+      ubicado.title = t('Ubicación marcada en el mapa');
       ubicado.textContent = '📍';
       item.appendChild(ubicado);
     }

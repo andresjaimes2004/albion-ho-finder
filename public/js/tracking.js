@@ -2,6 +2,7 @@
 
 import api from './api.js';
 import { crear, crearReloj, crearTarjetaRuta } from './rutas.js';
+import { t, tn } from './i18n.js';
 
 /**
  * tracking.js
@@ -24,11 +25,11 @@ const INTERVALO_REFRESCO_MS = 60_000;
 const POR_PAGINA = 60;
 
 const RECURSOS = {
-  ORE: 'Mineral',
-  WOOD: 'Madera',
-  FIBER: 'Fibra',
-  HIDE: 'Piel',
-  ROCK: 'Piedra',
+  ORE: t('Mineral'),
+  WOOD: t('Madera'),
+  FIBER: t('Fibra'),
+  HIDE: t('Piel'),
+  ROCK: t('Piedra'),
 };
 
 function normalizar(texto) {
@@ -128,7 +129,7 @@ export class PanelCaminos {
       if (this.mapaAbierto) this.abrirDetalle(this.mapaAbierto, { silencioso: true });
     } catch (error) {
       if (!this.datos) {
-        this.error.textContent = error.message || 'No se pudieron cargar los caminos de Avalon.';
+        this.error.textContent = error.message || t('No se pudieron cargar los caminos de Avalon.');
         this.error.hidden = false;
       }
     } finally {
@@ -206,12 +207,12 @@ export class PanelCaminos {
     this.estadoFuente.replaceChildren();
     this.estadoFuente.className = 'caminos-estado';
 
-    const partes = [`${estado.activas} conexi${estado.activas === 1 ? 'ón activa' : 'ones activas'}`];
-    if (estado.rutas) partes.push(`${estado.rutas} ruta${estado.rutas === 1 ? '' : 's'}`);
+    const partes = [tn(estado.activas, '{n} conexión activa', '{n} conexiones activas')];
+    if (estado.rutas) partes.push(tn(estado.rutas, '{n} ruta', '{n} rutas'));
     if (!estado.activas) this.estadoFuente.classList.add('caminos-estado--vacio');
 
     this.estadoFuente.append(crear('span', 'caminos-estado__punto'), partes.join(' · '));
-    this.estadoFuente.title = 'Conexiones registradas por los usuarios desde capturas del juego';
+    this.estadoFuente.title = t('Conexiones registradas por los usuarios desde capturas del juego');
   }
 
   _renderizarSugerencias() {
@@ -235,13 +236,13 @@ export class PanelCaminos {
 
     this.resumen.hidden = false;
     this.resumen.replaceChildren(
-      this._crearDato(filtradas.length, filtradas.length === 1 ? 'mapa' : 'mapas'),
-      this._crearDato(conConexiones, 'con conexiones abiertas')
+      this._crearDato(filtradas.length, filtradas.length === 1 ? t('mapa') : t('mapas')),
+      this._crearDato(conConexiones, t('con conexiones abiertas'))
     );
 
     this.lista.replaceChildren(...filtradas.slice(0, this.visibles).map((e) => this._crearTarjeta(e)));
     if (!filtradas.length) {
-      this.lista.appendChild(crear('p', 'estado estado--advertencia', 'Ningún camino coincide con la búsqueda.'));
+      this.lista.appendChild(crear('p', 'estado estado--advertencia', t('Ningún camino coincide con la búsqueda.')));
     }
     this.botonMas.hidden = filtradas.length <= this.visibles;
   }
@@ -256,7 +257,7 @@ export class PanelCaminos {
     const tarjeta = crear('button', `tarjeta-camino tarjeta-camino--${entrada.clase}`);
     tarjeta.type = 'button';
     if (entrada.conexiones) tarjeta.classList.add('tarjeta-camino--activa');
-    tarjeta.setAttribute('aria-label', `Ver conexiones de ${entrada.nombre}`);
+    tarjeta.setAttribute('aria-label', t('Ver conexiones de {nombre}', { nombre: entrada.nombre }));
 
     const cabeza = crear('span', 'tarjeta-camino__cabeza');
     cabeza.append(crear('span', 'tarjeta-camino__nombre', entrada.nombre));
@@ -264,17 +265,17 @@ export class PanelCaminos {
       crear(
         'span',
         `tarjeta-camino__conexiones${entrada.conexiones ? ' tarjeta-camino__conexiones--si' : ''}`,
-        entrada.conexiones ? `${entrada.conexiones} conexi${entrada.conexiones === 1 ? 'ón' : 'ones'}` : 'sin conexiones'
+        entrada.conexiones ? tn(entrada.conexiones, '{n} conexión', '{n} conexiones') : t('sin conexiones')
       )
     );
 
     const meta = [];
     if (entrada.tier) meta.push(`T${entrada.tier}`);
-    if (entrada.etiqueta) meta.push(entrada.etiqueta);
+    if (entrada.etiqueta) meta.push(t(entrada.etiqueta));
     if (entrada.dungeons) {
       const d = entrada.dungeons;
       const total = d.solo + d.grupo + d.elite;
-      if (total) meta.push(`${total} dungeon${total === 1 ? '' : 's'}`);
+      if (total) meta.push(tn(total, '{n} dungeon', '{n} dungeons'));
     }
     if (entrada.recursos && entrada.recursos.length) {
       meta.push(entrada.recursos.map((r) => RECURSOS[r] || r).join(', '));
@@ -294,7 +295,7 @@ export class PanelCaminos {
 
     if (!silencioso) {
       this.detalle.hidden = false;
-      this.detalle.replaceChildren(crear('div', 'estado', 'Consultando conexiones...'));
+      this.detalle.replaceChildren(crear('div', 'estado', t('Consultando conexiones...')));
       // La cabecera es fija y su alto cambia en móvil: se descuenta al desplazar.
       const cabecera = document.querySelector('.cabecera');
       const margen = (cabecera ? cabecera.getBoundingClientRect().height : 0) + 12;
@@ -309,7 +310,7 @@ export class PanelCaminos {
       if (!silencioso) {
         this.detalle.replaceChildren(
           this._crearCabeceraDetalle(nombre),
-          crear('p', 'estado estado--error', error.message || 'No se pudo consultar ese mapa.')
+          crear('p', 'estado estado--error', error.message || t('No se pudo consultar ese mapa.'))
         );
       }
     }
@@ -334,7 +335,7 @@ export class PanelCaminos {
 
     const cerrar = crear('button', 'boton boton--icono', '✕');
     cerrar.type = 'button';
-    cerrar.setAttribute('aria-label', 'Cerrar detalle');
+    cerrar.setAttribute('aria-label', t('Cerrar detalle'));
     cerrar.addEventListener('click', () => this.cerrarDetalle());
 
     cabecera.append(titulo, cerrar);
@@ -348,13 +349,13 @@ export class PanelCaminos {
     const insignias = [];
     const tier = camino ? camino.tier : mapa.tier;
     if (tier) insignias.push(`T${tier}`);
-    if (camino) insignias.push(camino.etiqueta, camino.id);
-    else if (mapa.clase === 'zonaNegra') insignias.push('Mapa de Zona Negra');
+    if (camino) insignias.push(t(camino.etiqueta), camino.id);
+    else if (mapa.clase === 'zonaNegra') insignias.push(t('Mapa de Zona Negra'));
 
     const partes = [this._crearCabeceraDetalle(mapa.nombre, insignias)];
 
     if (mapa.clase === 'zonaNegra' && this.abrirMapa) {
-      const ver = crear('button', 'boton boton--pequeno', 'Ver mapa de Zona Negra');
+      const ver = crear('button', 'boton boton--pequeno', t('Ver mapa de Zona Negra'));
       ver.type = 'button';
       ver.addEventListener('click', () => this.abrirMapa(mapa.nombre));
       partes.push(ver);
@@ -373,14 +374,14 @@ export class PanelCaminos {
 
   _crearBloqueConexiones(conexiones) {
     const bloque = crear('div', 'caminos-detalle__bloque');
-    bloque.append(crear('h4', null, 'Conexiones abiertas ahora'));
+    bloque.append(crear('h4', null, t('Conexiones abiertas ahora')));
 
     if (!conexiones.length) {
       bloque.append(
         crear(
           'p',
           'caminos-detalle__vacio',
-          'No hay conexiones registradas en este momento. Si estás en este camino, registra sus portales desde una captura del juego con el panel "Registrar conexiones desde capturas".'
+          t('No hay conexiones registradas en este momento. Si estás en este camino, registra sus portales desde una captura del juego con el panel "Registrar conexiones desde capturas".')
         )
       );
       return bloque;
@@ -403,10 +404,10 @@ export class PanelCaminos {
         conexion.sentido === 'salida' ? '→' : '←'
       )
     );
-    item.lastChild.title = conexion.sentido === 'salida' ? 'Portal que sale de este mapa' : 'Portal que llega a este mapa';
+    item.lastChild.title = conexion.sentido === 'salida' ? t('Portal que sale de este mapa') : t('Portal que llega a este mapa');
 
     const destino = crear('span', 'conexion__destino');
-    const nombre = hacia.nombre || 'Mapa desconocido';
+    const nombre = hacia.nombre || t('Mapa desconocido');
     if (hacia.nombre) {
       const enlace = crear('button', 'conexion__nombre', nombre);
       enlace.type = 'button';
@@ -415,20 +416,20 @@ export class PanelCaminos {
     } else {
       destino.append(crear('span', 'conexion__nombre conexion__nombre--oculto', nombre));
     }
-    const meta = [hacia.tier ? `T${hacia.tier}` : null, hacia.etiqueta].filter(Boolean).join(' · ');
+    const meta = [hacia.tier ? `T${hacia.tier}` : null, hacia.etiqueta && t(hacia.etiqueta)].filter(Boolean).join(' · ');
     if (meta) destino.append(crear('span', 'conexion__meta', meta));
 
     let tiempo;
     if (conexion.cierraEn) {
       tiempo = crearReloj(conexion.cierraEn, { clase: 'reloj conexion__tiempo' });
     } else {
-      tiempo = crear('span', 'conexion__tiempo conexion__tiempo--desconocido', 'sin hora de cierre');
+      tiempo = crear('span', 'conexion__tiempo conexion__tiempo--desconocido', t('sin hora de cierre'));
     }
 
     item.append(destino, tiempo, this._crearFuente(conexion));
 
     if (hacia.clase === 'zonaNegra' && this.abrirMapa) {
-      const ver = crear('button', 'boton boton--pequeno boton--sutil', 'Ver mapa');
+      const ver = crear('button', 'boton boton--pequeno boton--sutil', t('Ver mapa'));
       ver.type = 'button';
       ver.addEventListener('click', () => this.abrirMapa(hacia.nombre));
       item.append(ver);
@@ -439,14 +440,14 @@ export class PanelCaminos {
   /** Quién registró la conexión y, si es tuya (o eres admin), botón para borrarla. */
   _crearFuente(conexion) {
     const fuente = crear('span', 'conexion__fuente conexion__fuente--gremio');
-    fuente.textContent = conexion.reportadoPor ? `gremio · ${conexion.reportadoPor}` : 'gremio';
-    fuente.title = 'Registrada por un miembro desde una captura del juego';
+    fuente.textContent = conexion.reportadoPor ? t('gremio · {usuario}', { usuario: conexion.reportadoPor }) : t('gremio');
+    fuente.title = t('Registrada por un miembro desde una captura del juego');
     const puedeBorrar = this.usuario && (this.usuario.id === conexion.reportadoPorId || this.usuario.rol === 'ADMIN');
     if (puedeBorrar) {
       const borrar = crear('button', 'conexion__borrar', '✕');
       borrar.type = 'button';
-      borrar.title = 'Borrar esta conexión';
-      borrar.setAttribute('aria-label', 'Borrar esta conexión');
+      borrar.title = t('Borrar esta conexión');
+      borrar.setAttribute('aria-label', t('Borrar esta conexión'));
       borrar.addEventListener('click', async () => {
         borrar.disabled = true;
         try {
@@ -454,7 +455,7 @@ export class PanelCaminos {
           await this.refrescar();
         } catch (error) {
           borrar.disabled = false;
-          borrar.title = error.message || 'No se pudo borrar.';
+          borrar.title = error.message || t('No se pudo borrar.');
         }
       });
       fuente.append(' ', borrar);
@@ -464,14 +465,14 @@ export class PanelCaminos {
 
   _crearBloqueOficial(camino) {
     const bloque = crear('div', 'caminos-detalle__bloque');
-    bloque.append(crear('h4', null, 'Datos oficiales del camino'));
+    bloque.append(crear('h4', null, t('Datos oficiales del camino')));
 
     const d = camino.dungeons;
     const lineas = crear('dl', 'caminos-datos');
     const agregar = (termino, valor) => {
       lineas.append(crear('dt', null, termino), crear('dd', null, valor));
     };
-    agregar('Dungeons', `${d.solo} solo · ${d.grupo} grupo · ${d.elite} élite`);
+    agregar(t('Dungeons'), t('{solo} solo · {grupo} grupo · {elite} élite', d));
 
     const porTipo = new Map();
     for (const r of camino.recursos) {
@@ -503,10 +504,10 @@ export class PanelCaminos {
       contenedor.replaceChildren();
       return;
     }
-    contenedor.replaceChildren(this._crearBloqueRutas(rutas, { titulo: 'Rutas del gremio' }));
+    contenedor.replaceChildren(this._crearBloqueRutas(rutas, { titulo: t('Rutas del gremio') }));
   }
 
-  _crearBloqueRutas(rutas, { titulo = 'Rutas que pasan por aquí', resaltar = null } = {}) {
+  _crearBloqueRutas(rutas, { titulo = t('Rutas que pasan por aquí'), resaltar = null } = {}) {
     const bloque = crear('div', 'caminos-detalle__bloque bloque-rutas');
     bloque.append(crear('h4', null, `${titulo} (${rutas.length})`));
     const lista = crear('div', 'lista-rutas');

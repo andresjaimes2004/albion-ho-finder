@@ -1,6 +1,7 @@
 'use strict';
 
 import api from './api.js';
+import { t, tn } from './i18n.js';
 
 /**
  * sesion.js
@@ -74,12 +75,12 @@ export class PanelSesion {
 
   _pintarFormulario() {
     const esLogin = this.modo === 'login';
-    this.titulo.textContent = esLogin ? 'Iniciar sesión' : 'Crear cuenta';
-    this.enviar.textContent = esLogin ? 'Entrar' : 'Registrarme';
-    this.alternar.textContent = esLogin ? '¿No tienes cuenta? Regístrate' : 'Ya tengo cuenta';
+    this.titulo.textContent = esLogin ? t('Iniciar sesión') : t('Crear cuenta');
+    this.enviar.textContent = esLogin ? t('Entrar') : t('Registrarme');
+    this.alternar.textContent = esLogin ? t('¿No tienes cuenta? Regístrate') : t('Ya tengo cuenta');
     this.mensaje.textContent = esLogin
       ? ''
-      : 'La contraseña debe tener al menos 10 caracteres, con letras y números.';
+      : t('La contraseña debe tener al menos 10 caracteres, con letras y números.');
   }
 
   abrir(modo = 'login') {
@@ -111,13 +112,13 @@ export class PanelSesion {
       const entrar = document.createElement('button');
       entrar.type = 'button';
       entrar.className = 'boton';
-      entrar.textContent = 'Iniciar sesión';
+      entrar.textContent = t('Iniciar sesión');
       entrar.addEventListener('click', () => this.abrir('login'));
 
       const registrarse = document.createElement('button');
       registrarse.type = 'button';
       registrarse.className = 'boton boton--sutil cuenta__registro';
-      registrarse.textContent = 'Crear cuenta';
+      registrarse.textContent = t('Crear cuenta');
       registrarse.addEventListener('click', () => this.abrir('registro'));
 
       this.contenedor.append(entrar, registrarse);
@@ -132,14 +133,14 @@ export class PanelSesion {
     if (this.usuario.rol === 'ADMIN') {
       const insignia = document.createElement('span');
       insignia.className = 'insignia insignia--admin';
-      insignia.textContent = 'Admin';
+      insignia.textContent = t('Admin');
       saludo.appendChild(insignia);
     }
 
     const salir = document.createElement('button');
     salir.type = 'button';
     salir.className = 'boton boton--sutil';
-    salir.textContent = 'Salir';
+    salir.textContent = t('Salir');
     salir.addEventListener('click', async () => {
       await api.logout();
       await this.refrescar();
@@ -157,7 +158,7 @@ export class PanelSesion {
     if (!historial.length) {
       const vacio = document.createElement('li');
       vacio.className = 'historial__vacio';
-      vacio.textContent = 'Todavía no has hecho búsquedas.';
+      vacio.textContent = t('Todavía no has hecho búsquedas.');
       this.historialLista.appendChild(vacio);
       return;
     }
@@ -173,7 +174,7 @@ export class PanelSesion {
 
       const detalle = document.createElement('span');
       detalle.className = 'historial__detalle';
-      detalle.textContent = `${entrada.totalMapas} mapa${entrada.totalMapas === 1 ? '' : 's'}`;
+      detalle.textContent = tn(entrada.totalMapas, '{n} mapa', '{n} mapas');
 
       item.append(boton, detalle);
       this.historialLista.appendChild(item);

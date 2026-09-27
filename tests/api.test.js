@@ -530,6 +530,41 @@ test('un cuerpo JSON demasiado grande se rechaza con 413', async () => {
   assert.equal(estado, 413);
 });
 
+test('cada idioma tiene su página y el resto de rutas responde 404 de verdad', async () => {
+  const pedir = (ruta) => fetch(`${base}${ruta}`, { redirect: 'manual' });
+
+  const es = await pedir('/');
+  assert.equal(es.status, 200);
+  assert.match(await es.text(), /<html lang="es">/);
+
+  const en = await pedir('/en/');
+  assert.equal(en.status, 200);
+  const textoEn = await en.text();
+  assert.match(textoEn, /<html lang="en">/);
+  assert.match(textoEn, /hreflang="es"/);
+
+  for (const [ruta, destino] of [['/en', '/en/'], ['/index.html', '/'], ['/en/index.html', '/en/']]) {
+    const r = await pedir(ruta);
+    assert.equal(r.status, 301, ruta);
+    assert.equal(r.headers.get('location'), destino);
+  }
+
+  const robots = await pedir('/robots.txt');
+  assert.equal(robots.status, 200);
+  assert.match(await robots.text(), /Sitemap: /);
+  const sitemap = await pedir('/sitemap.xml');
+  assert.match(sitemap.headers.get('content-type'), /application\/xml/);
+  const manifiesto = await pedir('/manifest.webmanifest');
+  assert.equal(JSON.parse(await manifiesto.text()).name, 'Albion Navigator');
+
+  const inexistente = await pedir('/no-existe');
+  assert.equal(inexistente.status, 404);
+  assert.match(await inexistente.text(), /Página no encontrada/);
+  const inexistenteEn = await pedir('/en/no-existe');
+  assert.equal(inexistenteEn.status, 404);
+  assert.match(await inexistenteEn.text(), /Page not found/);
+});
+
 test('una ruta desconocida de la API responde JSON, no la página web', async () => {
   const cliente = crearCliente();
   const { estado, json } = await cliente.peticion('/api/no-existe');

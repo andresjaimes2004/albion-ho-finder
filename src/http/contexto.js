@@ -101,6 +101,19 @@ function decorarRespuesta(req, res) {
     return res;
   };
 
+  /** Redirección a una ruta del mismo sitio (nunca a otro dominio). */
+  res.redirect = (codigo, destino) => {
+    if (res.writableEnded) return res;
+    if (typeof destino !== 'string' || !destino.startsWith('/') || destino.startsWith('//')) {
+      throw new Error('Solo se permiten redirecciones internas.');
+    }
+    res.status(codigo);
+    res.set('Location', destino);
+    res.set('Content-Type', 'text/plain; charset=utf-8');
+    escribir(req, res, Buffer.from(`Redirigiendo a ${destino}`, 'utf8'));
+    return res;
+  };
+
   res.json = (objeto) => {
     if (res.writableEnded) return res;
     res.set('Content-Type', 'application/json; charset=utf-8');

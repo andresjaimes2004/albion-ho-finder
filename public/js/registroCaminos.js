@@ -3,6 +3,7 @@
 import api from './api.js';
 import { crearIndiceZonas, buscarZona, MAX_MINUTOS } from './capturas/lectura.js';
 import { agruparEnRutas, invertirRuta, claveRuta } from './capturas/encadenar.js';
+import { t, tn } from './i18n.js';
 
 /**
  * registroCaminos.js
@@ -119,7 +120,7 @@ export class PanelRegistro {
   _abrir() {
     this.abierto = true;
     this.cuerpo.hidden = false;
-    this.alternar.textContent = 'Cerrar';
+    this.alternar.textContent = t('Cerrar');
     this.alternar.setAttribute('aria-expanded', 'true');
     this._cargarZonas();
     if (this.usuario) {
@@ -131,7 +132,7 @@ export class PanelRegistro {
   _cerrar() {
     this.abierto = false;
     this.cuerpo.hidden = true;
-    this.alternar.textContent = 'Abrir';
+    this.alternar.textContent = t('Abrir');
     this.alternar.setAttribute('aria-expanded', 'false');
   }
 
@@ -177,13 +178,13 @@ export class PanelRegistro {
   }
 
   async _leer(fila, archivo) {
-    fila.poner('leyendo', 'Leyendo la captura…');
+    fila.poner('leyendo', t('Leyendo la captura…'));
     try {
       await this._cargarZonas();
       const { leerCaptura } = await import('./capturas/ocr.js');
       const resultado = await leerCaptura(archivo, this.indice, {
         progreso: (m) => {
-          if (m.status && m.status.includes('loading')) fila.poner('leyendo', 'Preparando el lector de capturas (solo la primera vez)…');
+          if (m.status && m.status.includes('loading')) fila.poner('leyendo', t('Preparando el lector de capturas (solo la primera vez)…'));
         },
       });
 
@@ -201,11 +202,11 @@ export class PanelRegistro {
         vista: resultado.vista,
       });
 
-      if (resultado.aviso) fila.poner('revisar', resultado.aviso);
-      else if (fila.valida()) fila.poner('lista', 'Revisa los datos y guarda.');
-      else fila.poner('revisar', 'Completa los campos resaltados.');
+      if (resultado.aviso) fila.poner('revisar', t(resultado.aviso));
+      else if (fila.valida()) fila.poner('lista', t('Revisa los datos y guarda.'));
+      else fila.poner('revisar', t('Completa los campos resaltados.'));
     } catch (error) {
-      fila.poner('error', 'No se pudo leer la captura. Puedes escribir los datos a mano.');
+      fila.poner('error', t('No se pudo leer la captura. Puedes escribir los datos a mano.'));
     }
     this._actualizarAcciones();
   }
@@ -243,16 +244,16 @@ export class PanelRegistro {
 
     const origen = entradaZona();
     const destino = entradaZona();
-    const horas = entradaNumero(24, 'horas');
-    const minutos = entradaNumero(59, 'minutos');
+    const horas = entradaNumero(24, t('horas'));
+    const minutos = entradaNumero(59, t('minutos'));
     const tiempo = crear('span', 'registro__tiempo');
     tiempo.append(horas, crear('span', null, 'h'), minutos, crear('span', null, 'm'));
 
     const quitar = crear('button', 'boton boton--icono registro__quitar', '✕');
     quitar.type = 'button';
-    quitar.setAttribute('aria-label', 'Quitar esta captura');
+    quitar.setAttribute('aria-label', t('Quitar esta captura'));
 
-    campos.append(campo('Origen', origen), campo('Destino', destino), campo('Cierra en', tiempo));
+    campos.append(campo(t('Origen'), origen), campo(t('Destino'), destino), campo(t('Cierra en'), tiempo));
     item.append(vista, campos, quitar, estado, etiquetaRuta);
     this.lista.append(item);
 
@@ -279,7 +280,7 @@ export class PanelRegistro {
         origen.classList.toggle('campo--dudoso', datos.dudoso.origen);
         destino.classList.toggle('campo--dudoso', datos.dudoso.destino);
         tiempo.classList.toggle('campo--dudoso', datos.dudoso.minutos);
-        vista.replaceChildren(datos.vista || crear('span', 'registro__sin-vista', 'Sin recuadro'));
+        vista.replaceChildren(datos.vista || crear('span', 'registro__sin-vista', t('Sin recuadro')));
       },
       /** Datos listos para enviar, o null si falta algo. */
       datos: () => {
@@ -299,7 +300,7 @@ export class PanelRegistro {
         input.classList.remove('campo--dudoso');
         if (input === horas || input === minutos) tiempo.classList.remove('campo--dudoso');
         if (fila.estadoActual !== 'leyendo') {
-          fila.poner(fila.valida() ? 'lista' : 'revisar', fila.valida() ? 'Lista para guardar.' : 'Completa los campos resaltados.');
+          fila.poner(fila.valida() ? 'lista' : 'revisar', fila.valida() ? t('Lista para guardar.') : t('Completa los campos resaltados.'));
         }
         this._actualizarAcciones();
       });
@@ -344,7 +345,7 @@ export class PanelRegistro {
     for (const fila of this.filas) fila.marcarRuta(null);
     this.rutasDetectadas.forEach((ruta, n) => {
       if (ruta.separada) return;
-      ruta.indices.forEach((i, k) => this.filas[i].marcarRuta(`Ruta ${n + 1} · tramo ${k + 1} de ${ruta.indices.length}`));
+      ruta.indices.forEach((i, k) => this.filas[i].marcarRuta(t('Ruta {ruta} · tramo {tramo} de {total}', { ruta: n + 1, tramo: k + 1, total: ruta.indices.length })));
     });
 
     this.contenedorRutas.hidden = !this.rutasDetectadas.length;
@@ -355,17 +356,17 @@ export class PanelRegistro {
     const caja = crear('div', `registro__ruta${ruta.separada ? ' registro__ruta--separada' : ''}`);
     const titulo = crear('p', 'registro__ruta-titulo');
     titulo.append(
-      crear('strong', null, `Ruta ${n + 1}`),
-      ` · ${ruta.indices.length} tramos${ruta.separada ? ' (se guardarán por separado)' : ''}`
+      crear('strong', null, t('Ruta {n}', { n: n + 1 })),
+      t(' · {n} tramos', { n: ruta.indices.length }) + (ruta.separada ? t(' (se guardarán por separado)') : '')
     );
     const recorrido = crear('p', 'registro__ruta-zonas', ruta.zonas.join(' → '));
 
     const acciones = crear('div', 'registro__ruta-acciones');
-    const invertir = crear('button', 'boton boton--pequeno boton--sutil', 'Invertir sentido');
+    const invertir = crear('button', 'boton boton--pequeno boton--sutil', t('Invertir sentido'));
     invertir.type = 'button';
     invertir.disabled = ruta.separada;
     invertir.addEventListener('click', () => this._cambiarPreferencia(ruta.clave, 'invertida'));
-    const separar = crear('button', 'boton boton--pequeno boton--sutil', ruta.separada ? 'Agrupar como ruta' : 'Guardar tramos por separado');
+    const separar = crear('button', 'boton boton--pequeno boton--sutil', ruta.separada ? t('Agrupar como ruta') : t('Guardar tramos por separado'));
     separar.type = 'button';
     separar.addEventListener('click', () => this._cambiarPreferencia(ruta.clave, 'separada'));
     acciones.append(invertir, separar);
@@ -386,7 +387,7 @@ export class PanelRegistro {
     const leyendo = this.filas.some((f) => f.estadoActual === 'leyendo');
     this.acciones.hidden = !this.filas.length;
     this.guardar.disabled = !listas || leyendo;
-    this.guardar.textContent = listas ? `Guardar ${listas} conexi${listas === 1 ? 'ón' : 'ones'}` : 'Guardar conexiones';
+    this.guardar.textContent = listas ? tn(listas, 'Guardar {n} conexión', 'Guardar {n} conexiones') : t('Guardar conexiones');
   }
 
   // ----------------------------------------------------------- guardado --
@@ -402,19 +403,19 @@ export class PanelRegistro {
       .map((ruta) => ruta.indices.map((i) => posicion.get(i)));
 
     this.guardar.disabled = true;
-    this.estado.textContent = 'Guardando…';
+    this.estado.textContent = t('Guardando…');
     try {
       const r = await api.reportarConexiones(listas.map((f) => f.datos()), rutas);
       for (const fila of listas) fila.item.remove();
       this.filas = this.filas.filter((f) => !listas.includes(f));
       const partes = [];
-      if (r.creadas) partes.push(`${r.creadas} nueva${r.creadas === 1 ? '' : 's'}`);
-      if (r.actualizadas) partes.push(`${r.actualizadas} actualizada${r.actualizadas === 1 ? '' : 's'}`);
-      if (r.rutas && r.rutas.length) partes.push(`${r.rutas.length} ruta${r.rutas.length === 1 ? '' : 's'}`);
-      this.estado.textContent = `Guardado: ${partes.join(' y ')}. ¡Gracias!`;
+      if (r.creadas) partes.push(tn(r.creadas, '{n} nueva', '{n} nuevas'));
+      if (r.actualizadas) partes.push(tn(r.actualizadas, '{n} actualizada', '{n} actualizadas'));
+      if (r.rutas && r.rutas.length) partes.push(tn(r.rutas.length, '{n} ruta', '{n} rutas'));
+      this.estado.textContent = t('Guardado: {resumen}. ¡Gracias!', { resumen: partes.join(t(' y ')) });
       if (this.alGuardar) this.alGuardar();
     } catch (error) {
-      this.estado.textContent = error.message || 'No se pudo guardar.';
+      this.estado.textContent = error.message || t('No se pudo guardar.');
     }
     this._actualizarAcciones();
   }

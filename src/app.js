@@ -2,12 +2,12 @@
 
 const http = require('http');
 const path = require('path');
-const fs = require('fs');
 
 const Router = require('./http/Router');
 const { decorarPeticion, decorarRespuesta } = require('./http/contexto');
 const { json } = require('./http/cuerpo');
 const servirEstaticos = require('./http/estaticos');
+const crearPaginas = require('./http/paginas');
 const cabecerasSeguridad = require('./middlewares/cabecerasSeguridad');
 const leerCookies = require('./middlewares/cookies');
 const { cargarSesion, verificarCsrf } = require('./middlewares/autenticacion');
@@ -28,7 +28,8 @@ const { responderError } = require('./controllers/utilidades');
  *  - Cuerpo JSON limitado (32 kB).
  *  - Sesión resuelta desde cookie httpOnly y verificación CSRF en toda
  *    petición que modifique datos.
- *  - SPA: cualquier ruta desconocida devuelve index.html, salvo /api.
+ *  - Páginas en español (/) e inglés (/en/), robots.txt y sitemap.xml
+ *    (ver http/paginas.js); cualquier otra ruta responde 404.
  * ----------------------------------------------------------------------
  */
 function crearApp() {
@@ -45,16 +46,7 @@ function crearApp() {
 
   app.use(servirEstaticos(carpetaPublica));
 
-  // Resto de rutas: se entrega la aplicación de una sola página.
-  const indice = path.join(carpetaPublica, 'index.html');
-  app.use((req, res, siguiente) => {
-    if (req.method !== 'GET' && req.method !== 'HEAD') return siguiente();
-    if (req.ruta.startsWith('/api')) return siguiente();
-
-    res.set('Content-Type', 'text/html; charset=utf-8');
-    res.set('Cache-Control', 'no-cache');
-    return res.send(fs.readFileSync(indice));
-  });
+  app.use(crearPaginas());
 
   /** Punto de entrada de cada petición HTTP. */
   function manejarPeticion(req, res) {
