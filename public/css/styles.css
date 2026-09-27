@@ -105,7 +105,7 @@ body[data-vista='caminos'] .fondo__capa--caminos { opacity: 1; }
   inset: 0;
   background:
     radial-gradient(ellipse at 50% 0%, rgba(167, 123, 255, 0.1), transparent 60%),
-    linear-gradient(180deg, rgba(12, 10, 16, 0.62) 0%, rgba(12, 10, 16, 0.8) 55%, rgba(12, 10, 16, 0.9) 100%);
+    linear-gradient(180deg, rgba(12, 10, 16, 0.46) 0%, rgba(12, 10, 16, 0.66) 55%, rgba(12, 10, 16, 0.82) 100%);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2363,6 +2363,8 @@ button.ruta__nombre:hover { color: var(--color-oro-claro); text-decoration: unde
    antes, para que la barra siga en dos filas. */
 @media (max-width: 1000px) {
   .cuenta__registro { display: none; }
+  /* La temporada ya se ve en las cifras del inicio y en cada mapa. */
+  .cabecera__derecha .badge-temporada { display: none; }
 }
 
 /* Barra superior: en pantallas medianas el botón "Apoyar" queda solo con el
@@ -2717,4 +2719,81 @@ select option { background: #16131c; color: var(--color-texto); }
 
 @media (prefers-reduced-motion: reduce) {
   .con-icono::before, .casilla, .casilla input, .casilla input::after { transition: none; }
+}
+
+/* ============================================================================
+   v10 — Cajas más claras y translúcidas, bordes a juego con cada fondo
+   ============================================================================ */
+
+/* Superficies: más transparentes para que se vea el arte de fondo. Los
+   paneles grandes desenfocan lo que tienen detrás, así el texto se sigue
+   leyendo bien. Bordes en un tono cálido suave en vez de gris violáceo. */
+:root {
+  --color-fondo-panel: rgba(24, 20, 31, 0.66);
+  --color-fondo-tarjeta: rgba(30, 26, 38, 0.62);
+  --vidrio: rgba(26, 22, 33, 0.52);
+  --vidrio-fuerte: rgba(12, 10, 16, 0.46);
+  --color-borde: rgba(226, 208, 176, 0.16);
+  --color-borde-suave: rgba(226, 208, 176, 0.09);
+
+  /* Acento de cada apartado, sacado de su fondo (se usa en bordes). */
+  --acento-rgb: 176, 138, 255;   /* Inicio: violeta del arte morado */
+  --exito-suave: rgba(110, 200, 160, 0.75);
+  --advertencia-suave: rgba(226, 178, 88, 0.75);
+  --error-suave: rgba(214, 110, 110, 0.75);
+}
+body[data-vista='hideouts'] { --acento-rgb: 96, 204, 176; }  /* verde azulado del castillo */
+body[data-vista='caminos'] { --acento-rgb: 226, 190, 110; }  /* dorado de los caballeros */
+
+.panel-busqueda,
+.registro,
+.caminos-detalle,
+.caminos-rutas,
+.panel-historial,
+.mapa-mundial,
+.panel-admin,
+.apoyar,
+.cifras {
+  backdrop-filter: blur(12px) saturate(120%);
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
+}
+
+/* Paneles grandes: borde con un toque del acento del apartado. */
+.panel-busqueda,
+.registro,
+.caminos-detalle,
+.caminos-rutas,
+.panel-historial,
+.mapa-mundial {
+  border-color: rgba(var(--acento-rgb), 0.2);
+  transition: border-color 0.6s ease;
+}
+
+/* Tarjetas con franja lateral: el acento del apartado en vez de rojo. */
+.tarjeta-mapa {
+  border-color: rgba(var(--acento-rgb), 0.16);
+  border-left-color: rgba(var(--acento-rgb), 0.75);
+}
+.tarjeta-mapa:hover { border-color: rgba(var(--acento-rgb), 0.35); border-left-color: rgba(var(--acento-rgb), 0.9); }
+
+.tarjeta-camino { background: rgba(30, 26, 38, 0.7); border-left-color: rgba(226, 208, 176, 0.25); }
+.tarjeta-camino:hover { border-color: rgba(var(--acento-rgb), 0.6); }
+.tarjeta-camino--zonaNegra { border-left-color: rgba(176, 138, 255, 0.65); }
+.tarjeta-camino--activa,
+.tarjeta-camino--zonaNegra.tarjeta-camino--activa { border-left-color: var(--exito-suave); }
+
+.ruta { border-left-color: rgba(var(--acento-rgb), 0.75); }
+
+/* Estados del registro por capturas: mismos significados, tonos suaves. */
+.registro__fila[data-estado='lista'] { border-left-color: var(--exito-suave); }
+.registro__fila[data-estado='revisar'] { border-left-color: var(--advertencia-suave); }
+.registro__fila[data-estado='error'] { border-left-color: var(--error-suave); }
+
+.conexion__fuente--gremio { border-color: rgba(110, 200, 160, 0.4); color: #8fd6b6; }
+
+/* Ventanas flotantes: más opacas que el resto, porque van sobre el fondo
+   oscurecido y tienen mucho detalle. */
+.ventana__contenido {
+  background: rgba(22, 19, 28, 0.94);
+  border-color: rgba(226, 208, 176, 0.18);
 }
