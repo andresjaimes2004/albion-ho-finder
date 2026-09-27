@@ -19,7 +19,7 @@ const app = crearApp();
 const servidor = app.crearServidor();
 
 servidor.listen(PORT, () => {
-  console.log(`Servidor "Buscador de Hideouts" escuchando en el puerto ${PORT}`);
+  console.log(`Servidor "Albion Navigator" escuchando en el puerto ${PORT}`);
 });
 
 // Cierre ordenado: deja de aceptar conexiones antes de terminar el proceso.
