@@ -138,7 +138,6 @@ const EN = {
   'Centrar': 'Center',
   'Cerrar': 'Close',
   'Mapa del cluster': 'Cluster map',
-  'Personal': 'Personal',
   'Salida a mapa vecino': 'Exit to neighboring map',
   'Rutas de Avalon de este mapa': 'Avalon routes for this map',
   'Hideouts en este mapa': 'Hideouts on this map',

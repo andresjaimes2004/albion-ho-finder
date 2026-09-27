@@ -207,7 +207,7 @@ class AdminService {
     const nombreMapa = texto(mapa, 'mapa', { min: 2, max: 80 });
     const nombreGremio = texto(gremio, 'gremio', { min: 1, max: 60 });
     const numeroSlot = entero(slot, 'slot', { min: 1, max: 10 });
-    const tipoHideout = opcion(tipo, 'tipo', ['HQ', 'P', 'ESTANDAR'], { obligatorio: false }) || 'ESTANDAR';
+    const tipoHideout = opcion(tipo, 'tipo', ['HQ', 'ESTANDAR'], { obligatorio: false }) || 'ESTANDAR';
 
     const filaMapa = this.mapas.obtenerPorNombre(nombreMapa);
     if (!filaMapa) throw new ErrorValidacion('Ese mapa no existe en la Zona Negra.');
@@ -242,7 +242,7 @@ class AdminService {
     }
 
     const numeroSlot = entero(slot, 'slot', { min: 1, max: 10, obligatorio: false });
-    const tipoHideout = opcion(tipo, 'tipo', ['HQ', 'P', 'ESTANDAR'], { obligatorio: false });
+    const tipoHideout = opcion(tipo, 'tipo', ['HQ', 'ESTANDAR'], { obligatorio: false });
     const comentario = texto(nota, 'nota', { min: 0, max: 200, obligatorio: false });
 
     const actualizado = this.hideouts.actualizar(hideoutId, {

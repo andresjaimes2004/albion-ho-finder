@@ -18,7 +18,9 @@ class Hideout {
     this.mapa = mapa;
     this.slot = slot;
     this.gremio = gremio;
-    this.tipo = tipo || 'ESTANDAR';
+    // Solo hay dos tipos: HQ (el principal) y HO. Los datos antiguos traen
+    // algunos "P" (personal): se tratan como HO sin tocar la base de datos.
+    this.tipo = tipo === 'HQ' ? 'HQ' : 'ESTANDAR';
     this.posX = posX ?? null;
     this.posY = posY ?? null;
     this.nota = nota ?? null;
@@ -32,10 +34,8 @@ class Hideout {
     switch (this.tipo) {
       case 'HQ':
         return 'Hideout principal (HQ)';
-      case 'P':
-        return 'Hideout personal (P)';
       default:
-        return 'Hideout';
+        return 'Hideout (HO)';
     }
   }
 

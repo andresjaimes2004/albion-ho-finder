@@ -427,12 +427,6 @@ body[data-vista='caminos'] .fondo__capa--caminos { opacity: 1; }
   border: 1px solid rgba(201, 162, 39, 0.35);
 }
 
-.etiqueta-tipo--p {
-  background: rgba(140, 47, 47, 0.18);
-  color: var(--color-carmesi-claro);
-  border: 1px solid rgba(140, 47, 47, 0.35);
-}
-
 .etiqueta-tipo--estandar {
   background: rgba(255, 255, 255, 0.05);
   color: var(--color-texto-suave);
@@ -752,8 +746,6 @@ body[data-vista='caminos'] .fondo__capa--caminos { opacity: 1; }
 .mapa__borde { fill: none; stroke: rgba(232, 201, 92, 0.8); stroke-width: 2; vector-effect: non-scaling-stroke; }
 .mapa__mascara { fill: rgba(9, 8, 11, 0.62); pointer-events: none; }
 .mapa__rejilla line { stroke: rgba(255, 255, 255, 0.04); stroke-width: 1.5; }
-.mapa__caminos line { stroke: #8a7c5a; stroke-width: 3; stroke-linecap: round; opacity: 0.7; vector-effect: non-scaling-stroke; }
-.mapa__caminos--sobre-fondo line { stroke: #ffe28a; stroke-width: 2.5; opacity: 0.85; stroke-dasharray: 6 5; }
 .mapa__territorio--sutil polygon { fill: rgba(201, 162, 39, 0.05); stroke-opacity: 0.7; }
 
 .mapa__territorio polygon { fill: rgba(201, 162, 39, 0.08); stroke: var(--color-oro); stroke-width: 1.5; stroke-dasharray: 5 4; vector-effect: non-scaling-stroke; }
@@ -784,7 +776,6 @@ body[data-vista='caminos'] .fondo__capa--caminos { opacity: 1; }
 .mapa__pin-cuerpo { fill: var(--color-exito); stroke: #0d0c0f; stroke-width: 1.5; }
 .mapa__pin-centro { fill: #0d0c0f; }
 .mapa__pin--hq .mapa__pin-cuerpo { fill: var(--color-oro); }
-.mapa__pin--personal .mapa__pin-cuerpo { fill: #5b8fd9; }
 .mapa__pin--destacado .mapa__pin-cuerpo { stroke: #fff4c8; stroke-width: 2.5; }
 
 /* -------------------------------------------------- ventanas flotantes --- */
@@ -847,7 +838,6 @@ body[data-vista='caminos'] .fondo__capa--caminos { opacity: 1; }
 
 .punto { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
 .punto--hq { background: var(--color-oro); }
-.punto--personal { background: #5b8fd9; }
 .punto--estandar { background: var(--color-exito); }
 .punto--salida { background: rgba(201, 162, 39, 0.4); border: 2px solid var(--color-oro); }
 
@@ -1078,13 +1068,6 @@ body[data-vista='caminos'] .fondo__capa--caminos { opacity: 1; }
 .selector-fondo__boton:disabled { opacity: 0.4; cursor: not-allowed; }
 .selector-fondo__boton:focus-visible { outline: 2px solid var(--color-oro-claro); outline-offset: -2px; }
 
-.selector-fondo__caminos {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.82rem;
-  color: var(--color-texto-suave);
-}
 
 .lienzo--mapa { background: #0b0a0d; }
 #mapa-mundial__svg { background: #46545c; }
@@ -2818,3 +2801,16 @@ html:has(dialog[open]) { overflow: hidden; }
   overscroll-behavior: contain;
 }
 .ventana__lienzo svg { touch-action: none; }
+
+/* Rótulo "Mapa" sobre la ventana del mapa (sustituye al selector de fondos). */
+.selector-fondo__titulo {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-oro-claro);
+  background: rgba(201, 162, 39, 0.14);
+  border: 1px solid rgba(201, 162, 39, 0.35);
+}
