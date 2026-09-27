@@ -10,6 +10,7 @@ import { PanelRegistro } from './registroCaminos.js';
 import { crear, crearListaConexiones, crearTarjetaRuta, iniciarRelojes } from './rutas.js';
 import { t, tn } from './i18n.js';
 import { Portada } from './portada.js';
+import { mostrarSuave, ocultarSuave } from './animar.js';
 
 /**
  * app.js
@@ -133,10 +134,17 @@ class BuscadorUI {
 
     document.getElementById('alternar-mapa').addEventListener('click', (evento) => {
       const seccion = document.getElementById('mapa-mundial');
-      seccion.hidden = !seccion.hidden;
-      evento.currentTarget.setAttribute('aria-expanded', String(!seccion.hidden));
-      evento.currentTarget.textContent = seccion.hidden ? t('Ver mapa de la Zona Negra') : t('Ocultar mapa');
-      if (!seccion.hidden) this.mapaMundial.cargar().catch(() => {});
+      const boton = evento.currentTarget;
+      // Se decide por el estado del botón: la sección puede estar a mitad de animación.
+      const abrir = boton.getAttribute('aria-expanded') !== 'true';
+      boton.setAttribute('aria-expanded', String(abrir));
+      boton.textContent = abrir ? t('Ocultar mapa') : t('Ver mapa de la Zona Negra');
+      if (abrir) {
+        mostrarSuave(seccion);
+        this.mapaMundial.cargar().catch(() => {});
+      } else {
+        ocultarSuave(seccion);
+      }
     });
   }
 
@@ -345,7 +353,7 @@ class BuscadorUI {
     }
 
     const verMapa = document.createElement('span');
-    verMapa.className = 'tarjeta-mapa__accion';
+    verMapa.className = 'tarjeta-mapa__accion con-icono icono-mapa';
     verMapa.textContent = t('Ver mapa');
     encabezado.appendChild(verMapa);
 

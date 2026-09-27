@@ -98,3 +98,12 @@ test('responde vacío cuando el gremio no existe', () => {
   assert.equal(resultado.ok, true);
   assert.equal(resultado.totalMapas, 0);
 });
+
+test('solo hay dos tipos: los hideouts "P" antiguos se entregan como HO', () => {
+  const servicio = new BuscadorService();
+  const resultado = servicio.buscarPorGremio('Gankers Letales');
+  const tipos = resultado.resultados.flatMap((r) => r.hideouts.map((h) => h.tipo)).sort();
+  assert.deepEqual(tipos, ['ESTANDAR', 'HQ']);
+  const antiguo = resultado.resultados.flatMap((r) => r.hideouts).find((h) => h.slot === 3);
+  assert.equal(antiguo.etiquetaTipo, 'Hideout (HO)');
+});

@@ -123,27 +123,27 @@
       <h2 id="funciones-titulo" class="seccion__titulo">{{Todo lo que necesitas para moverte por Albion}}</h2>
       <p class="seccion__texto">{{Tres herramientas pensadas para gremios, exploradores y cazadores de la Zona Negra.}}</p>
       <div class="funciones__tarjetas">
-        <article class="funcion funcion--hideouts">
+        <a class="funcion funcion--hideouts" href="{{@inicio}}#hideouts" data-ir="hideouts" data-enfocar="input-gremio">
+          <span class="funcion__ir" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m0 0-6-6m6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           <div class="funcion__contenido">
             <h3 class="funcion__titulo">{{Busca hideouts}}</h3>
             <p class="funcion__texto">{{Escribe el nombre de un gremio y mira todos sus hideouts, con slot y tipo, sobre el mapa del juego.}}</p>
-            <a class="boton boton--pequeno" href="{{@inicio}}#hideouts" data-ir="hideouts" data-enfocar="input-gremio">{{Buscar gremio}}</a>
           </div>
-        </article>
-        <article class="funcion funcion--caminos">
+        </a>
+        <a class="funcion funcion--caminos" href="{{@inicio}}#caminos" data-ir="caminos">
+          <span class="funcion__ir" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m0 0-6-6m6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           <div class="funcion__contenido">
             <h3 class="funcion__titulo">{{Sigue las rutas de Avalon}}</h3>
             <p class="funcion__texto">{{Consulta los 400 caminos y los portales abiertos ahora, con la cuenta regresiva hasta que cierran.}}</p>
-            <a class="boton boton--pequeno" href="{{@inicio}}#caminos" data-ir="caminos">{{Ver caminos}}</a>
           </div>
-        </article>
-        <article class="funcion funcion--registro">
+        </a>
+        <a class="funcion funcion--registro" href="{{@inicio}}#caminos" data-ir="caminos" data-abrir-registro>
+          <span class="funcion__ir" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m0 0-6-6m6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           <div class="funcion__contenido">
             <h3 class="funcion__titulo">{{Registra conexiones}}</h3>
             <p class="funcion__texto">{{Pega una captura del juego y el lector la convierte en conexiones y rutas para tu gremio.}}</p>
-            <a class="boton boton--pequeno" href="{{@inicio}}#caminos" data-ir="caminos" data-abrir-registro>{{Registrar}}</a>
           </div>
-        </article>
+        </a>
       </div>
     </section>
 
@@ -230,7 +230,7 @@
       <p class="panel-busqueda__ayuda">
         {{Escribe el nombre completo o solo una parte. Toca cualquier mapa del resultado para abrirlo en detalle.}}
       </p>
-      <button id="alternar-mapa" type="button" class="boton boton--sutil" aria-expanded="false">
+      <button id="alternar-mapa" type="button" class="boton boton--sutil con-icono icono-mapa" aria-expanded="false">
         {{Ver mapa de la Zona Negra}}
       </button>
     </section>
@@ -238,7 +238,7 @@
     <section id="historial" class="panel-historial" hidden>
       <div class="panel-historial__cabecera">
         <h2>{{Tus últimas búsquedas}}</h2>
-        <button id="historial-limpiar" type="button" class="boton boton--pequeno boton--sutil">{{Limpiar}}</button>
+        <button id="historial-limpiar" type="button" class="boton boton--pequeno boton--sutil con-icono icono-papelera">{{Limpiar}}</button>
       </div>
       <ul id="historial-lista" class="historial"></ul>
     </section>
@@ -248,10 +248,18 @@
         <h2>{{Mapa de la Zona Negra}}</h2>
         <p id="mapa-mundial__leyenda" class="mapa-mundial__leyenda"></p>
       </div>
+      <ul class="mundo-leyenda" aria-label="{{Colores por tier}}">
+        <li><span class="mundo-leyenda__punto mundo__nodo--t4"></span> T4</li>
+        <li><span class="mundo-leyenda__punto mundo__nodo--t5"></span> T5</li>
+        <li><span class="mundo-leyenda__punto mundo__nodo--t6"></span> T6</li>
+        <li><span class="mundo-leyenda__punto mundo__nodo--t7"></span> T7</li>
+        <li><span class="mundo-leyenda__punto mundo__nodo--t8"></span> T8</li>
+        <li><span class="mundo-leyenda__punto mundo-leyenda__punto--ocupado"></span> {{Con hideouts}}</li>
+      </ul>
       <p id="mapa-mundial__estado" class="estado estado--info" hidden></p>
       <svg id="mapa-mundial__svg" class="lienzo" role="img" aria-label="{{Mapa de clusters de la Zona Negra}}"></svg>
       <p class="mapa-mundial__pie">
-        {{Arrastra para moverte y usa la rueda para acercar. Los mapas resaltados son los del gremio buscado.}}
+        {{Arrastra para moverte y usa la rueda para acercar: al acercar aparecen los nombres de los mapas. Los mapas resaltados son los del gremio buscado.}}
       </p>
       <p id="mapa-mundial__atribucion" class="mapa-mundial__pie mapa-mundial__atribucion"></p>
     </section>
@@ -353,7 +361,7 @@
             <h2 id="registro-titulo" class="registro__titulo">{{Registrar conexiones desde capturas}}</h2>
             <p class="registro__subtitulo">{{Suma al mapa las conexiones que ve tu gremio.}}</p>
           </div>
-          <button id="registro-alternar" type="button" class="boton boton--pequeno" aria-expanded="false" aria-controls="registro-cuerpo">{{Abrir}}</button>
+          <button id="registro-alternar" type="button" class="boton boton--pequeno con-icono icono-abajo" aria-expanded="false" aria-controls="registro-cuerpo">{{Abrir}}</button>
         </div>
 
         <div id="registro-cuerpo" class="registro__cuerpo" hidden>
@@ -372,7 +380,7 @@
             <div id="registro-zona" class="registro__zona" tabindex="0">
               <strong>{{Pega aquí tus capturas (Ctrl+V)}}</strong>
               <span>{{o arrástralas, o}}</span>
-              <label class="boton boton--pequeno boton--sutil registro__archivos">
+              <label class="boton boton--pequeno boton--sutil registro__archivos con-icono icono-subir">
                 {{elige archivos}}
                 <input id="registro-archivos" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden />
               </label>
@@ -383,8 +391,8 @@
             <div id="registro-rutas" class="registro__rutas" hidden aria-live="polite"></div>
 
             <div id="registro-acciones" class="registro__acciones" hidden>
-              <button id="registro-guardar" type="button" class="boton">{{Guardar conexiones}}</button>
-              <button id="registro-vaciar" type="button" class="boton boton--sutil">{{Vaciar}}</button>
+              <button id="registro-guardar" type="button" class="boton con-icono icono-guardar">{{Guardar conexiones}}</button>
+              <button id="registro-vaciar" type="button" class="boton boton--sutil con-icono icono-papelera">{{Vaciar}}</button>
             </div>
             <p class="registro__privacidad">{{Las capturas se leen en tu navegador y no se suben: solo se guarda lo que confirmas.}}</p>
           </div>
@@ -402,7 +410,7 @@
       <p id="caminos-error" class="estado estado--error" hidden></p>
       <div id="caminos-resumen" class="resumen-resultados" hidden></div>
       <div id="caminos-lista" class="caminos-lista"></div>
-      <button id="caminos-mas" type="button" class="boton boton--sutil caminos-mas" hidden>{{Mostrar más}}</button>
+      <button id="caminos-mas" type="button" class="boton boton--sutil caminos-mas con-icono icono-abajo" hidden>{{Mostrar más}}</button>
 
       <p class="caminos-atribucion">
         {{Catálogo de caminos: dumps oficiales del cliente de Albion Online (Sandbox Interactive).}}
@@ -473,8 +481,7 @@
           <svg id="ventana-mapa__svg" class="lienzo lienzo--mapa" role="img" aria-label="{{Mapa del cluster}}"></svg>
           <ul class="leyenda">
             <li><span class="punto punto--hq"></span> HQ</li>
-            <li><span class="punto punto--personal"></span> {{Personal}}</li>
-            <li><span class="punto punto--estandar"></span> Hideout</li>
+            <li><span class="punto punto--estandar"></span> HO</li>
             <li><span class="punto punto--salida"></span> {{Salida a mapa vecino}}</li>
           </ul>
         </div>

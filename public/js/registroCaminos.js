@@ -4,6 +4,7 @@ import api from './api.js';
 import { crearIndiceZonas, buscarZona, MAX_MINUTOS } from './capturas/lectura.js';
 import { agruparEnRutas, invertirRuta, claveRuta } from './capturas/encadenar.js';
 import { t, tn } from './i18n.js';
+import { mostrarSuave, ocultarSuave } from './animar.js';
 
 /**
  * registroCaminos.js
@@ -124,7 +125,7 @@ export class PanelRegistro {
 
   _abrir() {
     this.abierto = true;
-    this.cuerpo.hidden = false;
+    mostrarSuave(this.cuerpo);
     this.alternar.textContent = t('Cerrar');
     this.alternar.setAttribute('aria-expanded', 'true');
     this._cargarZonas();
@@ -136,7 +137,7 @@ export class PanelRegistro {
 
   _cerrar() {
     this.abierto = false;
-    this.cuerpo.hidden = true;
+    ocultarSuave(this.cuerpo);
     this.alternar.textContent = t('Abrir');
     this.alternar.setAttribute('aria-expanded', 'false');
   }
@@ -339,7 +340,7 @@ export class PanelRegistro {
       const z = this.porNombre && this.porNombre.get(zona.toLowerCase());
       return z ? z.grupo : undefined;
     };
-    const { rutas } = agruparEnRutas(tramos, grupoDe);
+    const { rutas, truncado } = agruparEnRutas(tramos, grupoDe);
 
     this.rutasDetectadas = rutas.map((ruta) => {
       const clave = claveRuta(ruta.zonas);
@@ -347,14 +348,28 @@ export class PanelRegistro {
       return { ...(pref.invertida ? invertirRuta(ruta) : ruta), clave, separada: Boolean(pref.separada) };
     });
 
-    for (const fila of this.filas) fila.marcarRuta(null);
+    // Un tramo puede estar en varias rutas (bifurcaciones): se listan todas.
+    const pertenencias = new Map();
     this.rutasDetectadas.forEach((ruta, n) => {
       if (ruta.separada) return;
-      ruta.indices.forEach((i, k) => this.filas[i].marcarRuta(t('Ruta {ruta} · tramo {tramo} de {total}', { ruta: n + 1, tramo: k + 1, total: ruta.indices.length })));
+      ruta.indices.forEach((i, k) => {
+        if (!pertenencias.has(i)) pertenencias.set(i, []);
+        pertenencias.get(i).push({ ruta: n + 1, tramo: k + 1, total: ruta.indices.length });
+      });
+    });
+    this.filas.forEach((fila, i) => {
+      const lista = pertenencias.get(i);
+      if (!lista) fila.marcarRuta(null);
+      else if (lista.length === 1) fila.marcarRuta(t('Ruta {ruta} · tramo {tramo} de {total}', lista[0]));
+      else fila.marcarRuta(t('En {n} rutas: {lista}', { n: lista.length, lista: lista.map((p) => p.ruta).join(', ') }));
     });
 
-    this.contenedorRutas.hidden = !this.rutasDetectadas.length;
-    this.contenedorRutas.replaceChildren(...this.rutasDetectadas.map((ruta, n) => this._crearAvisoRuta(ruta, n)));
+    const avisos = this.rutasDetectadas.map((ruta, n) => this._crearAvisoRuta(ruta, n));
+    if (truncado) {
+      avisos.unshift(crear('p', 'registro__ruta-tope', t('Hay demasiadas combinaciones: se muestran las primeras {n} rutas.', { n: rutas.length })));
+    }
+    this.contenedorRutas.hidden = !avisos.length;
+    this.contenedorRutas.replaceChildren(...avisos);
   }
 
   _crearAvisoRuta(ruta, n) {

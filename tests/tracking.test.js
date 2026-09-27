@@ -124,7 +124,7 @@ test('rechaza zonas desconocidas, iguales, sin camino o tiempos imposibles', () 
     assert.throws(() => s.registrar(autor.id, [conexion]), mensaje);
   }
   assert.throws(() => s.registrar(autor.id, []), /ninguna conexión/);
-  assert.throws(() => s.registrar(autor.id, Array(21).fill({ origen: 'Ouyos-Aoeuam', destino: 'Martlock', minutos: 5 })), /Como máximo 20/);
+  assert.throws(() => s.registrar(autor.id, Array(51).fill({ origen: 'Ouyos-Aoeuam', destino: 'Martlock', minutos: 5 })), /Como máximo 50/);
 
   // Si una falla, no se guarda ninguna.
   assert.throws(() => s.registrar(autor.id, [
@@ -332,4 +332,28 @@ test('borrar una ruta quita sus tramos exclusivos y conserva los compartidos', a
   // Si se borra una conexión suelta que usaba una ruta, la ruta desaparece.
   s.eliminar(admin, vigentes[0].id);
   assert.equal((await servicio.resumen()).rutas.length, 0);
+});
+
+test('guarda en un envío varias rutas que comparten tramos (bifurcaciones)', async () => {
+  limpiarReportes();
+  const conexiones = [
+    { origen: 'Deepwood Copse', destino: 'Ouyos-Aoeuam', minutos: 120 },
+    { origen: 'Ouyos-Aoeuam', destino: 'Martlock', minutos: 90 },
+    { origen: 'Ouyos-Aoeuam', destino: 'Cases-Ugumlos', minutos: 60 },
+    { origen: 'Cases-Ugumlos', destino: 'Lymhurst', minutos: 200 },
+  ];
+  // Desde Ouyos el portal lleva a Martlock y a Cases → Lymhurst: tres rutas.
+  const r = servicioReportes().registrar(autor.id, conexiones, [[0, 1], [0, 2, 3], [1, 2, 3]]);
+  assert.equal(r.creadas, 4, 'cada portal se guarda una sola vez');
+  assert.deepEqual(r.rutas.map((x) => x.zonas.join(' > ')), [
+    'Deepwood Copse > Ouyos-Aoeuam > Martlock',
+    'Deepwood Copse > Ouyos-Aoeuam > Cases-Ugumlos > Lymhurst',
+    'Martlock > Ouyos-Aoeuam > Cases-Ugumlos > Lymhurst',
+  ]);
+
+  const { servicio } = crearServicio();
+  const { rutas } = await servicio.resumen();
+  assert.equal(rutas.length, 3);
+  const deepwood = await servicio.paraMapas(['Deepwood Copse']);
+  assert.equal(deepwood.mapas['Deepwood Copse'].rutas.length, 2, 'el mapa de Zona Negra aparece en sus dos rutas');
 });

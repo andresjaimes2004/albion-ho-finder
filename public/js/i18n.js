@@ -121,7 +121,7 @@ export const EN = {
   'Portal de ciudad': 'City portal',
   'Descanso': 'Rest',
   'Hideout principal (HQ)': 'Headquarters (HQ)',
-  'Hideout personal (P)': 'Personal hideout (P)',
+  'Hideout (HO)': 'Hideout (HO)',
 
   // --- Cuenta ---
   'Iniciar sesión': 'Sign in',
@@ -144,14 +144,12 @@ export const EN = {
     'Game map: © Sandbox Interactive GmbH, via the official Albion Online wiki.',
 
   // --- Ventana del mapa ---
-  'Mapa oficial': 'Official map',
-  'Imagen propia': 'Custom image',
-  'Sin fondo': 'No background',
+  'Mapa': 'Map',
   'Cargando mapa...': 'Loading map...',
   'Rutas de Avalon activas': 'Active Avalon routes',
   'Ir a la ruta en Caminos de Avalon →': 'Go to the route in Avalonian Roads →',
-  'Salidas, caminos y territorios: dumps oficiales del cliente de Albion Online.':
-    'Exits, paths and territories: official Albion Online client data dumps.',
+  'Salidas y territorios: dumps oficiales del cliente de Albion Online.':
+    'Exits and territories: official Albion Online client data dumps.',
   'La ubicación de cada hideout la marca un administrador: el juego no la publica.':
     'Each hideout location is marked by an administrator: the game does not publish it.',
   'El mapa mundial es ilustrativo: la superposición es aproximada.':
@@ -163,10 +161,6 @@ export const EN = {
   'Pantano': 'Swamp',
   'Tier {tier}': 'Tier {tier}',
   'Cuadrante {cuadrante}': 'Quadrant {cuadrante}',
-  'Fondo del mapa': 'Map background',
-  'Este mapa todavía no tiene una imagen subida por un administrador.':
-    'This map does not have an image uploaded by an administrator yet.',
-  ' Caminos de los datos': ' Paths from game data',
   'Territorio': 'Territory',
   'Salida': 'Exit',
   'Ir a {destino}': 'Go to {destino}',
@@ -189,7 +183,6 @@ export const EN = {
   'Gremio': 'Guild',
   'Slot': 'Slot',
   'Tipo de hideout': 'Hideout type',
-  'Personal': 'Personal',
   'Añadir hideout': 'Add hideout',
   'Imagen de fondo propia': 'Custom background image',
   'Ajusta la imagen hasta que las salidas y el borde coincidan con el mapa. Se guarda para todos los visitantes.':
@@ -224,6 +217,8 @@ export const EN = {
   'Lista para guardar.': 'Ready to save.',
   'Ruta {ruta} · tramo {tramo} de {total}': 'Route {ruta} · leg {tramo} of {total}',
   'Ruta {n}': 'Route {n}',
+  'En {n} rutas: {lista}': 'In {n} routes: {lista}',
+  'Hay demasiadas combinaciones: se muestran las primeras {n} rutas.': 'Too many combinations: showing the first {n} routes.',
   ' · {n} tramos': ' · {n} legs',
   ' (se guardarán por separado)': ' (will be saved separately)',
   'Invertir sentido': 'Reverse direction',

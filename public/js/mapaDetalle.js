@@ -19,18 +19,13 @@ import { t, tn } from './i18n.js';
  * Ventana flotante con el detalle de un mapa de la Zona Negra.
  *
  * El mapa se dibuja en diamante, con la misma orientación que tiene en
- * el juego, y puede mostrar tres fondos:
+ * el juego. De fondo usa la imagen que haya subido un administrador (con
+ * su ajuste de escala, desplazamiento y rotación) o, si no hay, el recorte
+ * de esa zona del mapa del juego (teselas de la wiki oficial, alineadas
+ * con la calibración de mapaOficial.js).
  *
- *  - "Mapa oficial": el recorte de esa zona del mapa del juego (teselas
- *    de la wiki oficial), alineado con la calibración de mapaOficial.js.
- *  - "Imagen propia": la imagen que haya subido un administrador (por
- *    ejemplo, una captura del minimapa), con su ajuste de escala,
- *    desplazamiento y rotación.
- *  - "Sin fondo": solo la geometría de los datos del juego.
- *
- * Encima van las salidas hacia los mapas vecinos, los territorios, los
- * caminos (opcionales cuando hay fondo, porque el fondo ya los muestra) y
- * los hideouts. La ubicación de cada hideout la marca un administrador
+ * Encima van las salidas hacia los mapas vecinos, los territorios y los
+ * hideouts. La ubicación de cada hideout la marca un administrador
  * con un clic; se guarda en coordenadas del juego, así que sigue siendo
  * válida aunque se cambie el fondo.
  *
@@ -40,14 +35,8 @@ import { t, tn } from './i18n.js';
  * ----------------------------------------------------------------------
  */
 
-const COLOR_TIPO = { HQ: 'hq', P: 'personal', ESTANDAR: 'estandar' };
+const COLOR_TIPO = { HQ: 'hq', ESTANDAR: 'estandar' };
 const MARGEN_VISTA = 70;
-
-const FONDOS = [
-  { id: 'oficial', etiqueta: 'Mapa oficial' },
-  { id: 'propia', etiqueta: 'Imagen propia' },
-  { id: 'ninguno', etiqueta: 'Sin fondo' },
-];
 
 export class VentanaMapa {
   constructor({ obtenerSesion, alCambiar, irACaminos } = {}) {
@@ -73,7 +62,6 @@ export class VentanaMapa {
     this.teselas = null;
     this.imagenFondo = null;
     this.fondo = 'oficial';
-    this.mostrarCaminos = false;
     this.ajuste = null;
 
     // Una sola instancia de navegación por SVG: crear una por cada render
@@ -257,7 +245,7 @@ export class VentanaMapa {
     this._renderAdmin();
 
     const textos = [
-      t('Salidas, caminos y territorios: dumps oficiales del cliente de Albion Online.'),
+      t('Salidas y territorios: dumps oficiales del cliente de Albion Online.'),
       t('La ubicación de cada hideout la marca un administrador: el juego no la publica.'),
     ];
     if (this.fondo === 'oficial') {
@@ -285,44 +273,12 @@ export class VentanaMapa {
     }
   }
 
+  /** Rótulo sobre el mapa (antes había un selector de fondos). */
   _renderSelectorFondo() {
-    this.selectorFondo.replaceChildren();
-
-    const grupo = document.createElement('div');
-    grupo.className = 'selector-fondo__opciones';
-    grupo.setAttribute('role', 'group');
-    grupo.setAttribute('aria-label', t('Fondo del mapa'));
-
-    for (const opcion of FONDOS) {
-      const boton = document.createElement('button');
-      boton.type = 'button';
-      boton.className = 'selector-fondo__boton';
-      boton.textContent = t(opcion.etiqueta);
-      boton.setAttribute('aria-pressed', String(this.fondo === opcion.id));
-      if (opcion.id === 'propia' && !this.datos.imagen) {
-        boton.disabled = true;
-        boton.title = t('Este mapa todavía no tiene una imagen subida por un administrador.');
-      }
-      boton.addEventListener('click', () => {
-        this.fondo = opcion.id;
-        this._render();
-      });
-      grupo.appendChild(boton);
-    }
-
-    const caminos = document.createElement('label');
-    caminos.className = 'selector-fondo__caminos';
-    const casilla = document.createElement('input');
-    casilla.type = 'checkbox';
-    casilla.checked = this.fondo === 'ninguno' || this.mostrarCaminos;
-    casilla.disabled = this.fondo === 'ninguno';
-    casilla.addEventListener('change', () => {
-      this.mostrarCaminos = casilla.checked;
-      this._render();
-    });
-    caminos.append(casilla, t(' Caminos de los datos'));
-
-    this.selectorFondo.append(grupo, caminos);
+    const rotulo = document.createElement('span');
+    rotulo.className = 'selector-fondo__titulo';
+    rotulo.textContent = t('Mapa');
+    this.selectorFondo.replaceChildren(rotulo);
   }
 
   /** Esquinas del área del minimapa, ya giradas a la vista en diamante. */
@@ -443,21 +399,6 @@ export class VentanaMapa {
         )
       );
       capa.appendChild(etiqueta.grupo);
-    }
-
-    // 4. Caminos: siempre sin fondo; con fondo, solo si se piden (el fondo
-    // ya los muestra y la superposición es aproximada).
-    if ((!conFondo || this.mostrarCaminos) && mapa.caminos && mapa.caminos.nodos) {
-      const caminos = crear('g', { class: `mapa__caminos${conFondo ? ' mapa__caminos--sobre-fondo' : ''}` });
-      for (const [desde, hasta] of mapa.caminos.enlaces || []) {
-        const a = mapa.caminos.nodos[desde];
-        const b = mapa.caminos.nodos[hasta];
-        if (!a || !b) continue;
-        const [x1, y1] = localAVista(a[0], a[1]);
-        const [x2, y2] = localAVista(b[0], b[1]);
-        caminos.appendChild(crear('line', { x1, y1, x2, y2 }));
-      }
-      capa.appendChild(caminos);
     }
 
     // 5. Salidas hacia mapas vecinos
@@ -776,7 +717,6 @@ export class VentanaMapa {
     for (const [valor, etiqueta] of [
       ['ESTANDAR', 'HO'],
       ['HQ', 'HQ'],
-      ['P', t('Personal')],
     ]) {
       const opcion = document.createElement('option');
       opcion.value = valor;

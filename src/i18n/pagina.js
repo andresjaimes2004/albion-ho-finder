@@ -69,8 +69,10 @@ const EN = {
   'Mapa interactivo de la Zona Negra': 'Interactive Black Zone map',
   'Mapa de la Zona Negra': 'Black Zone map',
   'Mapa de clusters de la Zona Negra': 'Black Zone cluster map',
-  'Arrastra para moverte y usa la rueda para acercar. Los mapas resaltados son los del gremio buscado.':
-    'Drag to move and use the wheel to zoom. Highlighted maps belong to the guild you searched for.',
+  'Arrastra para moverte y usa la rueda para acercar: al acercar aparecen los nombres de los mapas. Los mapas resaltados son los del gremio buscado.':
+    'Drag to move and use the wheel to zoom: map names appear as you zoom in. Highlighted maps belong to the guild you searched for.',
+  'Colores por tier': 'Colors by tier',
+  'Con hideouts': 'With hideouts',
   'Escribe al menos 2 caracteres para empezar a buscar.': 'Type at least 2 characters to start searching.',
   'Buscando en la Zona Negra...': 'Searching the Black Zone...',
   'No se encontró ningún Hideout para ese gremio.': 'No hideout was found for that guild.',
@@ -138,7 +140,6 @@ const EN = {
   'Centrar': 'Center',
   'Cerrar': 'Close',
   'Mapa del cluster': 'Cluster map',
-  'Personal': 'Personal',
   'Salida a mapa vecino': 'Exit to neighboring map',
   'Rutas de Avalon de este mapa': 'Avalon routes for this map',
   'Hideouts en este mapa': 'Hideouts on this map',
@@ -168,15 +169,12 @@ const EN = {
   'Busca hideouts': 'Find hideouts',
   'Escribe el nombre de un gremio y mira todos sus hideouts, con slot y tipo, sobre el mapa del juego.':
     'Type a guild name and see all its hideouts, with slot and type, on the game map.',
-  'Buscar gremio': 'Search guild',
   'Sigue las rutas de Avalon': 'Follow Avalon routes',
   'Consulta los 400 caminos y los portales abiertos ahora, con la cuenta regresiva hasta que cierran.':
     'Check all 400 roads and the portals open right now, with a countdown until they close.',
-  'Ver caminos': 'View roads',
   'Registra conexiones': 'Log connections',
   'Pega una captura del juego y el lector la convierte en conexiones y rutas para tu gremio.':
     'Paste an in-game screenshot and the reader turns it into connections and routes for your guild.',
-  'Registrar': 'Log them',
   'Mantén Albion Navigator en línea': 'Keep Albion Navigator online',
   'Albion Navigator es gratis y sin anuncios. Si te sirve, puedes donar lo que quieras: cada aporte ayuda a mantenerlo en línea y con actualizaciones constantes.':
     'Albion Navigator is free and ad-free. If it helps you, you can donate any amount: every contribution keeps it online and regularly updated.',
