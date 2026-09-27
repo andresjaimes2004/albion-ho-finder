@@ -87,8 +87,8 @@ body {
 }
 
 .fondo__capa--inicio { background-image: url('../assets/fondo-inicio.webp'); background-position: 35% 30%; }
-.fondo__capa--hideouts { background-image: url('../assets/fondo-hideouts.webp'); background-position: 40% 30%; }
-.fondo__capa--caminos { background-image: url('../assets/fondo-caminos.webp'); background-position: 25% 50%; }
+.fondo__capa--hideouts { background-image: url('../assets/fondo-hideouts.webp'); background-position: 50% 45%; }
+.fondo__capa--caminos { background-image: url('../assets/fondo-caminos.webp'); background-position: 40% 35%; }
 
 @media (max-width: 960px) {
   .fondo__capa--inicio { background-image: url('../assets/fondo-inicio-960.webp'); }
