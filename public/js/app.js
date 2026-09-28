@@ -94,7 +94,37 @@ class BuscadorUI {
 
     this._bindEventos();
     this._bindPestanas();
+    this._vigilarCabecera();
     this._iniciar();
+  }
+
+  /**
+   * La barra superior se adapta a lo que realmente cabe: el espacio
+   * depende del idioma, de si hay sesión y del nombre de usuario, así que
+   * un ancho fijo en el CSS no basta. Si las pestañas no caben, primero
+   * se compacta ("Apoyar" solo con el corazón) y, si aún no, las pestañas
+   * pasan a su propia fila. Nunca quedan tapadas por otros elementos.
+   */
+  _vigilarCabecera() {
+    const cabecera = document.querySelector('.cabecera');
+    const pestanas = document.querySelector('.pestanas');
+    if (!cabecera || !pestanas) return;
+    const noCaben = () => pestanas.scrollWidth > pestanas.clientWidth + 1;
+    const ajustar = () => {
+      cabecera.classList.remove('cabecera--compacta', 'cabecera--dos-filas');
+      if (!noCaben()) return;
+      cabecera.classList.add('cabecera--compacta');
+      if (noCaben()) cabecera.classList.add('cabecera--dos-filas');
+    };
+    ajustar();
+    if (typeof ResizeObserver === 'function') {
+      // Cambia el ancho de la ventana o lo que hay a la derecha (sesión).
+      const observador = new ResizeObserver(() => requestAnimationFrame(ajustar));
+      observador.observe(cabecera.querySelector('.cabecera__contenido'));
+      observador.observe(cabecera.querySelector('.cabecera__derecha'));
+    } else {
+      window.addEventListener('resize', ajustar);
+    }
   }
 
   async _iniciar() {
@@ -102,6 +132,8 @@ class BuscadorUI {
     try {
       const mundo = await this.mapaMundial.cargar();
       this._mostrarCifras(mundo);
+      // La temporada de los datos se ve junto al buscador desde el principio.
+      this._actualizarBadgeTemporada(mundo && mundo.temporada);
     } catch (error) {
       /* el mapa es un complemento: si falla, el buscador sigue sirviendo */
     }
