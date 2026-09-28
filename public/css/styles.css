@@ -251,6 +251,17 @@ body[data-vista='caminos'] .fondo__capa--caminos { opacity: 1; }
   margin-bottom: 28px;
 }
 
+/* Etiqueta del campo y, a la derecha, la temporada de los datos. */
+.panel-busqueda__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-bottom: 10px;
+}
+.panel-busqueda__cabecera .panel-busqueda__label { margin-bottom: 0; }
+
 .panel-busqueda__label {
   display: block;
   font-size: 0.85rem;
@@ -1173,7 +1184,6 @@ body[data-vista='caminos'] .fondo__capa--caminos { opacity: 1; }
 @media (max-width: 520px) {
   .cabecera__contenido { gap: 8px 10px; padding-left: 14px; padding-right: 14px; }
   .cabecera__derecha { gap: 6px; flex-wrap: nowrap; }
-  .cabecera__derecha .badge-temporada,
   .cuenta__registro { display: none; }
   .cabecera .cuenta .boton { padding: 6px 10px; font-size: 0.8rem; }
   .idioma__opcion { padding: 3px 7px; font-size: 0.7rem; }
@@ -2325,8 +2335,6 @@ button.ruta__nombre:hover { color: var(--color-oro-claro); text-decoration: unde
    antes, para que la barra siga en dos filas. */
 @media (max-width: 1000px) {
   .cuenta__registro { display: none; }
-  /* La temporada ya se ve en las cifras del inicio y en cada mapa. */
-  .cabecera__derecha .badge-temporada { display: none; }
 }
 
 /* Barra superior: en pantallas medianas el botón "Apoyar" queda solo con el
@@ -3145,3 +3153,12 @@ html:has(dialog[open]) { overflow: hidden; }
 .mapa__etiqueta--oculta { opacity: 0; transition: opacity 0.2s ease; }
 .mapa__salida--fija:hover .mapa__etiqueta--oculta { opacity: 0.9; }
 
+/* Barra superior adaptable (app.js, _vigilarCabecera): si las pestañas no
+   caben, "Apoyar" se queda con el corazón y, si aún no, las pestañas pasan
+   a su propia fila (como en tableta). Así nunca quedan tapadas. */
+.cabecera--compacta .boton-apoyar { padding: 7px 10px; }
+.cabecera--compacta .boton-apoyar span { display: none; }
+.cabecera--compacta .cuenta__registro { display: none; }
+.cabecera--dos-filas .cabecera__contenido { flex-wrap: wrap; }
+.cabecera--dos-filas .pestanas { order: 3; flex-basis: 100%; }
+.cabecera--dos-filas .pestanas__boton { flex: 1; justify-content: center; }

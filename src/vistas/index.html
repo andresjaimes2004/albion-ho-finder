@@ -71,7 +71,6 @@
       </nav>
 
       <div class="cabecera__derecha">
-        <span id="badge-temporada" class="badge-temporada" hidden></span>
         <a class="boton-apoyar" href="#apoyar" data-desplazar><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.8 3.9 4.5 7.3 4.5c2 0 3.6 1.1 4.7 2.7 1.1-1.6 2.7-2.7 4.7-2.7 3.4 0 5.7 3.3 4.5 6.7-1.7 4.7-9.2 9.3-9.2 9.3Z" fill="currentColor"/></svg><span>{{Apoyar}}</span></a>
         <nav class="idioma" aria-label="{{Idioma}}">
           <a class="idioma__opcion" href="{{@inicioEs}}" hreflang="es" lang="es" {{@actualEs}}>ES</a>
@@ -213,7 +212,10 @@
     </header>
 
     <section class="panel-busqueda" aria-label="{{Buscador de gremios y mapas}}">
-      <label for="input-gremio" class="panel-busqueda__label">{{Gremio o mapa}}</label>
+      <div class="panel-busqueda__cabecera">
+        <label for="input-gremio" class="panel-busqueda__label">{{Gremio o mapa}}</label>
+        <span id="badge-temporada" class="badge-temporada" hidden></span>
+      </div>
       <div class="panel-busqueda__caja">
         <svg class="icono-buscar" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
