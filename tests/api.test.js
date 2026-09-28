@@ -139,6 +139,33 @@ test('la búsqueda pública responde con los mapas del gremio', async () => {
   assert.equal(json.resultados[0].geo.tier, 6);
 });
 
+test('la búsqueda también encuentra mapas por su nombre, tengan o no hideouts', async () => {
+  const cliente = crearCliente();
+
+  // Parte del nombre, sin importar mayúsculas: el mapa sale con sus hideouts.
+  const porMapa = await cliente.peticion('/api/buscar?q=deepwood');
+  assert.equal(porMapa.estado, 200);
+  assert.equal(porMapa.json.totalMapas, 0, 'ningún gremio se llama así');
+  assert.deepEqual(porMapa.json.mapas.map((m) => m.mapa), ['Deepwood Copse']);
+  assert.equal(porMapa.json.mapas[0].hideouts[0].gremio, 'Gankers Letales');
+  assert.equal(porMapa.json.mapas[0].geo.tier, 6);
+
+  // Un mapa sin hideouts también aparece (antes no había forma de verlo).
+  const vacio = await cliente.peticion('/api/buscar?q=Battlebrae%20L');
+  assert.deepEqual(vacio.json.mapas.map((m) => [m.mapa, m.hideouts.length]), [['Battlebrae Lake', 0]]);
+
+  // Coincide con una palabra del medio y sin espacios ni guiones.
+  const medio = await cliente.peticion('/api/buscar?q=copse');
+  assert.deepEqual(medio.json.mapas.map((m) => m.mapa), ['Deepwood Copse']);
+  const junto = await cliente.peticion('/api/buscar?q=deepwoodcop');
+  assert.deepEqual(junto.json.mapas.map((m) => m.mapa), ['Deepwood Copse']);
+
+  // Un gremio sigue encontrándose como antes (y el parámetro antiguo sirve).
+  const gremio = await cliente.peticion('/api/buscar?gremio=Gankers');
+  assert.equal(gremio.json.totalMapas, 1);
+  assert.deepEqual(gremio.json.mapas, []);
+});
+
 test('el detalle del mapa entrega la geografía real y sus hideouts', async () => {
   const cliente = crearCliente();
   const { json } = await cliente.peticion('/api/mapas/Deepwood%20Copse');
