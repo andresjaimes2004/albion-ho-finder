@@ -902,6 +902,27 @@ body[data-vista='caminos'] .fondo__capa--caminos { opacity: 1; }
 .tarjeta-mapa__encabezado:hover .tarjeta-mapa__nombre { color: var(--color-oro-claro); }
 .tarjeta-mapa__meta { font-size: 0.78rem; color: var(--color-texto-tenue); }
 
+/* Resultados del buscador en dos bloques: mapas por nombre y gremios. */
+.resultados__titulo {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 10px 0 -2px;
+  font-family: var(--fuente-titulos);
+  font-size: 1.05rem;
+  color: var(--color-oro-claro);
+}
+.resultados__titulo:first-child { margin-top: 0; }
+.resultados__cuenta {
+  font-family: var(--fuente-texto);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-texto-suave);
+}
+.resultados__mas { margin: 0; font-size: 0.85rem; color: var(--color-texto-tenue); }
+.tarjeta-mapa__vacia { margin: 0; font-size: 0.88rem; color: var(--color-texto-tenue); }
+
 .item-hideout__logo { border-radius: 5px; object-fit: cover; }
 .item-hideout__ubicado { font-size: 0.8rem; }
 

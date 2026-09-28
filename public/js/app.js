@@ -40,7 +40,6 @@ class BuscadorUI {
     };
     this.errorTexto = document.getElementById('estado-error__texto');
 
-    this.resumen = document.getElementById('resumen-resultados');
     this.listaMapas = document.getElementById('lista-mapas');
 
     this.temporizadorDebounce = null;
@@ -255,7 +254,6 @@ class BuscadorUI {
 
   _mostrarEstado(nombreEstado) {
     Object.values(this.estados).forEach((el) => (el.hidden = true));
-    this.resumen.hidden = true;
     this.listaMapas.replaceChildren();
 
     if (nombreEstado && this.estados[nombreEstado]) {
@@ -279,15 +277,17 @@ class BuscadorUI {
 
       this._actualizarBadgeTemporada(datos.temporada);
 
-      if (datos.totalMapas === 0) {
+      const porNombre = datos.mapas || [];
+      if (datos.totalMapas === 0 && !porNombre.length) {
         this._mostrarEstado('sinResultados');
         this.mapaMundial.destacar([]);
         return;
       }
 
       this._renderizarResultados(datos);
-      this._cargarRutas(datos.resultados.map((r) => r.mapa), this.controladorActual.signal);
-      this.mapaMundial.destacar(datos.resultados.map((r) => r.mapa));
+      const nombres = [...new Set([...porNombre, ...datos.resultados].map((r) => r.mapa))];
+      this._cargarRutas(nombres, this.controladorActual.signal);
+      this.mapaMundial.destacar(nombres);
       this.panelSesion.refrescarHistorial();
     } catch (error) {
       if (error.name === 'AbortError') return;
@@ -302,33 +302,54 @@ class BuscadorUI {
     this.badgeTemporada.hidden = false;
   }
 
+  /**
+   * Dos bloques: los mapas cuyo nombre coincide (con todos sus hideouts,
+   * o ninguno) y los mapas donde tiene hideout el gremio buscado.
+   */
   _renderizarResultados(datos) {
     this._mostrarEstado(null);
-
-    this.resumen.hidden = false;
-    this.resumen.replaceChildren(
-      this._crearSpanResumen(tn(datos.totalMapas, '{n} mapa', '{n} mapas')),
-      this._crearSpanResumen(tn(datos.totalHideouts, '{n} hideout', '{n} hideouts'))
-    );
-
     this.listaMapas.replaceChildren();
     this.tarjetasPorMapa.clear();
-    for (const grupo of datos.resultados) {
-      this.listaMapas.appendChild(this._crearTarjetaMapa(grupo));
+
+    const porNombre = datos.mapas || [];
+    if (porNombre.length) {
+      this.listaMapas.appendChild(
+        this._crearTituloSeccion(t('Mapas'), tn(datos.totalMapasPorNombre || porNombre.length, '{n} mapa', '{n} mapas'))
+      );
+      for (const grupo of porNombre) {
+        this.listaMapas.appendChild(this._crearTarjetaMapa(grupo, { resaltar: null }));
+      }
+      if ((datos.totalMapasPorNombre || 0) > porNombre.length) {
+        this.listaMapas.appendChild(
+          crear('p', 'resultados__mas', t('Hay más mapas con ese nombre: sigue escribiendo para acotar la búsqueda.'))
+        );
+      }
+    }
+
+    if (datos.resultados.length) {
+      this.listaMapas.appendChild(
+        this._crearTituloSeccion(
+          t('Gremios'),
+          `${tn(datos.totalMapas, '{n} mapa', '{n} mapas')} · ${tn(datos.totalHideouts, '{n} hideout', '{n} hideouts')}`
+        )
+      );
+      for (const grupo of datos.resultados) {
+        this.listaMapas.appendChild(this._crearTarjetaMapa(grupo));
+      }
     }
   }
 
-  _crearSpanResumen(texto) {
-    const span = document.createElement('span');
-    const partes = texto.split(' ');
-    const fuerte = document.createElement('strong');
-    fuerte.textContent = partes[0];
-    span.appendChild(fuerte);
-    span.append(' ' + partes.slice(1).join(' '));
-    return span;
+  _crearTituloSeccion(titulo, detalle) {
+    const cabecera = crear('h3', 'resultados__titulo', titulo);
+    cabecera.appendChild(crear('span', 'resultados__cuenta', detalle));
+    return cabecera;
   }
 
-  _crearTarjetaMapa(grupo) {
+  /**
+   * Tarjeta de un mapa. `resaltar`: texto del gremio buscado, para
+   * destacarlo al abrir el mapa (null en los mapas encontrados por nombre).
+   */
+  _crearTarjetaMapa(grupo, { resaltar = this.ultimoTermino } = {}) {
     const tarjeta = document.createElement('article');
     tarjeta.className = 'tarjeta-mapa';
 
@@ -372,42 +393,53 @@ class BuscadorUI {
     ir.appendChild(flecha);
     encabezado.appendChild(ir);
 
-    encabezado.addEventListener('click', () =>
-      this.ventanaMapa.abrir(grupo.mapa, { resaltarGremio: this.ultimoTermino })
-    );
+    encabezado.addEventListener('click', () => this.ventanaMapa.abrir(grupo.mapa, { resaltarGremio: resaltar }));
 
     tarjeta.appendChild(encabezado);
 
-    const lista = document.createElement('ul');
-    lista.className = 'lista-hideouts';
-    for (const hideout of grupo.hideouts) {
-      lista.appendChild(this._crearItemHideout(hideout));
+    if (grupo.hideouts.length) {
+      const lista = document.createElement('ul');
+      lista.className = 'lista-hideouts';
+      for (const hideout of grupo.hideouts) {
+        lista.appendChild(this._crearItemHideout(hideout));
+      }
+      tarjeta.appendChild(lista);
+    } else {
+      tarjeta.appendChild(crear('p', 'tarjeta-mapa__vacia', t('Sin hideouts registrados esta temporada.')));
     }
 
-    tarjeta.appendChild(lista);
-    this.tarjetasPorMapa.set(grupo.mapa, tarjeta);
+    // Un mismo mapa puede salir en los dos bloques (por nombre y por gremio).
+    if (!this.tarjetasPorMapa.has(grupo.mapa)) this.tarjetasPorMapa.set(grupo.mapa, []);
+    this.tarjetasPorMapa.get(grupo.mapa).push(tarjeta);
     return tarjeta;
   }
 
   // ------------------------------------------------ rutas de Avalon --
 
-  /** Rutas del gremio y conexiones vigentes de los mapas del resultado. */
+  /**
+   * Rutas y conexiones vigentes de los mapas del resultado. La API admite
+   * hasta 50 mapas por consulta: con búsquedas cortas hay más, así que se
+   * piden por tandas.
+   */
   async _cargarRutas(nombres, senal) {
     if (!nombres.length) return;
-    let datos;
+    const tandas = [];
+    for (let i = 0; i < nombres.length; i += 50) tandas.push(nombres.slice(i, i + 50));
+    let mapas;
     try {
-      datos = await api.rutasDeMapas(nombres, senal);
+      const respuestas = await Promise.all(tandas.map((tanda) => api.rutasDeMapas(tanda, senal)));
+      mapas = Object.assign({}, ...respuestas.map((r) => r.mapas));
     } catch (error) {
       return; // es un complemento: sin rutas, el resultado sigue sirviendo
     }
     if (senal.aborted) return;
 
-    for (const [nombre, info] of Object.entries(datos.mapas)) {
-      const tarjeta = this.tarjetasPorMapa.get(nombre);
-      if (!tarjeta) continue;
-      const previa = tarjeta.querySelector('.rutas-hideout');
-      if (previa) previa.remove();
-      tarjeta.appendChild(this._crearSeccionRutas(nombre, info));
+    for (const [nombre, info] of Object.entries(mapas)) {
+      for (const tarjeta of this.tarjetasPorMapa.get(nombre) || []) {
+        const previa = tarjeta.querySelector('.rutas-hideout');
+        if (previa) previa.remove();
+        tarjeta.appendChild(this._crearSeccionRutas(nombre, info));
+      }
     }
   }
 

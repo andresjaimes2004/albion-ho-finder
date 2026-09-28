@@ -26,9 +26,9 @@ const PREGUNTAS = {
         'Es 100 % gratis y sin anuncios. Para buscar hideouts y consultar los caminos de Avalon no necesitas cuenta. Solo la necesitas para registrar conexiones desde capturas, para que cada una quede a tu nombre.',
     },
     {
-      pregunta: '¿Cómo encuentro los hideouts de un gremio?',
+      pregunta: '¿Cómo encuentro los hideouts de un gremio o de un mapa?',
       respuesta:
-        'Entra en el apartado Hideouts y escribe el nombre del gremio, completo o solo una parte. Verás cada mapa donde tiene hideout, con su tipo (HQ o HO). Toca un mapa para abrirlo en detalle, con su ubicación y las rutas de Avalon que llegan a él.',
+        'Entra en el apartado Hideouts y escribe el nombre de un gremio o de un mapa, completo o solo una parte. Con un gremio verás cada mapa donde tiene hideout, con su tipo (HQ o HO); con un mapa, todos los hideouts que hay en él, aunque no tenga ninguno. Toca un mapa para abrirlo en detalle, con su ubicación y las rutas de Avalon que llegan a él.',
     },
     {
       pregunta: '¿De dónde salen los datos de los hideouts y de los mapas?',
@@ -82,9 +82,9 @@ const PREGUNTAS = {
         'It is 100% free and ad-free. You do not need an account to search hideouts or browse the Avalonian roads. You only need one to log connections from screenshots, so each one is saved under your name.',
     },
     {
-      pregunta: 'How do I find a guild’s hideouts?',
+      pregunta: 'How do I find the hideouts of a guild or a map?',
       respuesta:
-        'Open the Hideouts section and type the guild name, in full or just part of it. You will see every map where it has a hideout, with its type (HQ or HO). Tap a map to open it in detail, with its location and the Avalon routes that lead there.',
+        'Open the Hideouts section and type the name of a guild or a map, in full or just part of it. For a guild you will see every map where it has a hideout, with its type (HQ or HO); for a map, every hideout in it, even if there are none. Tap a map to open it in detail, with its location and the Avalon routes that lead there.',
     },
     {
       pregunta: 'Where does the hideout and map data come from?',

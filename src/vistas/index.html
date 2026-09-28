@@ -127,7 +127,7 @@
           <span class="funcion__ir" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m0 0-6-6m6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           <div class="funcion__contenido">
             <h3 class="funcion__titulo">{{Busca hideouts}}</h3>
-            <p class="funcion__texto">{{Escribe el nombre de un gremio y mira todos sus hideouts, con su tipo, sobre el mapa del juego.}}</p>
+            <p class="funcion__texto">{{Busca un gremio o un mapa y mira sus hideouts, con su tipo, sobre el mapa del juego.}}</p>
           </div>
         </a>
         <a class="funcion funcion--caminos" href="{{@inicio}}#caminos" data-ir="caminos">
@@ -208,12 +208,12 @@
       </span>
       <div>
         <h2 class="titulo-vista__titulo">{{Hideouts de la Zona Negra}}</h2>
-        <p class="titulo-vista__texto">{{Escribe el nombre de un gremio y descubre en qué mapas tiene hideout, su tipo y las rutas de Avalon que llegan a ellos.}}</p>
+        <p class="titulo-vista__texto">{{Busca un gremio para ver en qué mapas tiene hideout, o un mapa para ver quién tiene hideout en él, con su tipo y las rutas de Avalon que llegan.}}</p>
       </div>
     </header>
 
-    <section class="panel-busqueda" aria-label="{{Buscador de gremio}}">
-      <label for="input-gremio" class="panel-busqueda__label">{{Nombre del gremio}}</label>
+    <section class="panel-busqueda" aria-label="{{Buscador de gremios y mapas}}">
+      <label for="input-gremio" class="panel-busqueda__label">{{Gremio o mapa}}</label>
       <div class="panel-busqueda__caja">
         <svg class="icono-buscar" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
@@ -222,13 +222,13 @@
         <input
           id="input-gremio"
           type="text"
-          placeholder="{{Ej: Gankers Letales, ARCH...}}"
+          placeholder="{{Ej: Gankers Letales o Timbertop Escarp}}"
           autocomplete="off"
           maxlength="60"
         />
       </div>
       <p class="panel-busqueda__ayuda">
-        {{Escribe el nombre completo o solo una parte. Toca cualquier mapa del resultado para abrirlo en detalle.}}
+        {{Escribe el nombre de un gremio o de un mapa, completo o solo una parte. Toca cualquier mapa del resultado para abrirlo en detalle.}}
       </p>
       <button id="alternar-mapa" type="button" class="boton boton--sutil con-icono icono-mapa" aria-expanded="false">
         {{Ver mapa de la Zona Negra}}
@@ -259,7 +259,7 @@
       <p id="mapa-mundial__estado" class="estado estado--info" hidden></p>
       <svg id="mapa-mundial__svg" class="lienzo" role="img" aria-label="{{Mapa de clusters de la Zona Negra}}"></svg>
       <p class="mapa-mundial__pie">
-        {{Arrastra para moverte y usa la rueda para acercar: al acercar aparecen los nombres de los mapas. Los mapas resaltados son los del gremio buscado.}}
+        {{Arrastra para moverte y usa la rueda para acercar: al acercar aparecen los nombres de los mapas. Los mapas resaltados son los de tu búsqueda.}}
       </p>
       <p id="mapa-mundial__atribucion" class="mapa-mundial__pie mapa-mundial__atribucion"></p>
     </section>
@@ -277,7 +277,7 @@
 
       <div id="estado-sin-resultados" class="estado estado--advertencia" hidden>
         <span class="estado__icono">🚫</span>
-        <p>{{No se encontró ningún Hideout para ese gremio.}}</p>
+        <p>{{No se encontró ningún gremio ni mapa con ese nombre.}}</p>
       </div>
 
       <div id="estado-error" class="estado estado--error" hidden>
@@ -285,7 +285,6 @@
         <p id="estado-error__texto">{{Ocurrió un error al consultar los datos.}}</p>
       </div>
 
-      <div id="resumen-resultados" class="resumen-resultados" hidden></div>
       <div id="lista-mapas" class="lista-mapas"></div>
     </section>
 

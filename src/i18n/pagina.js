@@ -56,26 +56,30 @@ const EN = {
   'Caminos de Avalon': 'Avalonian Roads',
   'Idioma': 'Language',
   'Hideouts de la Zona Negra': 'Black Zone Guild Hideouts',
-  'Escribe el nombre de un gremio y descubre en qué mapas tiene hideout, su tipo y las rutas de Avalon que llegan a ellos.':
-    'Type a guild name to see every map where it has a hideout, its type and the Avalon routes that lead there.',
-  'Buscador de gremio': 'Guild search',
-  'Nombre del gremio': 'Guild name',
-  'Ej: Gankers Letales, ARCH...': 'e.g. Gankers Letales, ARCH...',
-  'Escribe el nombre completo o solo una parte. Toca cualquier mapa del resultado para abrirlo en detalle.':
-    'Type the full name or just part of it. Tap any map in the results to open it in detail.',
+  'Busca un gremio para ver en qué mapas tiene hideout, o un mapa para ver quién tiene hideout en él, con su tipo y las rutas de Avalon que llegan.':
+    'Search a guild to see which maps it has a hideout in, or a map to see who has a hideout there, with their type and the Avalon routes that lead there.',
+  'Buscador de gremios y mapas':
+    'Guild and map search',
+  'Gremio o mapa':
+    'Guild or map',
+  'Ej: Gankers Letales o Timbertop Escarp':
+    'e.g. Gankers Letales or Timbertop Escarp',
+  'Escribe el nombre de un gremio o de un mapa, completo o solo una parte. Toca cualquier mapa del resultado para abrirlo en detalle.':
+    'Type the name of a guild or a map, in full or just part of it. Tap any map in the results to open it in detail.',
   'Ver mapa de la Zona Negra': 'Show Black Zone map',
   'Tus últimas búsquedas': 'Your recent searches',
   'Limpiar': 'Clear',
   'Mapa interactivo de la Zona Negra': 'Interactive Black Zone map',
   'Mapa de la Zona Negra': 'Black Zone map',
   'Mapa de clusters de la Zona Negra': 'Black Zone cluster map',
-  'Arrastra para moverte y usa la rueda para acercar: al acercar aparecen los nombres de los mapas. Los mapas resaltados son los del gremio buscado.':
-    'Drag to move and use the wheel to zoom: map names appear as you zoom in. Highlighted maps belong to the guild you searched for.',
+  'Arrastra para moverte y usa la rueda para acercar: al acercar aparecen los nombres de los mapas. Los mapas resaltados son los de tu búsqueda.':
+    'Drag to move and use the wheel to zoom: map names appear as you zoom in. Highlighted maps are the ones from your search.',
   'Colores por tier': 'Colors by tier',
   'Con hideouts': 'With hideouts',
   'Escribe al menos 2 caracteres para empezar a buscar.': 'Type at least 2 characters to start searching.',
   'Buscando en la Zona Negra...': 'Searching the Black Zone...',
-  'No se encontró ningún Hideout para ese gremio.': 'No hideout was found for that guild.',
+  'No se encontró ningún gremio ni mapa con ese nombre.':
+    'No guild or map was found with that name.',
   'Ocurrió un error al consultar los datos.': 'Something went wrong while loading the data.',
   'Panel de administración': 'Admin panel',
   'Administración': 'Administration',
@@ -168,8 +172,8 @@ const EN = {
   'Tres herramientas pensadas para gremios, exploradores y cazadores de la Zona Negra.':
     'Three tools built for guilds, scouts and Black Zone hunters.',
   'Busca hideouts': 'Find hideouts',
-  'Escribe el nombre de un gremio y mira todos sus hideouts, con su tipo, sobre el mapa del juego.':
-    'Type a guild name and see all its hideouts, with their type, on the game map.',
+  'Busca un gremio o un mapa y mira sus hideouts, con su tipo, sobre el mapa del juego.':
+    'Search a guild or a map and see its hideouts, with their type, on the game map.',
   'Sigue las rutas de Avalon': 'Follow Avalon routes',
   'Consulta los 400 caminos y los portales abiertos ahora, con la cuenta regresiva hasta que cierran.':
     'Check all 400 roads and the portals open right now, with a countdown until they close.',
