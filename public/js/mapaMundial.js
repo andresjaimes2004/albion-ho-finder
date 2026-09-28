@@ -36,6 +36,7 @@ export class MapaMundial {
     this.estado = document.getElementById('mapa-mundial__estado');
     this.leyenda = document.getElementById('mapa-mundial__leyenda');
     this.atribucion = document.getElementById('mapa-mundial__atribucion');
+    this.avisoSinFondo = document.getElementById('mapa-mundial__sin-fondo');
     this.alSeleccionar = alSeleccionar || (() => {});
 
     this.datos = null;
@@ -94,6 +95,10 @@ export class MapaMundial {
       factor: 1,
       zoomBase: 2,
       areaBase: area,
+      alFallarFondo: () => {
+        this.svg.classList.add('mundo--sin-fondo');
+        if (this.avisoSinFondo) this.avisoSinFondo.hidden = false;
+      },
     });
 
     // Tamaños proporcionales al área para que se vean igual en cualquier recorte.
@@ -166,6 +171,16 @@ export class MapaMundial {
       },
     });
     this.navegacion.refrescarCapa();
+
+    // Botones + / − / ver todo, pensados sobre todo para el móvil.
+    const controles = this.svg.parentElement.querySelector('.zoom-controles');
+    if (controles && !controles.dataset.listo) {
+      controles.dataset.listo = '1';
+      controles.addEventListener('click', (evento) => {
+        const accion = evento.target.closest('[data-zoom]')?.dataset.zoom;
+        if (accion && this.navegacion) this.navegacion[accion]();
+      });
+    }
 
     // Si el mapa se muestra después (sección oculta al cargar), recalcular.
     if (typeof ResizeObserver === 'function') {
