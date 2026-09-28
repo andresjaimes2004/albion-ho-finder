@@ -290,6 +290,68 @@ test('una escritura sin token CSRF es rechazada', async () => {
   assert.deepEqual(conToken.json.hideout.pos, [10, 10]);
 });
 
+test('si el navegador pierde la cookie del token CSRF, el servidor la repone', async () => {
+  // Caso real: la sesión se prolonga sola, pero antes la cookie del token
+  // caducaba a las 8 h del login y toda escritura fallaba para siempre.
+  // Sesión creada con el servicio para no gastar el límite de logins.
+  const sesion = new AuthService().iniciarSesion({ usuario: 'jefe', clave: 'ClaveSegura99', huella: 'perdida' });
+  const cliente = crearCliente();
+  cliente.cookies.set('ho_sesion', sesion.token);
+  cliente.cookies.set('ho_csrf', sesion.csrf);
+  const original = sesion.csrf;
+
+  cliente.cookies.delete('ho_csrf');
+  const fallida = await cliente.escribir('/api/admin/hideouts/1/posicion', { metodo: 'PUT', datos: { x: 1, y: 1 } });
+  assert.equal(fallida.estado, 403);
+  assert.equal(fallida.json.codigo, 'CSRF');
+  // La misma respuesta devuelve el token: el navegador reintenta y funciona.
+  assert.equal(cliente.cookies.get('ho_csrf'), original);
+  const reintento = await cliente.escribir('/api/admin/hideouts/1/posicion', { metodo: 'PUT', datos: { x: 1, y: 1 } });
+  assert.equal(reintento.estado, 200);
+
+  // Una cookie alterada también se corrige con cualquier petición.
+  cliente.cookies.set('ho_csrf', 'otro-valor');
+  await cliente.peticion('/api/auth/sesion');
+  assert.equal(cliente.cookies.get('ho_csrf'), original);
+});
+
+test('al prolongarse la sesión también se prolonga la cookie del token CSRF', async () => {
+  const sesion = new AuthService().iniciarSesion({ usuario: 'jefe', clave: 'ClaveSegura99', huella: 'larga' });
+  const SesionRepository = require('../src/repositories/SesionRepository');
+  const tokens = require('../src/security/tokens');
+  // Le queda menos de 2 h: la próxima petición la prolonga.
+  const pronto = new Date(Date.now() + 60 * 60 * 1000).toISOString().replace('T', ' ').slice(0, 19);
+  new SesionRepository().prolongar(tokens.hashToken(sesion.token), pronto);
+
+  const respuesta = await fetch(`${base}/api/auth/sesion`, {
+    headers: { cookie: `ho_sesion=${sesion.token}; ho_csrf=${sesion.csrf}` },
+  });
+  const cookies = respuesta.headers.getSetCookie();
+  const csrf = cookies.find((c) => c.startsWith('ho_csrf='));
+  const sesionCookie = cookies.find((c) => c.startsWith('ho_sesion='));
+  assert.ok(sesionCookie, 'la sesión se prolonga');
+  assert.ok(csrf, 'y el token CSRF viaja con la nueva caducidad');
+  assert.equal(/Expires=([^;]+)/.exec(csrf)[1], /Expires=([^;]+)/.exec(sesionCookie)[1]);
+});
+
+test('una sesión con token CSRF antiguo (aleatorio) pasa al derivado sin cerrar sesión', async () => {
+  const auth = new AuthService();
+  const sesion = auth.iniciarSesion({ usuario: 'jefe', clave: 'ClaveSegura99', huella: 'antigua' });
+  // Simula una sesión creada antes del cambio: su hash CSRF no es el derivado.
+  const SesionRepository = require('../src/repositories/SesionRepository');
+  const tokens = require('../src/security/tokens');
+  new SesionRepository().actualizarCsrf(tokens.hashToken(sesion.token), tokens.hashToken('aleatorio-viejo'));
+
+  const cliente = crearCliente();
+  cliente.cookies.set('ho_sesion', sesion.token);
+  cliente.cookies.set('ho_csrf', 'aleatorio-viejo');
+  const primera = await cliente.escribir('/api/admin/hideouts/1/posicion', { metodo: 'PUT', datos: { x: 2, y: 2 } });
+  assert.equal(primera.estado, 403);
+  assert.equal(cliente.cookies.get('ho_csrf'), tokens.derivarCsrf(sesion.token));
+  const segunda = await cliente.escribir('/api/admin/hideouts/1/posicion', { metodo: 'PUT', datos: { x: 2, y: 2 } });
+  assert.equal(segunda.estado, 200);
+});
+
 // ------------------------------------------------------------------- admin --
 
 test('un usuario normal no puede entrar al panel de administración', async () => {

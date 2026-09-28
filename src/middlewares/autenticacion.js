@@ -32,6 +32,19 @@ function cargarSesion(req, res, next) {
           expires: nuevaExpiracion,
         });
       }
+
+      // La cookie legible del token CSRF se vuelve a entregar si falta,
+      // no coincide o la sesión se acaba de prolongar. Antes solo se
+      // prolongaba la de sesión: pasadas 8 h desde el login el navegador
+      // perdía el token y toda escritura fallaba aunque se recargara.
+      const csrfNuevo = servicio.sincronizarCsrf(token, sesion, (req.cookies || {})[config.cookies.csrf]);
+      if (csrfNuevo || nuevaExpiracion) {
+        res.cookie(config.cookies.csrf, csrfNuevo || servicio.csrfDe(token), {
+          ...config.cookies.opciones,
+          httpOnly: false,
+          expires: nuevaExpiracion || new Date(`${sesion.expiraEn}Z`),
+        });
+      }
     }
   } catch (error) {
     req.sesion = null;
@@ -48,7 +61,11 @@ function verificarCsrf(req, res, next) {
 
   const enviado = req.get('x-csrf-token') || '';
   if (!enviado || !tokens.sonIguales(tokens.hashToken(enviado), req.sesion.csrfHash)) {
-    return res.status(403).json({ ok: false, mensaje: 'Token de seguridad inválido. Recarga la página.' });
+    // `codigo` permite al navegador reintentar solo: esta misma respuesta
+    // ya trae la cookie con el token correcto (ver cargarSesion).
+    return res
+      .status(403)
+      .json({ ok: false, codigo: 'CSRF', mensaje: 'Token de seguridad inválido. Recarga la página.' });
   }
   return next();
 }
