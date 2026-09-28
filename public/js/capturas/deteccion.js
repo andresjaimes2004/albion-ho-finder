@@ -1,17 +1,18 @@
 /**
  * deteccion.js
  * ----------------------------------------------------------------------
- * Localiza en una captura del juego las dos regiones que hay que leer:
+ * Localiza en una captura del juego las regiones que hay que leer:
  *
  *  - El recuadro que aparece al pasar el cursor por un portal de Avalon
  *    ("Camino de Avalon a · <destino> · se cierra 17 h 16 m"). Se ubica
- *    por su barra de capacidad, de un amarillo muy concreto (255,178,18)
- *    que no aparece en ningún otro lugar de la interfaz.
+ *    por el carril de su barra de capacidad: amarillo (255,178,18) en la
+ *    parte llena y tostado en la vacía, siempre del mismo ancho (137 px a
+ *    1080p) sea cual sea la ocupación del portal (0/7 … 7/7).
  *  - El título del camino actual ("VI · Xetos-Obursum"), en el pergamino
  *    claro de la parte superior.
  *
- * Todas las posiciones se calculan en proporción al tamaño de la barra o
- * del pergamino, así que funciona con cualquier resolución o escala de
+ * Todas las posiciones se calculan en proporción al carril o al
+ * pergamino, así que funciona con cualquier resolución o escala de
  * interfaz, y también con recortes parciales de la pantalla.
  *
  * Los colores dependen de la configuración de cada jugador (brillo y
@@ -19,15 +20,12 @@
  * video, HDR, luz nocturna de Windows...). Por eso cada región se busca
  * por niveles: primero con los colores exactos por defecto y, si no
  * aparece, por tono/saturación/brillo (HSV) con umbrales relativos a los
- * colores más intensos de la propia captura. Así un juego más apagado o
- * más vivo sigue funcionando y lo que ya funcionaba no cambia.
+ * colores más intensos de la propia captura.
  *
  * Funciones puras sobre { width, height, data } (RGBA, como ImageData),
  * sin DOM: se prueban en Node.
  * ----------------------------------------------------------------------
  */
-
-const MIN_LARGO_BARRA = 24;
 
 /** Colores exactos con la configuración por defecto del juego. */
 function esAmarilloBarra(r, g, b) {
@@ -77,9 +75,10 @@ function muestrear(imagen, filtro) {
 }
 
 /**
- * Criterio tolerante para la barra: tono amarillo-anaranjado y saturación
- * y brillo cercanos a los más intensos de la captura (la barra es lo más
- * saturado de ese tono; el pergamino, mucho menos).
+ * Criterio tolerante para la parte llena del carril: tono amarillo-
+ * anaranjado y saturación y brillo cercanos a los más intensos de la
+ * captura (la barra es lo más saturado de ese tono; el pergamino, mucho
+ * menos).
  */
 function amarilloAdaptativo(imagen) {
   const candidatos = muestrear(imagen, (c) => c.h >= 24 && c.h <= 58 && c.s >= 0.4 && c.v >= 0.45);
@@ -107,110 +106,162 @@ function pergaminoAdaptativo(imagen, limiteAlto) {
   };
 }
 
+// ------------------------------------------------------------------ carril --
+
 /**
- * Busca la barra de capacidad del recuadro del portal: el tramo
- * horizontal más largo de amarillo. El texto "7/7" y el ícono de persona
- * van dibujados encima y la parten en trozos, así que los trozos
- * separados por huecos pequeños se unen.
- * @returns {{x0:number, x1:number, y0:number, y1:number} | null}
+ * La barra de capacidad es un carril de ancho fijo (137 px a 1080p) que se
+ * llena de amarillo según las plazas ("5/7"); lo que falta es tostado.
+ * Medir solo lo amarillo daba una escala falsa en portales que no están
+ * llenos (y en 0/7 o 1/7 ni siquiera se encontraba), así que se mide el
+ * carril completo: amarillo + tostado.
  */
-export function detectarBarra(imagen) {
-  const estricta = buscarBarra(imagen, esAmarilloBarra);
-  if (estricta) return estricta;
-  const tolerante = amarilloAdaptativo(imagen);
-  return tolerante ? buscarBarra(imagen, tolerante, { exigirForma: true }) : null;
+function esTostadoCarril(r, g, b) {
+  return r > 120 && r < 175 && g > 88 && g < 135 && b > 25 && b < 75 && r - b > 70;
 }
 
-function buscarBarra(imagen, esAmarillo, { exigirForma = false } = {}) {
-  const { width, height, data } = imagen;
-  let mejor = null;
+function esCarrilExacto(r, g, b) {
+  return esAmarilloBarra(r, g, b) || esTostadoCarril(r, g, b);
+}
 
-  for (let y = 0; y < height; y++) {
-    const tramos = [];
-    let inicio = -1;
-    for (let x = 0; x <= width; x++) {
-      const i = (y * width + x) * 4;
-      const amarillo = x < width && esAmarillo(data[i], data[i + 1], data[i + 2]);
-      if (amarillo && inicio < 0) inicio = x;
-      if (!amarillo && inicio >= 0) {
-        const previo = tramos[tramos.length - 1];
-        // Hueco tolerado: 8 px o el 10 % de lo acumulado (resoluciones altas).
-        if (previo && inicio - previo[1] - 1 <= Math.max(8, 0.1 * (previo[1] - previo[0] + 1))) {
-          previo[1] = x - 1;
-        } else {
-          tramos.push([inicio, x - 1]);
-        }
-        inicio = -1;
-      }
-    }
-    for (const [x0, x1] of tramos) {
-      const largo = x1 - x0 + 1;
-      if (largo >= MIN_LARGO_BARRA && (!mejor || largo > mejor.x1 - mejor.x0 + 1)) {
-        mejor = { x0, x1, y0: y, y1: y };
-      }
-    }
+/** Carril con otros brillos o saturaciones: mismo tono, dos niveles de brillo. */
+function carrilAdaptativo(imagen) {
+  const amarillo = amarilloAdaptativo(imagen);
+  if (!amarillo) {
+    // Barra vacía (0/7): solo hay tostado; tono y saturación, brillo medio.
+    return (r, g, b) => {
+      const c = aHsv(r, g, b);
+      return c.h >= 28 && c.h <= 52 && c.s >= 0.45 && c.v >= 0.35 && c.v <= 0.8;
+    };
   }
-  if (!mejor) return null;
-
-  // Extiende hacia abajo mientras la fila siga siendo amarilla en el
-  // centro de la barra (la barra tiene varias filas de alto).
-  const centro = Math.round((mejor.x0 + mejor.x1) / 2);
-  const esFila = (y) => {
-    if (y < 0 || y >= height) return false;
-    const i = (y * width + centro) * 4;
-    return esAmarillo(data[i], data[i + 1], data[i + 2]);
+  return (r, g, b) => {
+    if (amarillo(r, g, b)) return true;
+    const c = aHsv(r, g, b);
+    return c.h >= 28 && c.h <= 52 && c.s >= 0.45 && c.v >= 0.3 && c.v <= 0.75;
   };
-  while (esFila(mejor.y0 - 1)) mejor.y0 -= 1;
-  while (esFila(mejor.y1 + 1)) mejor.y1 += 1;
+}
 
-  // Con el criterio tolerante se exige la forma de la barra (larga y
-  // delgada) para no confundirla con otros elementos dorados.
-  if (exigirForma) {
-    const largo = mejor.x1 - mejor.x0 + 1;
-    const alto = mejor.y1 - mejor.y0 + 1;
-    if (alto < 2 || alto > Math.max(6, largo * 0.2)) return null;
+/**
+ * Busca el carril de la barra de capacidad.
+ * @returns {{x0:number, x1:number, y0:number, y1:number, ancho:number, alto:number, llenado:number} | null}
+ */
+export function detectarCarril(imagen) {
+  const exacto = buscarCarril(imagen, esCarrilExacto);
+  if (exacto) return exacto;
+  const tolerante = carrilAdaptativo(imagen);
+  return tolerante ? buscarCarril(imagen, tolerante) : null;
+}
+
+function buscarCarril(imagen, esCarril) {
+  const { width, height, data } = imagen;
+  const enCarril = (x, y) => {
+    if (x < 0 || y < 0 || x >= width || y >= height) return false;
+    const i = (y * width + x) * 4;
+    return esCarril(data[i], data[i + 1], data[i + 2]);
+  };
+
+  // 1. Tramos horizontales largos (el texto "5/7" y el ícono los cortan un poco).
+  const candidatos = [];
+  for (let y = 0; y < height; y++) {
+    let inicio = -1;
+    let ultimo = -10;
+    for (let x = 0; x <= width; x++) {
+      const si = x < width && enCarril(x, y);
+      if (si) {
+        if (inicio < 0 || x - ultimo > 6) {
+          if (inicio >= 0 && ultimo - inicio + 1 >= 40) candidatos.push({ x0: inicio, x1: ultimo, y });
+          inicio = x;
+        }
+        ultimo = x;
+      }
+    }
+    if (inicio >= 0 && ultimo - inicio + 1 >= 40) candidatos.push({ x0: inicio, x1: ultimo, y });
   }
-  return mejor;
+  candidatos.sort((a, b) => b.x1 - b.x0 - (a.x1 - a.x0));
+
+  // 2. El primero que tenga forma de barra: banda delgada y aislada.
+  const vistos = new Set();
+  for (const c of candidatos.slice(0, 60)) {
+    const clave = `${c.x0}:${Math.floor(c.y / 4)}`;
+    if (vistos.has(clave)) continue;
+    vistos.add(clave);
+    const carril = validarCarril(c, enCarril);
+    if (carril) return carril;
+  }
+  return null;
+}
+
+function validarCarril(candidato, enCarril) {
+  const largo = candidato.x1 - candidato.x0 + 1;
+  // Alto: columnas junto al extremo izquierdo (siempre parte del carril).
+  const columna = (y) => [2, 3, 4].some((d) => enCarril(candidato.x0 + d, y));
+  let y0 = candidato.y;
+  let y1 = candidato.y;
+  while (columna(y0 - 1) && candidato.y - y0 < largo) y0 -= 1;
+  while (columna(y1 + 1) && y1 - candidato.y < largo) y1 += 1;
+  const alto = y1 - y0 + 1;
+  if (alto < Math.max(3, largo * 0.035) || alto > largo * 0.11) return null;
+
+  // Columnas del carril: la mitad o más de sus filas son del carril.
+  const esColumna = (x) => {
+    let cuenta = 0;
+    for (let y = y0; y <= y1; y++) if (enCarril(x, y)) cuenta += 1;
+    return cuenta >= alto * 0.5;
+  };
+  const hueco = Math.max(2, Math.round(alto * 0.6));
+  let x0 = candidato.x0;
+  let x1 = candidato.x0;
+  for (let x = candidato.x0, sin = 0; sin <= hueco; x++) {
+    if (esColumna(x)) {
+      x1 = x;
+      sin = 0;
+    } else {
+      sin += 1;
+    }
+  }
+  for (let x = candidato.x0 - 1, sin = 0; sin <= hueco && x >= 0; x--) {
+    if (esColumna(x)) {
+      x0 = x;
+      sin = 0;
+    } else {
+      sin += 1;
+    }
+  }
+  const ancho = x1 - x0 + 1;
+  // Proporción de la barra: 8-9 px de alto por 137 de ancho (≈ 0,06). El
+  // borde del pergamino del título es del mismo tostado, pero mucho más
+  // largo y fino.
+  if (ancho < 40 || alto < ancho * 0.04 || alto > ancho * 0.09) return null;
+
+  // Aislada: justo encima y debajo no sigue el carril (es una barra, no
+  // una zona grande del mapa de ese color).
+  const fuera = (y) => {
+    let cuenta = 0;
+    for (let x = x0; x <= x1; x += 2) if (enCarril(x, y)) cuenta += 1;
+    return cuenta / Math.ceil(ancho / 2);
+  };
+  if (fuera(y0 - 2) > 0.3 || fuera(y1 + 2) > 0.3) return null;
+
+  return { x0, x1, y0, y1, ancho, alto };
 }
 
 /**
- * Región del recuadro del portal a partir de su barra. Proporciones
- * medidas en capturas a 1920×1080: barra de ~137 px; el texto va desde
- * ~0,3 anchos de barra por encima hasta ~0,2 por debajo (la línea del
- * tiempo de cierre).
+ * Regiones del recuadro a partir del carril (medidas a 1080p, carril de
+ * 137 px): el nombre del destino va justo encima (de −0,15 a −0,05
+ * anchos) y la línea del tiempo debajo (de 0,095 a 0,2), alineada a la
+ * derecha; el recuadro se ensancha con nombres largos, así que la región
+ * del tiempo llega hasta 1,62 anchos.
  */
-export function regionRecuadro(barra, imagen) {
-  const ancho = barra.x1 - barra.x0 + 1;
-  return recortarALimites(
-    {
-      x: Math.round(barra.x0 - 0.12 * ancho),
-      y: Math.round(barra.y0 - 0.34 * ancho),
-      ancho: Math.round(ancho * 1.62),
-      alto: Math.round(ancho * 0.62),
-    },
-    imagen
-  );
-}
-
-/**
- * Las dos líneas útiles del recuadro, para leerlas por separado: el
- * nombre del destino (justo encima de la barra) y el tiempo de cierre
- * (debajo, alineado a la derecha). Leer la línea del tiempo sola, con
- * solo dígitos permitidos, evita confundir "17" con "TZ" o "12".
- */
-export function regionesRecuadro(barra, imagen) {
-  const ancho = barra.x1 - barra.x0 + 1;
+export function regionesCarril(carril, imagen) {
+  const W = carril.ancho;
   const region = (x, y, an, al) =>
     recortarALimites(
-      { x: Math.round(barra.x0 + x * ancho), y: Math.round(barra.y0 + y * ancho), ancho: Math.round(an * ancho), alto: Math.round(al * ancho) },
+      { x: Math.round(carril.x0 + x * W), y: Math.round(carril.y0 + y * W), ancho: Math.round(an * W), alto: Math.round(al * W) },
       imagen
     );
-  // Medido a 1920×1080 (barra de 137 px): el nombre ocupa de 0,36 a
-  // 0,98 anchos de barra en x y de −0,14 a −0,05 en y; los dígitos del
-  // tiempo, de 1,09 a 1,44 en x y de 0,11 a 0,19 en y.
   return {
-    destino: region(0.3, -0.16, 1.1, 0.14),
-    tiempo: region(0.95, 0.085, 0.6, 0.13),
+    recuadro: region(-0.45, -0.42, 2.05, 0.68),
+    destino: region(0.28, -0.155, 1.25, 0.11),
+    tiempo: region(0.3, 0.095, 1.32, 0.105),
   };
 }
 
