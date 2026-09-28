@@ -75,8 +75,9 @@ async function peticion(ruta, { metodo = 'GET', datos, senal, binario, reintento
 }
 
 export const api = {
-  buscar: (gremio, senal) =>
-    peticion(`/api/buscar?gremio=${encodeURIComponent(gremio)}`, { senal }),
+  /** Busca el texto en gremios y en nombres de mapas. */
+  buscar: (texto, senal) =>
+    peticion(`/api/buscar?q=${encodeURIComponent(texto)}`, { senal }),
 
   mundo: () => peticion('/api/mapas'),
   detalleMapa: (nombre) => peticion(`/api/mapas/${encodeURIComponent(nombre)}`),

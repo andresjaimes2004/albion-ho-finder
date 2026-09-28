@@ -29,6 +29,8 @@ export const EN = {
   // --- Buscador de hideouts ---
   'Ver mapa de la Zona Negra': 'Show Black Zone map',
   'Ocultar mapa': 'Hide map',
+  'Hay más mapas con ese nombre: sigue escribiendo para acotar la búsqueda.': 'There are more maps with that name: keep typing to narrow the search.',
+  'Sin hideouts registrados esta temporada.': 'No hideouts registered this season.',
   'No se pudo conectar con el servidor.': 'Could not connect to the server.',
   'Temporada {codigo}': 'Season {codigo}',
   '{n} mapa': '{n} map',

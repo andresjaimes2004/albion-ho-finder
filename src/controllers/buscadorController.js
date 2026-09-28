@@ -8,19 +8,20 @@ const servicio = new BuscadorService();
 const busquedas = new BusquedaRepository();
 
 /**
- * GET /api/buscar?gremio=texto
+ * GET /api/buscar?q=texto  (también ?gremio=texto, el nombre anterior)
+ * Busca el texto en los gremios y en los nombres de los mapas.
  * Controlador delgado: valida la petición HTTP y delega en el servicio.
  * Si hay sesión iniciada, la búsqueda queda en el historial del usuario.
  */
 const buscarGremio = manejar((req, res) => {
-  const { gremio } = req.query;
+  const texto = req.query.q !== undefined ? req.query.q : req.query.gremio;
 
-  if (typeof gremio !== 'string') {
-    return res.status(400).json({ ok: false, mensaje: 'Parámetro "gremio" requerido.' });
+  if (typeof texto !== 'string') {
+    return res.status(400).json({ ok: false, mensaje: 'Parámetro "q" requerido.' });
   }
 
   const usuarioId = req.sesion ? req.sesion.usuario.id : null;
-  const resultado = servicio.buscarPorGremio(gremio, { usuarioId });
+  const resultado = servicio.buscarPorGremio(texto, { usuarioId });
 
   return res.status(200).json(resultado);
 });
