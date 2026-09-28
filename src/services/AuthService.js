@@ -112,7 +112,7 @@ class AuthService {
     this.usuarios.registrarAcceso(fila.id);
 
     const token = tokens.generarToken();
-    const csrf = tokens.generarToken();
+    const csrf = tokens.derivarCsrf(token);
     const expiraEn = enHoras(config.sesion.horasVigencia);
 
     this.sesiones.crear({
@@ -151,6 +151,27 @@ class AuthService {
         rol: sesion.rol,
       },
     };
+  }
+
+  /** Token CSRF (derivado) de una sesión. */
+  csrfDe(token) {
+    return tokens.derivarCsrf(token);
+  }
+
+  /**
+   * Token CSRF que el navegador debe tener para esta sesión, o null si la
+   * cookie que envió ya es la correcta. Las sesiones anteriores a los
+   * tokens derivados se pasan al token derivado la primera vez.
+   */
+  sincronizarCsrf(token, sesion, csrfEnviado) {
+    const esperado = tokens.derivarCsrf(token);
+    const hashEsperado = tokens.hashToken(esperado);
+    if (!tokens.sonIguales(sesion.csrfHash, hashEsperado)) {
+      this.sesiones.actualizarCsrf(tokens.hashToken(token), hashEsperado);
+      sesion.csrfHash = hashEsperado;
+    }
+    const valido = typeof csrfEnviado === 'string' && csrfEnviado && tokens.sonIguales(tokens.hashToken(csrfEnviado), hashEsperado);
+    return valido ? null : esperado;
   }
 
   /** Prolonga la sesión si le queda poco tiempo (sesión deslizante). */

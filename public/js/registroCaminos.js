@@ -5,6 +5,8 @@ import { crearIndiceZonas, buscarZona, MAX_MINUTOS } from './capturas/lectura.js
 import { agruparEnRutas, invertirRuta, claveRuta } from './capturas/encadenar.js';
 import { t, tn } from './i18n.js';
 import { mostrarSuave, ocultarSuave } from './animar.js';
+import * as borrador from './capturas/borrador.js';
+import { crearReloj, iniciarRelojes } from './rutas.js';
 
 /**
  * registroCaminos.js
@@ -23,10 +25,25 @@ import { mostrarSuave, ocultarSuave } from './animar.js';
  * Las filas que se encadenan (el destino de una es el origen de otra, en
  * cualquier sentido) se proponen como una ruta; el usuario puede
  * invertirla o guardar los tramos por separado.
+ *
+ * Mientras no se guardan, las capturas (imagen, lectura y correcciones)
+ * se conservan en el navegador (capturas/borrador.js): si la página se
+ * recarga, vuelven a aparecer tal como estaban.
  * ----------------------------------------------------------------------
  */
 
 const CONFIANZA_SEGURA = 0.9;
+
+function nuevoId() {
+  if (window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
+
+/** Recorte del recuadro como imagen, para guardarlo en el borrador. */
+function lienzoABlob(lienzo) {
+  if (!lienzo || typeof lienzo.toBlob !== 'function') return Promise.resolve(null);
+  return new Promise((resolver) => lienzo.toBlob((blob) => resolver(blob), 'image/png'));
+}
 
 function crear(etiqueta, clase, texto) {
   const el = document.createElement(etiqueta);
@@ -67,8 +84,77 @@ export class PanelRegistro {
   }
 
   establecerUsuario(usuario) {
+    const antes = this._claveUsuario();
     this.usuario = usuario;
     this._renderizarSesion();
+    const ahora = this._claveUsuario();
+    if (ahora !== antes) {
+      // Otro usuario (o sin sesión): sus capturas pendientes no se mezclan.
+      this._limpiarLista();
+      if (ahora !== null) this._restaurar(ahora);
+    }
+  }
+
+  _claveUsuario() {
+    return this.usuario ? String(this.usuario.id ?? this.usuario.usuario) : null;
+  }
+
+  _limpiarLista() {
+    this.filas = [];
+    this.preferencias.clear();
+    this.lista.replaceChildren();
+    this._actualizarAcciones();
+  }
+
+  /**
+   * Vuelve a mostrar las capturas que quedaron sin guardar (recarga,
+   * pestaña cerrada...). Las de portales que ya cerraron se descartan.
+   */
+  async _restaurar(usuario) {
+    const registros = await borrador.listar(usuario);
+    if (usuario !== this._claveUsuario() || !registros.length) return;
+    // Sin la lista de zonas ninguna fila parece válida (y Guardar quedaría
+    // desactivado): se espera a tenerla.
+    try {
+      await this._cargarZonas();
+    } catch (error) {
+      // Sin zonas se restaura igual; se validarán al escribir.
+    }
+    if (usuario !== this._claveUsuario()) return;
+
+    let recuperadas = 0;
+    let caducadas = 0;
+    for (const registro of registros) {
+      if (this._caducado(registro)) {
+        caducadas += 1;
+        borrador.borrar(registro.id);
+        continue;
+      }
+      const fila = this._crearFila(registro.capturadaEn, registro.id, registro.orden);
+      recuperadas += 1;
+      if (registro.leida) {
+        fila.restaurar(registro);
+      } else if (registro.archivo) {
+        this.cola = this.cola.then(() => this._leer(fila, registro.archivo));
+      }
+    }
+
+    const partes = [];
+    if (recuperadas) partes.push(tn(recuperadas, 'Se recuperó {n} captura que no se había guardado.', 'Se recuperaron {n} capturas que no se habían guardado.'));
+    if (caducadas) partes.push(tn(caducadas, 'Se descartó {n} de un portal que ya cerró.', 'Se descartaron {n} de portales que ya cerraron.'));
+    this.estado.textContent = partes.join(' ');
+    if (recuperadas && !this.abierto) this._abrir();
+    this._actualizarAcciones();
+  }
+
+  /** Borrador que ya no sirve: muy antiguo o de un portal que ya cerró. */
+  _caducado(registro) {
+    const edad = Date.now() - registro.capturadaEn;
+    if (edad > borrador.VIGENCIA_MS) return true;
+    const valores = registro.valores;
+    if (!registro.leida || !valores) return false;
+    const total = Number(valores.horas || 0) * 60 + Number(valores.minutos || 0);
+    return total > 0 && edad > total * 60_000;
   }
 
   /** Solo se atienden pegados mientras la pestaña de caminos está visible. */
@@ -110,11 +196,10 @@ export class PanelRegistro {
 
     this.guardar.addEventListener('click', () => this._guardar());
     document.getElementById('registro-vaciar').addEventListener('click', () => {
-      this.filas = [];
-      this.preferencias.clear();
-      this.lista.replaceChildren();
-      this._actualizarAcciones();
+      this._limpiarLista();
       this.estado.textContent = '';
+      const usuario = this._claveUsuario();
+      if (usuario !== null) borrador.vaciar(usuario);
     });
   }
 
@@ -176,10 +261,17 @@ export class PanelRegistro {
    * pegar es "ahora"; en archivos se usa su fecha de modificación).
    */
   _agregar(imagenes, capturadaEn) {
-    for (const archivo of imagenes) {
-      const fila = this._crearFila(capturadaEn || archivo.lastModified || Date.now());
+    const usuario = this._claveUsuario();
+    imagenes.forEach((archivo, n) => {
+      const orden = Date.now() + n;
+      const fila = this._crearFila(capturadaEn || archivo.lastModified || Date.now(), nuevoId(), orden);
+      // Se guarda la imagen antes de leerla: si la página se recarga a
+      // mitad de la cola, al volver se retoma la lectura.
+      if (usuario !== null) {
+        borrador.guardar({ id: fila.id, usuario, orden, capturadaEn: fila.capturadaEn, archivo, leida: false });
+      }
       this.cola = this.cola.then(() => this._leer(fila, archivo));
-    }
+    });
     this._actualizarAcciones();
   }
 
@@ -203,21 +295,31 @@ export class PanelRegistro {
         dudoso: {
           origen: !resultado.origen || resultado.confianza.origen < CONFIANZA_SEGURA,
           destino: !resultado.destino || resultado.confianza.destino < CONFIANZA_SEGURA,
-          minutos: resultado.minutos === null,
+          // Tiempo leído con poco margen entre dos cifras: se propone, pero se resalta.
+          minutos: resultado.minutos === null || resultado.confianza.minutos < 1,
         },
         vista: resultado.vista,
       });
 
-      if (resultado.aviso) fila.poner('revisar', t(resultado.aviso));
+      if (fila.cerrado()) fila.evaluar();
+      else if (resultado.aviso) fila.poner('revisar', t(resultado.aviso));
       else if (fila.valida()) fila.poner('lista', t('Revisa los datos y guarda.'));
       else fila.poner('revisar', t('Completa los campos resaltados.'));
+      borrador.actualizar(fila.id, {
+        leida: true,
+        valores: fila.valores(),
+        dudoso: fila.dudosos(),
+        aviso: resultado.aviso || null,
+        vista: await lienzoABlob(resultado.vista),
+      });
     } catch (error) {
       fila.poner('error', t('No se pudo leer la captura. Puedes escribir los datos a mano.'));
+      borrador.actualizar(fila.id, { leida: true, valores: fila.valores(), dudoso: fila.dudosos(), error: true });
     }
     this._actualizarAcciones();
   }
 
-  _crearFila(capturadaEn) {
+  _crearFila(capturadaEn, id = nuevoId(), orden = Date.now()) {
     const item = crear('li', 'registro__fila');
     const vista = crear('div', 'registro__vista');
     const campos = crear('div', 'registro__campos');
@@ -264,6 +366,8 @@ export class PanelRegistro {
     this.lista.append(item);
 
     const fila = {
+      id,
+      orden,
       item,
       capturadaEn,
       estadoActual: 'leyendo',
@@ -288,17 +392,70 @@ export class PanelRegistro {
         tiempo.classList.toggle('campo--dudoso', datos.dudoso.minutos);
         vista.replaceChildren(datos.vista || crear('span', 'registro__sin-vista', t('Sin recuadro')));
       },
+      /** Lo escrito en los campos, tal cual (para el borrador). */
+      valores: () => ({ origen: origen.value, destino: destino.value, horas: horas.value, minutos: minutos.value }),
+      dudosos: () => ({
+        origen: origen.classList.contains('campo--dudoso'),
+        destino: destino.classList.contains('campo--dudoso'),
+        minutos: tiempo.classList.contains('campo--dudoso'),
+      }),
+      /** Vuelve a mostrar una captura guardada en el borrador. */
+      restaurar: (registro) => {
+        const v = registro.valores || {};
+        origen.value = v.origen || '';
+        destino.value = v.destino || '';
+        horas.value = v.horas || '';
+        minutos.value = v.minutos || '';
+        const dudoso = registro.dudoso || {};
+        origen.classList.toggle('campo--dudoso', Boolean(dudoso.origen));
+        destino.classList.toggle('campo--dudoso', Boolean(dudoso.destino));
+        tiempo.classList.toggle('campo--dudoso', Boolean(dudoso.minutos));
+        if (registro.vista) {
+          // Se dibuja en un lienzo: la política de seguridad no admite
+          // imágenes blob: (y así no hace falta relajarla).
+          const lienzo = crear('canvas');
+          vista.replaceChildren(lienzo);
+          createImageBitmap(registro.vista)
+            .then((bitmap) => {
+              lienzo.width = bitmap.width;
+              lienzo.height = bitmap.height;
+              lienzo.getContext('2d').drawImage(bitmap, 0, 0);
+              bitmap.close();
+            })
+            .catch(() => vista.replaceChildren(crear('span', 'registro__sin-vista', t('Sin recuadro'))));
+        } else {
+          vista.replaceChildren(crear('span', 'registro__sin-vista', t('Sin recuadro')));
+        }
+        if (registro.error && !fila.valida()) fila.poner('error', t('No se pudo leer la captura. Puedes escribir los datos a mano.'));
+        else fila.evaluar(registro.aviso);
+      },
       /** Datos listos para enviar, o null si falta algo. */
       datos: () => {
         const o = this._zonaExacta(origen.value);
         const d = this._zonaExacta(destino.value);
         const total = Number(horas.value || 0) * 60 + Number(minutos.value || 0);
         if (!o || !d || o === d || !Number.isInteger(total) || total < 1 || total > MAX_MINUTOS) return null;
-        // Descuenta el tiempo transcurrido desde la captura.
-        const transcurrido = Math.floor((Date.now() - fila.capturadaEn) / 60_000);
-        return { origen: o, destino: d, minutos: Math.max(1, total - Math.max(0, transcurrido)) };
+        // Descuenta el tiempo transcurrido desde la captura. Si ya pasó, el
+        // portal cerró: no se guarda ni forma rutas (antes quedaba con 1 min).
+        const restante = total - Math.max(0, Math.floor((Date.now() - fila.capturadaEn) / 60_000));
+        if (restante < 1) return null;
+        return { origen: o, destino: d, minutos: restante };
       },
       valida: () => fila.datos() !== null,
+      /** Momento en que cierra el portal (hora de la captura + tiempo leído). */
+      cierraEn: () => fila.capturadaEn + (Number(horas.value || 0) * 60 + Number(minutos.value || 0)) * 60_000,
+      /** Campos completos, pero el portal ya cerró desde la captura. */
+      cerrado: () => {
+        const total = Number(horas.value || 0) * 60 + Number(minutos.value || 0);
+        return total > 0 && Date.now() - fila.capturadaEn >= total * 60_000;
+      },
+      /** Pone el estado que corresponde a lo escrito (lista, cerrada o incompleta). */
+      evaluar: (avisoLectura = null) => {
+        if (fila.valida()) fila.poner('lista', t('Lista para guardar.'));
+        else if (fila.cerrado()) fila.poner('error', t('Este portal ya cerró: la captura es anterior a su cierre. Quítala.'));
+        else if (avisoLectura) fila.poner('revisar', t(avisoLectura));
+        else fila.poner('revisar', t('Completa los campos resaltados.'));
+      },
     };
 
     for (const input of [origen, destino, horas, minutos]) {
@@ -306,7 +463,14 @@ export class PanelRegistro {
         input.classList.remove('campo--dudoso');
         if (input === horas || input === minutos) tiempo.classList.remove('campo--dudoso');
         if (fila.estadoActual !== 'leyendo') {
-          fila.poner(fila.valida() ? 'lista' : 'revisar', fila.valida() ? t('Lista para guardar.') : t('Completa los campos resaltados.'));
+          fila.evaluar();
+          // Las correcciones también se conservan (con una pausa corta
+          // para no escribir en cada tecla).
+          clearTimeout(fila._guardado);
+          fila._guardado = setTimeout(
+            () => borrador.actualizar(fila.id, { valores: fila.valores(), dudoso: fila.dudosos() }),
+            400
+          );
         }
         this._actualizarAcciones();
       });
@@ -314,6 +478,7 @@ export class PanelRegistro {
     quitar.addEventListener('click', () => {
       this.filas = this.filas.filter((f) => f !== fila);
       item.remove();
+      borrador.borrar(fila.id);
       this._actualizarAcciones();
     });
 
@@ -379,6 +544,12 @@ export class PanelRegistro {
       crear('strong', null, t('Ruta {n}', { n: n + 1 })),
       t(' · {n} tramos', { n: ruta.indices.length }) + (ruta.separada ? t(' (se guardarán por separado)') : '')
     );
+    // Una ruta solo sirve mientras siga abierto el primero de sus portales en cerrar.
+    if (!ruta.separada) {
+      const cierre = Math.min(...ruta.indices.map((i) => this.filas[i].cierraEn()));
+      titulo.append(' · ', crearReloj(cierre, { clase: 'reloj registro__ruta-reloj' }));
+      iniciarRelojes();
+    }
     const recorrido = crear('p', 'registro__ruta-zonas', ruta.zonas.join(' → '));
 
     const acciones = crear('div', 'registro__ruta-acciones');
@@ -426,7 +597,10 @@ export class PanelRegistro {
     this.estado.textContent = t('Guardando…');
     try {
       const r = await api.reportarConexiones(listas.map((f) => f.datos()), rutas);
-      for (const fila of listas) fila.item.remove();
+      for (const fila of listas) {
+        fila.item.remove();
+        borrador.borrar(fila.id);
+      }
       this.filas = this.filas.filter((f) => !listas.includes(f));
       const partes = [];
       if (r.creadas) partes.push(tn(r.creadas, '{n} nueva', '{n} nuevas'));

@@ -46,6 +46,12 @@ class SesionRepository extends BaseRepository {
       .run({ $token: tokenHash, $expira: expiraEn });
   }
 
+  actualizarCsrf(tokenHash, csrfHash) {
+    this.db
+      .prepare('UPDATE sesiones SET csrf_hash = $csrf WHERE token_hash = $token')
+      .run({ $token: tokenHash, $csrf: csrfHash });
+  }
+
   eliminar(tokenHash) {
     this.db.prepare('DELETE FROM sesiones WHERE token_hash = $token').run({ $token: tokenHash });
   }

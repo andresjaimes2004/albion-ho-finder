@@ -25,7 +25,7 @@ function leerCookie(nombre) {
   return null;
 }
 
-async function peticion(ruta, { metodo = 'GET', datos, senal, binario } = {}) {
+async function peticion(ruta, { metodo = 'GET', datos, senal, binario, reintento = false } = {}) {
   const opciones = {
     method: metodo,
     credentials: 'same-origin',
@@ -53,6 +53,13 @@ async function peticion(ruta, { metodo = 'GET', datos, senal, binario } = {}) {
     cuerpo = await respuesta.json();
   } catch (error) {
     cuerpo = null;
+  }
+
+  // Token de seguridad caducado o perdido: el servidor ya envió la cookie
+  // correcta en esta misma respuesta, así que se reintenta una vez sin
+  // que el usuario tenga que recargar (y perder lo que estaba haciendo).
+  if (respuesta.status === 403 && cuerpo && cuerpo.codigo === 'CSRF' && !reintento) {
+    return peticion(ruta, { metodo, datos, senal, binario, reintento: true });
   }
 
   if (!respuesta.ok || (cuerpo && cuerpo.ok === false)) {

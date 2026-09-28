@@ -8,6 +8,33 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v12 — Lector de capturas nuevo, borrador y token de seguridad
+
+- **Lector de capturas rehecho** y medido con 31 capturas reales a
+  1920×1080 (antes: origen 25/31, destino 26/31, tiempo 11/31; ahora
+  31/31 en los tres, 30/31 en tiempo validando dejando una fuera):
+  - el recuadro del portal se ubica por el carril completo de la barra
+    de capacidad (parte llena + vacía, siempre 137 px a 1080p), no solo
+    por lo amarillo: antes los portales que no estaban 7/7 se recortaban
+    mal y los de 0/7 o 1/7 no se encontraban;
+  - el tiempo de cierre lo lee un reconocedor propio de la tipografía del
+    juego (`capturas/tiempo.js` + `capturas/plantillas.js`, 156
+    caracteres reales) con una gramática estricta ("18 h 03 m", "12 h",
+    "42 m 09 s"): ya no se pierde el "1" de 10-19 h;
+  - los nombres cortados por la interfaz, por delante o por detrás, se
+    encuentran igual y se resaltan para revisarlos;
+  - ante la duda se resalta o se deja vacío, nunca se inventa un valor.
+- **Borrador de capturas:** las capturas del panel (imagen, lectura y
+  correcciones) se guardan en el navegador (IndexedDB) hasta enviarlas;
+  si la página se recarga, vuelven tal cual.
+- **Portales cerrados:** una captura cuyo portal ya cerró se marca y no se
+  guarda ni forma rutas (antes quedaba con 1 minuto). Cada ruta propuesta
+  muestra cuánto le queda (hasta que cierra su primer portal).
+- **Token de seguridad:** se renueva junto con la sesión y el servidor lo
+  repone si el navegador lo pierde; si una escritura lo encuentra
+  caducado, el navegador reintenta solo. Antes, pasadas 8 h desde el
+  login, todo guardado fallaba con "Token de seguridad inválido".
+
 ### v11 — Imágenes de los mapas y ventana del mapa renovada
 
 - **Imagen real de cada mapa:** los 276 mapas de la Zona Negra muestran la

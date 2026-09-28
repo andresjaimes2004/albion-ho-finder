@@ -19,10 +19,14 @@ const cargar = (archivo) => import(pathToFileURL(path.join(raiz, archivo)).href)
 
 let det;
 let lec;
+let tie;
+let plantillas;
 let indice;
 test.before(async () => {
   det = await cargar('deteccion.js');
   lec = await cargar('lectura.js');
+  tie = await cargar('tiempo.js');
+  plantillas = (await cargar('plantillas.js')).PLANTILLAS;
   indice = lec.crearIndiceZonas(require('../data/zonas_albion.json').zonas);
 });
 
@@ -37,38 +41,65 @@ function imagen(ancho, alto, rectangulos) {
 }
 
 const AMARILLO_BARRA = [255, 178, 18];
+const TOSTADO_BARRA = [145, 111, 48];
 const PERGAMINO = [250, 195, 136];
 const OSCURO = [82, 75, 79];
 
+/**
+ * Barra de capacidad como la del juego: carril de 137×8 px con marco gris,
+ * lleno de amarillo según la ocupación (plazas de 7) y tostado el resto.
+ */
+function barra(x, y, plazas, { escala = 1, amarillo = AMARILLO_BARRA, tostado = TOSTADO_BARRA } = {}) {
+  const ancho = 137 * escala;
+  const alto = 8 * escala;
+  const lleno = Math.round((ancho * plazas) / 7);
+  const partes = [[x - 2, y - 2, x + ancho + 1, y + alto + 1, OSCURO]];
+  if (lleno > 0) partes.push([x, y, x + lleno - 1, y + alto - 1, amarillo]);
+  if (lleno < ancho) partes.push([x + lleno, y, x + ancho - 1, y + alto - 1, tostado]);
+  return partes;
+}
+
 // ------------------------------------------------------------ detección --
 
-test('encuentra la barra de capacidad aunque el texto "7/7" la parta en trozos', () => {
-  const img = imagen(400, 200, [
-    [100, 120, 236, 127, AMARILLO_BARRA],
-    // Ícono y texto dibujados encima de la barra (huecos de 2 a 5 px).
-    [156, 120, 160, 127, OSCURO],
-    [166, 120, 168, 127, OSCURO],
+test('mide el carril completo de la barra sea cual sea la ocupación del portal', () => {
+  // Antes se medía solo lo amarillo: con 5/7 la escala salía un 30 % menor
+  // y los recortes del nombre y del tiempo caían fuera de su sitio.
+  for (const plazas of [7, 6, 5, 1, 0]) {
+    const img = imagen(600, 300, barra(200, 150, plazas));
+    const carril = det.detectarCarril(img);
+    assert.ok(carril, `${plazas}/7 se encuentra`);
+    assert.deepEqual([carril.x0, carril.y0, carril.ancho, carril.alto], [200, 150, 137, 8], `${plazas}/7`);
+  }
+});
+
+test('el texto "5/7" y el ícono encima de la barra no la parten', () => {
+  const img = imagen(600, 300, [
+    ...barra(200, 150, 5),
+    [256, 150, 260, 157, [5, 4, 3]],
+    [268, 152, 270, 156, [255, 255, 255]],
   ]);
-  const barra = det.detectarBarra(img);
-  assert.deepEqual({ x0: barra.x0, x1: barra.x1, y0: barra.y0 }, { x0: 100, x1: 236, y0: 120 });
-
-  const { destino, tiempo } = det.regionesRecuadro(barra, img);
-  assert.ok(destino.y + destino.alto <= 120, 'el nombre va encima de la barra');
-  assert.ok(tiempo.y > 127, 'el tiempo va debajo de la barra');
-  assert.ok(tiempo.x > barra.x0 + 100, 'el tiempo va alineado a la derecha');
+  assert.equal(det.detectarCarril(img).ancho, 137);
 });
 
-test('sin barra amarilla no hay recuadro', () => {
-  assert.equal(det.detectarBarra(imagen(200, 100, [[10, 10, 190, 20, OSCURO]])), null);
-  assert.equal(det.detectarBarra(imagen(200, 100, [[10, 10, 20, 15, AMARILLO_BARRA]])), null, 'demasiado corta');
+test('las regiones del recuadro salen del carril: nombre encima, tiempo debajo a la derecha', () => {
+  const img = imagen(600, 300, barra(200, 150, 4));
+  const carril = det.detectarCarril(img);
+  const { destino, tiempo } = det.regionesCarril(carril, img);
+  assert.ok(destino.y + destino.alto <= 150, 'el nombre va encima de la barra');
+  assert.ok(tiempo.y > 150 + 8, 'el tiempo va debajo de la barra');
+  assert.ok(tiempo.x + tiempo.ancho > 200 + 137 * 1.45, 'llega hasta el final de la hora');
+
+  // Otra resolución: todo escala con el carril.
+  const doble = imagen(1200, 600, barra(400, 300, 4, { escala: 2 }));
+  const regionesDoble = det.regionesCarril(det.detectarCarril(doble), doble);
+  assert.ok(Math.abs(regionesDoble.tiempo.ancho - tiempo.ancho * 2) <= 2);
 });
 
-test('las regiones escalan con el tamaño de la barra (otra resolución)', () => {
-  const img = imagen(800, 400, [[200, 240, 473, 255, AMARILLO_BARRA]]);
-  const barra = det.detectarBarra(img);
-  const normal = det.regionesRecuadro({ x0: 100, x1: 236, y0: 120, y1: 127 }, imagen(400, 200, []));
-  const doble = det.regionesRecuadro(barra, img);
-  assert.ok(Math.abs(doble.tiempo.ancho - normal.tiempo.ancho * 2) <= 2);
+test('sin barra no hay recuadro, y el borde del pergamino no se toma por ella', () => {
+  assert.equal(det.detectarCarril(imagen(300, 100, [[10, 10, 290, 20, OSCURO]])), null);
+  assert.equal(det.detectarCarril(imagen(300, 100, [[10, 10, 30, 15, AMARILLO_BARRA]])), null, 'demasiado corta');
+  // Franja tostada larga y fina (borde del pergamino del título).
+  assert.equal(det.detectarCarril(imagen(1000, 100, [[50, 40, 880, 45, TOSTADO_BARRA]])), null);
 });
 
 test('encuentra el panel del título en el pergamino superior', () => {
@@ -119,6 +150,50 @@ test('reconoce los nombres tal como los leyó el OCR en capturas reales', () => 
     assert.equal(r && r.zona.nombre, esperado, leido);
   }
   assert.equal(lec.mejorZonaEnLineas('| No A III E DIS', indice), null, 'el ruido no se convierte en una zona');
+});
+
+test('reconoce títulos que la interfaz corta por delante, por detrás o por ambos lados', () => {
+  const casos = {
+    'VII €& nfang Wastelar\nReglon negra (Calidad: 6)': 'Sunfang Wasteland',
+    'V 4# urthgrove €scar\nReglon negra (Calidad: 2)': 'Southgrove Escarp',
+    'VIII 4& emouth Southbl\nReglon negra (Calidad: 3)': 'Stonemouth Southbluff',
+    'VII «& rand Quicksan«': 'Sunstrand Quicksands',
+    'V4 Whirebank Sho\nReglon negra (Calidad: 1)': 'Whitebank Shore',
+  };
+  for (const [leido, esperado] of Object.entries(casos)) {
+    const r = lec.mejorZonaEnLineas(leido, indice);
+    assert.equal(r && r.zona.nombre, esperado, leido);
+    assert.ok(r.confianza < 0.9, 'un nombre recortado se marca para revisar');
+  }
+});
+
+test('lee el tiempo de cierre con la tipografía del juego (capturas reales)', () => {
+  // Franjas reales: 10-20 h (el "1" estrecho que el OCR genérico perdía),
+  // "12 h" en punto, "42 m 09 s" en rojo y portales a 0/7 y 1/7.
+  const { casos } = require('./fixtures/tiempo-capturas.json');
+  for (const caso of casos) {
+    const gris = Buffer.from(caso.gris, 'base64');
+    const data = new Uint8ClampedArray(caso.ancho * caso.alto * 4);
+    for (let i = 0; i < gris.length; i++) data.set([gris[i], gris[i], gris[i], 255], i * 4);
+    const franja = { width: caso.ancho, height: caso.alto, data };
+    const r = tie.leerTiempo(franja, { x: 0, y: 0, ancho: caso.ancho, alto: caso.alto }, plantillas);
+    assert.equal(r && r.minutos, caso.minutos, `esperado ${caso.minutos}`);
+  }
+});
+
+test('la gramática del tiempo rechaza lecturas imposibles en vez de inventarlas', () => {
+  const c = (clase, xa, { altura = 1, puntos = 0.9 } = {}) => ({
+    clase, xa, xb: xa + 3, puntos, margen: 0.1, altoLinea: 7, rasgos: { alturaRelativa: altura },
+  });
+  const leer = (lista) => tie.interpretarCaracteres(lista);
+  assert.equal(leer([c('1', 0), c('8', 5), c('h', 12), c('0', 19), c('3', 24), c('m', 31)]).minutos, 18 * 60 + 3);
+  assert.equal(leer([c('1', 0), c('2', 5), c('h', 12)]).minutos, 720, '"12 h" en punto');
+  assert.equal(leer([c('4', 0), c('2', 5), c('m', 12), c('0', 19), c('9', 24), c('s', 31)]).minutos, 42, '"42 m 09 s"');
+  // Una minúscula de "se cierra" (baja) no se cuela como cifra de la hora.
+  assert.equal(leer([c('6', 0, { altura: 0.7 }), c('3', 5), c('h', 12), c('3', 19), c('3', 24), c('m', 31)]).minutos, 213);
+  assert.equal(leer([c('7', 0), c('0', 5), c('h', 12), c('0', 19), c('3', 24), c('m', 31)]), null, 'más de 24 h');
+  assert.equal(leer([c('3', 0), c('h', 7), c('3', 14), c('m', 21)]), null, 'con horas, los minutos llevan dos cifras');
+  assert.equal(leer([c('1', 0), c('5', 5), c('h', 12, { puntos: 0.2 }), c('3', 19), c('1', 24), c('m', 31)]).minutos, 31, 'sin "h" fiable solo quedan los minutos');
 });
 
 test('convierte el tiempo de cierre a minutos', () => {
@@ -252,10 +327,10 @@ test('detecta barra y título con colores alterados (brillo, saturación, luz no
   // Juego más apagado: barra y pergamino con menos saturación y brillo.
   const apagada = imagen(1920, 1080, [
     [545, 155, 1375, 205, [212, 178, 128]],
-    [900, 700, 1036, 707, [214, 160, 64]],
+    ...barra(900, 700, 5, { amarillo: [214, 160, 64], tostado: [128, 100, 52] }),
   ]);
-  const barra = det.detectarBarra(apagada);
-  assert.deepEqual([barra.x0, barra.y0], [900, 700], 'la barra, no el pergamino');
+  const carril = det.detectarCarril(apagada);
+  assert.deepEqual([carril.x0, carril.y0, carril.ancho], [900, 700, 137], 'la barra, no el pergamino');
   assert.equal(det.regionTitulo(apagada).y, 155);
 
   // Luz nocturna: casi sin azul; el pergamino deja de cumplir el criterio exacto.
@@ -263,5 +338,5 @@ test('detecta barra y título con colores alterados (brillo, saturación, luz no
   assert.equal(det.regionTitulo(nocturna).y, 155);
 
   // Un elemento dorado grueso (no una barra) no se toma por la barra.
-  assert.equal(det.detectarBarra(imagen(400, 300, [[50, 50, 250, 200, [200, 150, 40]]])), null);
+  assert.equal(det.detectarCarril(imagen(400, 300, [[50, 50, 250, 200, [200, 150, 40]]])), null);
 });

@@ -24,6 +24,16 @@ function hashToken(token) {
   return crypto.createHash('sha256').update(String(token)).digest('hex');
 }
 
+/**
+ * Token CSRF de una sesión, derivado del token de sesión (HMAC). Así el
+ * servidor puede volver a entregarlo si la cookie legible del navegador
+ * caduca o se pierde, sin guardarlo en claro. Solo lo puede calcular quien
+ * tenga el token de sesión, que viaja en una cookie httpOnly.
+ */
+function derivarCsrf(tokenSesion) {
+  return crypto.createHmac('sha256', String(tokenSesion)).update('csrf').digest('base64url');
+}
+
 /** Comparación en tiempo constante de dos cadenas hexadecimales/ASCII. */
 function sonIguales(a, b) {
   if (typeof a !== 'string' || typeof b !== 'string') return false;
@@ -44,4 +54,4 @@ function huellaOrigen(req) {
   return crypto.createHash('sha256').update(`${ip}|${agente}`).digest('hex').slice(0, 32);
 }
 
-module.exports = { generarToken, hashToken, sonIguales, huellaOrigen };
+module.exports = { generarToken, hashToken, derivarCsrf, sonIguales, huellaOrigen };

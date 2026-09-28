@@ -49,6 +49,23 @@ export function distancia(a, b, maximo = Infinity) {
   return previa[b.length];
 }
 
+/**
+ * Distancia de edición entre `a` y el trozo de `b` que mejor se le
+ * parece (sin coste por lo que sobra de `b` al principio o al final).
+ * Sirve para nombres que la interfaz corta por delante o por detrás.
+ */
+export function distanciaEnSubcadena(a, b) {
+  let previa = new Array(b.length + 1).fill(0);
+  for (let i = 1; i <= a.length; i++) {
+    const actual = [i];
+    for (let j = 1; j <= b.length; j++) {
+      actual.push(Math.min(previa[j] + 1, actual[j - 1] + 1, previa[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)));
+    }
+    previa = actual;
+  }
+  return Math.min(...previa);
+}
+
 /** Índice de zonas para buscar rápido por clave. */
 export function crearIndiceZonas(zonas) {
   return zonas.map((zona) => ({ zona, clave: claveOcr(zona.nombre) }));
@@ -57,23 +74,38 @@ export function crearIndiceZonas(zonas) {
 /**
  * Zona más parecida a un texto leído, o null si ninguna se parece lo
  * suficiente. `confianza` va de 0 a 1.
+ *
+ * El título del mapa puede venir cortado por la interfaz por delante,
+ * por detrás o por ambos lados ("nfang Wastelar" → Sunfang Wasteland):
+ * entonces se busca lo leído dentro del nombre completo. Ese caso, o un
+ * empate entre dos zonas, baja la confianza para que el usuario lo revise.
  */
 export function buscarZona(texto, indice) {
   const leida = claveOcr(texto);
   if (leida.length < 4) return null;
 
   const tolerancia = Math.max(1, Math.floor(leida.length * 0.25));
-  let mejor = null;
+  const candidatos = [];
   for (const { zona, clave } of indice) {
     let d = distancia(leida, clave, tolerancia);
-    // Nombre cortado por la interfaz: se compara con el comienzo.
-    if (d > tolerancia && leida.length >= 8 && leida.length < clave.length) {
-      d = distancia(leida, clave.slice(0, leida.length), tolerancia) + 1;
+    let recortada = false;
+    if (d > tolerancia && leida.length >= 6 && leida.length < clave.length && leida.length >= clave.length * 0.45) {
+      d = distanciaEnSubcadena(leida, clave) + 1;
+      recortada = true;
     }
-    if (d <= tolerancia && (!mejor || d < mejor.d)) mejor = { zona, d, clave };
+    if (d <= tolerancia) candidatos.push({ zona, d, clave, recortada });
   }
-  if (!mejor) return null;
-  return { zona: mejor.zona, confianza: 1 - mejor.d / Math.max(leida.length, mejor.clave.length) };
+  if (!candidatos.length) return null;
+
+  candidatos.sort((x, y) => x.d - y.d || Number(x.recortada) - Number(y.recortada));
+  const mejor = candidatos[0];
+  const empate = candidatos.some((c) => c !== mejor && c.d === mejor.d && c.recortada === mejor.recortada);
+  const referencia = mejor.recortada ? leida.length : Math.max(leida.length, mejor.clave.length);
+  let confianza = 1 - mejor.d / referencia;
+  // Un nombre cortado siempre deja algo de duda: se propone, pero se resalta.
+  if (mejor.recortada) confianza = Math.min(confianza, 0.85);
+  if (empate) confianza = Math.min(confianza, 0.5);
+  return { zona: mejor.zona, confianza };
 }
 
 /** Busca la mejor zona entre varias líneas (y cada línea sin símbolos iniciales). */
