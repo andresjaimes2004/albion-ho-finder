@@ -82,7 +82,7 @@ export function vistaALocal(vx, vy) {
  * que corresponde a la ampliación actual de la pantalla.
  */
 export class CapaTeselas {
-  constructor(svg, grupo, { origen, factor, zoomBase, areaBase, maxTeselas = 90 }) {
+  constructor(svg, grupo, { origen, factor, zoomBase, areaBase, maxTeselas = 90, alFallarFondo = null }) {
     this.svg = svg;
     this.grupo = grupo;
     this.origen = origen;
@@ -98,7 +98,14 @@ export class CapaTeselas {
     this.zoomDetalle = null;
     this.pendiente = false;
 
-    this._pintarRango(this.capaBase, new Map(), zoomBase, areaBase);
+    // La wiki está detrás de Cloudflare: en algunas redes o navegadores
+    // (sobre todo móviles) responde con un desafío en vez de la imagen.
+    // Si no carga ninguna tesela de la capa base, se avisa para que el
+    // mapa explique por qué no hay fondo.
+    this.alFallarFondo = alFallarFondo;
+    this.base = { total: 0, fallidas: 0 };
+
+    this._pintarRango(this.capaBase, new Map(), zoomBase, areaBase, this.base);
   }
 
   /** Rectángulo (en px0) → rango de teselas a un zoom dado. */
@@ -115,7 +122,7 @@ export class CapaTeselas {
     };
   }
 
-  _pintarRango(capa, registro, zoom, area) {
+  _pintarRango(capa, registro, zoom, area, recuento = null) {
     const { x0, x1, y0, y1 } = this._rango(zoom, area);
     const vivas = new Set();
     const lado = 256 / 2 ** zoom / this.factor; // tamaño de la tesela en la vista
@@ -140,12 +147,34 @@ export class CapaTeselas {
           preserveAspectRatio: 'none',
           decoding: 'async',
         });
-        imagen.addEventListener('error', () => imagen.remove(), { once: true });
+        this._alFallar(imagen, recuento);
+        if (recuento) recuento.total += 1;
         capa.appendChild(imagen);
         registro.set(clave, imagen);
       }
     }
     return vivas;
+  }
+
+  /**
+   * Una tesela que falla se reintenta una vez (un corte momentáneo de la
+   * red no debe dejar un hueco); si vuelve a fallar se quita.
+   */
+  _alFallar(imagen, recuento) {
+    let reintentada = false;
+    imagen.addEventListener('error', () => {
+      if (!reintentada) {
+        reintentada = true;
+        // Con el mismo href el navegador no volvería a pedirla.
+        const href = `${imagen.getAttribute('href')}?reintento=1`;
+        setTimeout(() => imagen.isConnected && imagen.setAttribute('href', href), 1500);
+        return;
+      }
+      imagen.remove();
+      if (!recuento) return;
+      recuento.fallidas += 1;
+      if (recuento.fallidas === recuento.total && this.alFallarFondo) this.alFallarFondo();
+    });
   }
 
   /** Área visible de la vista, convertida a píxeles de zoom 0. */

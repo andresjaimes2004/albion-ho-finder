@@ -259,9 +259,19 @@
         <li><span class="mundo-leyenda__punto mundo-leyenda__punto--ocupado"></span> {{Con hideouts}}</li>
       </ul>
       <p id="mapa-mundial__estado" class="estado estado--info" hidden></p>
-      <svg id="mapa-mundial__svg" class="lienzo" role="img" aria-label="{{Mapa de clusters de la Zona Negra}}"></svg>
+      <div class="lienzo-marco">
+        <svg id="mapa-mundial__svg" class="lienzo" role="img" aria-label="{{Mapa de clusters de la Zona Negra}}"></svg>
+        <div class="zoom-controles" role="group" aria-label="{{Zoom del mapa}}">
+          <button type="button" class="zoom-controles__boton" data-zoom="acercar" aria-label="{{Acercar}}" title="{{Acercar}}">+</button>
+          <button type="button" class="zoom-controles__boton" data-zoom="alejar" aria-label="{{Alejar}}" title="{{Alejar}}">−</button>
+          <button type="button" class="zoom-controles__boton" data-zoom="reiniciar" aria-label="{{Ver todo el mapa}}" title="{{Ver todo el mapa}}">⤢</button>
+        </div>
+      </div>
+      <p id="mapa-mundial__sin-fondo" class="mapa-mundial__pie mapa-mundial__sin-fondo" hidden>
+        {{No se pudo cargar la imagen del mapa desde la wiki oficial de Albion (tu red o tu navegador la bloqueó). El mapa sigue funcionando: puntos, nombres y conexiones.}}
+      </p>
       <p class="mapa-mundial__pie">
-        {{Arrastra para moverte y usa la rueda para acercar: al acercar aparecen los nombres de los mapas. Los mapas resaltados son los de tu búsqueda.}}
+        {{Arrastra para moverte; acerca con la rueda, pellizcando, con doble toque o con los botones + y −. Al acercar aparecen los nombres de los mapas. Los mapas resaltados son los de tu búsqueda.}}
       </p>
       <p id="mapa-mundial__atribucion" class="mapa-mundial__pie mapa-mundial__atribucion"></p>
     </section>
@@ -469,6 +479,8 @@
           <div id="ventana-mapa__insignias" class="ventana__insignias"></div>
         </div>
         <div class="ventana__controles">
+          <button id="ventana-mapa__alejar" type="button" class="boton boton--pequeno boton--sutil" aria-label="{{Alejar}}" title="{{Alejar}}">−</button>
+          <button id="ventana-mapa__acercar" type="button" class="boton boton--pequeno boton--sutil" aria-label="{{Acercar}}" title="{{Acercar}}">+</button>
           <button id="ventana-mapa__reiniciar" type="button" class="boton boton--pequeno boton--sutil">{{Centrar}}</button>
           <button id="ventana-mapa__cerrar" type="button" class="boton boton--icono" aria-label="{{Cerrar}}">✕</button>
         </div>

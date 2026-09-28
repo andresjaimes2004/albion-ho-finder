@@ -3162,3 +3162,37 @@ html:has(dialog[open]) { overflow: hidden; }
 .cabecera--dos-filas .cabecera__contenido { flex-wrap: wrap; }
 .cabecera--dos-filas .pestanas { order: 3; flex-basis: 100%; }
 .cabecera--dos-filas .pestanas__boton { flex: 1; justify-content: center; }
+
+/* ============================================================================
+   Mapa global en móvil: botones de zoom sobre el mapa y aviso sin fondo
+   ============================================================================ */
+.lienzo-marco { position: relative; }
+.zoom-controles {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.zoom-controles__boton {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--color-oro-claro);
+  background: rgba(14, 12, 18, 0.82);
+  border: 1px solid rgba(232, 201, 92, 0.35);
+  border-radius: 10px;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.zoom-controles__boton:hover { background: rgba(40, 32, 20, 0.92); border-color: rgba(232, 201, 92, 0.7); }
+.zoom-controles__boton:focus-visible { outline: 2px solid var(--color-oro-claro); outline-offset: 2px; }
+.mapa-mundial__sin-fondo { color: var(--advertencia-suave, #e2b258); }
+/* Sin la imagen de la wiki, un fondo que deje ver puntos y conexiones. */
+#mapa-mundial__svg.mundo--sin-fondo { background: radial-gradient(circle at 50% 45%, #3c4a52, #27313a 75%); }
+#mapa-mundial__svg.mundo--sin-fondo .mundo__aristas line { stroke: rgba(232, 220, 190, 0.35); }

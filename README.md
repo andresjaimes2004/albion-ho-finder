@@ -8,6 +8,20 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v12.1 — Mapa global usable en el móvil
+
+- **Gestos táctiles** en el mapa de la Zona Negra y en la ventana de cada mapa:
+  un dedo arrastra, dos dedos pellizcan (zoom y desplazamiento a la vez) y el
+  doble toque acerca. Arrastrar empezando sobre un mapa también mueve la vista
+  (y no abre el mapa); un toque sin mover lo sigue abriendo.
+- **Botones + / − / ver todo** sobre el mapa global, y + / − junto a "Centrar"
+  en la ventana del mapa.
+- **Fondo resistente a bloqueos**: las teselas vienen de la wiki oficial, que
+  está detrás de Cloudflare y a veces responde a redes o navegadores móviles
+  con un desafío (403) en lugar de la imagen. Cada tesela que falla se
+  reintenta una vez; si no carga ninguna, el mapa lo avisa y cambia a un fondo
+  liso que deja ver puntos, nombres y conexiones.
+
 ### v12 — Lector de capturas nuevo, borrador y token de seguridad
 
 - **Lector de capturas rehecho** y medido con 31 capturas reales a

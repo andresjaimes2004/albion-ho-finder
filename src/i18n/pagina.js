@@ -72,8 +72,14 @@ const EN = {
   'Mapa interactivo de la Zona Negra': 'Interactive Black Zone map',
   'Mapa de la Zona Negra': 'Black Zone map',
   'Mapa de clusters de la Zona Negra': 'Black Zone cluster map',
-  'Arrastra para moverte y usa la rueda para acercar: al acercar aparecen los nombres de los mapas. Los mapas resaltados son los de tu búsqueda.':
-    'Drag to move and use the wheel to zoom: map names appear as you zoom in. Highlighted maps are the ones from your search.',
+  'Arrastra para moverte; acerca con la rueda, pellizcando, con doble toque o con los botones + y −. Al acercar aparecen los nombres de los mapas. Los mapas resaltados son los de tu búsqueda.':
+    'Drag to move; zoom with the wheel, by pinching, by double-tapping or with the + and − buttons. Map names appear as you zoom in. Highlighted maps are the ones from your search.',
+  'Zoom del mapa': 'Map zoom',
+  'Acercar': 'Zoom in',
+  'Alejar': 'Zoom out',
+  'Ver todo el mapa': 'Show the whole map',
+  'No se pudo cargar la imagen del mapa desde la wiki oficial de Albion (tu red o tu navegador la bloqueó). El mapa sigue funcionando: puntos, nombres y conexiones.':
+    "The map image couldn't be loaded from the official Albion wiki (your network or browser blocked it). The map still works: points, names and connections.",
   'Colores por tier': 'Colors by tier',
   'Con hideouts': 'With hideouts',
   'Escribe al menos 2 caracteres para empezar a buscar.': 'Type at least 2 characters to start searching.',

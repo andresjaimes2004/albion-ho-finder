@@ -119,6 +119,8 @@ export class VentanaMapa {
     document.getElementById('ventana-mapa__reiniciar').addEventListener('click', () => {
       this.navegacion.reiniciar();
     });
+    document.getElementById('ventana-mapa__acercar').addEventListener('click', () => this.navegacion.acercar());
+    document.getElementById('ventana-mapa__alejar').addEventListener('click', () => this.navegacion.alejar());
 
     this.dialogo.addEventListener('cancel', (evento) => {
       evento.preventDefault();
