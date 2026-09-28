@@ -207,6 +207,11 @@ export const EN = {
   'Leyendo la captura…': 'Reading the screenshot…',
   'Preparando el lector de capturas (solo la primera vez)…': 'Preparing the screenshot reader (first time only)…',
   'Revisa los datos y guarda.': 'Check the data and save.',
+  'Este portal ya cerró: la captura es anterior a su cierre. Quítala.': 'This portal has already closed: the screenshot is older than its closing time. Remove it.',
+  'Se recuperó {n} captura que no se había guardado.': 'Recovered {n} unsaved screenshot.',
+  'Se recuperaron {n} capturas que no se habían guardado.': 'Recovered {n} unsaved screenshots.',
+  'Se descartó {n} de un portal que ya cerró.': 'Discarded {n} from a portal that has already closed.',
+  'Se descartaron {n} de portales que ya cerraron.': 'Discarded {n} from portals that have already closed.',
   'Completa los campos resaltados.': 'Fill in the highlighted fields.',
   'No se pudo leer la captura. Puedes escribir los datos a mano.':
     'Could not read the screenshot. You can type the data by hand.',

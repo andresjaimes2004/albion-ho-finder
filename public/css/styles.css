@@ -3123,3 +3123,4 @@ html:has(dialog[open]) { overflow: hidden; }
 /* Texto secundario que no cabía: aparece al pasar el ratón por su marcador. */
 .mapa__etiqueta--oculta { opacity: 0; transition: opacity 0.2s ease; }
 .mapa__salida--fija:hover .mapa__etiqueta--oculta { opacity: 0.9; }
+
