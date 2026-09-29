@@ -45,6 +45,7 @@ router.get('/tracking/rutas', tracking.rutasDeMapas);
 router.get('/tracking/:nombre', tracking.detalle);
 router.post('/tracking/reportes', exigirAutenticacion, tracking.registrar);
 router.delete('/tracking/reportes/:id', exigirAutenticacion, tracking.eliminar);
+router.put('/tracking/rutas/:id', exigirAutenticacion, tracking.editarRuta);
 router.delete('/tracking/rutas/:id', exigirAutenticacion, tracking.eliminarRuta);
 
 router.get('/salud', (req, res) => {

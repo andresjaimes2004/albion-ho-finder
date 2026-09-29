@@ -83,8 +83,9 @@ export function textoCercania({ portal, saltos }) {
  *   - resaltar: nombre de zona a destacar (p. ej. el mapa del hideout)
  *   - alElegirZona(nombre): al tocar una zona
  *   - alBorrar(ruta): al borrar (autor o admin)
+ *   - alEditar(ruta): al pulsar "Editar" (autor o admin)
  */
-export function crearTarjetaRuta(ruta, { usuario = null, resaltar = null, alElegirZona = null, alBorrar = null } = {}) {
+export function crearTarjetaRuta(ruta, { usuario = null, resaltar = null, alElegirZona = null, alBorrar = null, alEditar = null } = {}) {
   // Ruta que cerró hace poco: sus tramos traen estado (abierto, cerrado,
   // desconectado) y se ve hasta `borraEn`.
   const cerrada = Boolean(ruta.borraEn);
@@ -124,6 +125,14 @@ export function crearTarjetaRuta(ruta, { usuario = null, resaltar = null, alEleg
     fuente.append(' ', borrar);
   }
   cabecera.append(fuente);
+  const esSuya = usuario && (usuario.id === ruta.reportadoPorId || usuario.rol === 'ADMIN');
+  if (alEditar && esSuya) {
+    const editar = crear('button', 'boton boton--pequeno boton--sutil ruta__editar', t('Editar'));
+    editar.type = 'button';
+    editar.title = t('Editar esta ruta');
+    editar.addEventListener('click', () => alEditar(ruta));
+    cabecera.append(editar);
+  }
   if (ruta.cercania) {
     cabecera.append(
       crear('span', 'ruta__cercania', t('Entrada: {mapa}, {cercania}', { mapa: ruta.cercania.desde, cercania: textoCercania(ruta.cercania) }))
