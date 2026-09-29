@@ -15,8 +15,9 @@ Avalon abiertas que registra la comunidad.
   hideouts nuevos, destruidos, de otro gremio o de otro tipo. Las posiciones
   y notas se conservan mientras el gremio del slot no cambie. Si el archivo
   no cambió desde la última revisión, no se descarga.
-- Acceso **privado**: el archivo se comparte solo con una cuenta de servicio
-  de Google (lectura); la clave vive únicamente en la VM.
+- Acceso **privado y sin claves**: el archivo se comparte solo con una cuenta
+  de servicio de Google (lectura) vinculada a la VM; no hay ningún archivo
+  de clave que se pueda filtrar.
 - Protección: si el Excel borraría o cambiaría más del 30 % de los hideouts
   no se aplica nada (un administrador puede forzarlo desde el panel).
 - Panel de administración: estado de la última revisión y "Sincronizar ahora".
@@ -727,44 +728,55 @@ cambios. Sirve un `.xlsx` subido a Drive o una hoja de cálculo de Google.
   administrador pulsa "Aplicar de todos modos" en el panel.
 - Una temporada nueva se sigue creando con `npm run db:import`.
 
-**Configuración (una sola vez, en la consola de Google Cloud del mismo
-proyecto que la VM)**
+**Configuración sin claves (una sola vez)**
 
-1. *APIs y servicios → Biblioteca*: busca **Google Drive API** y actívala.
+La web corre en una VM de Google Cloud, así que no se descarga ninguna clave:
+se crea una cuenta de servicio sin permisos, se **vincula a la VM** y la VM pide
+tokens temporales a Google por sí sola. Es la opción que Google recomienda para
+programas que corren dentro de Google Cloud (la federación de identidades es
+para los que corren fuera).
+
+1. Consola de Google Cloud, en el proyecto de la VM: *APIs y servicios →
+   Biblioteca* → **Google Drive API** → *Habilitar*.
 2. *IAM y administración → Cuentas de servicio → Crear cuenta de servicio*:
-   nombre `albion-excel-lector`. No le des ningún rol del proyecto.
-3. Abre la cuenta → *Claves → Agregar clave → Crear clave nueva → JSON*. Se
-   descarga un archivo `.json`: es una contraseña, **no lo subas a GitHub ni
-   lo compartas**.
-4. Súbelo a la VM (en la ventana SSH del navegador: engranaje → *Subir
-   archivo*) y déjalo en la carpeta del proyecto con permisos solo para ti:
+   nombre `albion-excel-lector`, **sin ningún rol**. No crees claves.
+3. En Google Drive, **comparte el Excel** con el correo de esa cuenta
+   (`albion-excel-lector@<proyecto>.iam.gserviceaccount.com`) como **Lector**.
+   Si el Excel está en una *unidad compartida*, añade ese correo como miembro
+   **Lector** de la unidad. No hace falta ningún enlace público.
+4. Copia el **id del archivo**: lo que va entre `/d/` y la siguiente `/` en
+   su dirección (`https://docs.google.com/spreadsheets/d/ESTE_ES_EL_ID/edit`).
+5. En **Cloud Shell** (no en la ventana SSH de la VM), vincula la cuenta a la
+   VM con permiso de solo lectura de Drive. La VM se apaga 1–2 minutos; la IP
+   fija no cambia. `ZONA` sale de `gcloud compute instances list`:
    ```bash
-   mv ~/*.json ~/albion-ho-finder/credenciales-drive.json
-   chmod 600 ~/albion-ho-finder/credenciales-drive.json
+   gcloud compute instances stop albion-ho-finder --zone=ZONA
+   gcloud compute instances set-service-account albion-ho-finder --zone=ZONA \
+     --service-account=albion-excel-lector@<proyecto>.iam.gserviceaccount.com \
+     --scopes=https://www.googleapis.com/auth/drive.readonly,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write
+   gcloud compute instances start albion-ho-finder --zone=ZONA
    ```
-   (`credenciales*.json` está en `.gitignore`.)
-5. En Google Drive, **comparte el Excel** con el correo de la cuenta de
-   servicio (algo como `albion-excel-lector@<proyecto>.iam.gserviceaccount.com`)
-   como **Lector**. No hace falta ningún enlace público.
-6. Copia el **id del archivo** de su URL: lo que va entre `/d/` y `/edit`
-   (`https://docs.google.com/spreadsheets/d/ESTE_ES_EL_ID/edit`) o entre
-   `/d/` y `/view` en `drive.google.com/file/d/.../view`.
-7. Añade al `.env` de la VM:
+   De paso, la VM deja de usar la cuenta por defecto de Compute Engine, que
+   tiene permisos de Editor sobre todo el proyecto.
+6. Añade al `.env` de la VM (en la ventana SSH):
    ```
    EXCEL_DRIVE_ID=ESTE_ES_EL_ID
-   GOOGLE_CREDENCIALES=/home/TU_USUARIO/albion-ho-finder/credenciales-drive.json
    EXCEL_SYNC_MINUTOS=60
    ```
-8. Reinicia y mira el registro: la primera revisión ocurre a los 30 s.
+7. Reinicia y mira el registro: la primera revisión ocurre a los 30 s.
    ```bash
    sudo systemctl restart albion
    journalctl -u albion -n 30 --no-pager
    ```
-   En el panel de administración aparece el estado y el botón
-   "Sincronizar ahora". Cada sincronización con cambios queda en la bitácora.
+   En el panel de administración aparecen el estado, la cuenta con la que se
+   comparte el Excel y el botón "Sincronizar ahora". Cada sincronización con
+   cambios queda en la bitácora.
 
-Si la clave se filtra, bórrala en la consola (*Claves*) y crea otra: el permiso
-es solo de lectura y solo sobre los archivos compartidos con esa cuenta.
+**Fuera de Google Cloud** (por ejemplo, para probar en local) no hay VM que
+entregue tokens: ahí sí hace falta una clave JSON de la cuenta de servicio en
+`GOOGLE_CREDENCIALES=/ruta/credenciales-drive.json` (`credenciales*.json` está
+en `.gitignore`). Nunca la subas a GitHub; si se filtra, bórrala en la consola
+(*Claves*).
 
 ## Actualizar los datos en una nueva temporada
 

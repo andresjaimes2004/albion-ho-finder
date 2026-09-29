@@ -55,7 +55,7 @@ export class PanelAdmin {
       this.sincAhora.disabled = true;
       this.sincEstado.textContent = estado.error
         ? t('Mal configurada: {error}', { error: estado.error })
-        : t('No configurada. Falta EXCEL_DRIVE_ID y GOOGLE_CREDENCIALES en el .env del servidor (ver README).');
+        : t('No configurada. Falta EXCEL_DRIVE_ID en el .env del servidor (ver README).');
       return;
     }
     this.sincAhora.disabled = false;
@@ -65,7 +65,8 @@ export class PanelAdmin {
       return;
     }
     const cuando = new Date(ultimo.en).toLocaleString(regional);
-    this.sincEstado.textContent = `${t('Última revisión: {cuando}.', { cuando })} ${ultimo.ok ? '' : t('Error:')} ${ultimo.mensaje}`;
+    const cuenta = estado.cuenta ? ` ${t('Cuenta con la que compartir el Excel: {cuenta}.', { cuenta: estado.cuenta })}` : '';
+    this.sincEstado.textContent = `${t('Última revisión: {cuando}.', { cuando })} ${ultimo.ok ? '' : t('Error:')} ${ultimo.mensaje}${cuenta}`;
     this.sincEstado.classList.toggle('admin-sincronizacion__estado--error', !ultimo.ok);
     this.sincForzar.hidden = !ultimo.requiereForzar;
   }

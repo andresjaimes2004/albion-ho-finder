@@ -8,12 +8,19 @@ const path = require('path');
  * googleDrive.js
  * ----------------------------------------------------------------------
  * Descarga de un archivo privado de Google Drive con una cuenta de
- * servicio (sin dependencias: el token se firma con `crypto`).
+ * servicio, sin dependencias.
  *
  * El archivo NO se publica con enlace: se comparte solo con el correo de
- * la cuenta de servicio, como lector. La clave de la cuenta (JSON) vive
- * únicamente en el servidor, fuera del repositorio (GOOGLE_CREDENCIALES).
- * El permiso pedido es de solo lectura (drive.readonly).
+ * la cuenta de servicio, como lector. El permiso es de solo lectura
+ * (drive.readonly). Dos formas de identificarse ante Google:
+ *
+ *  - Recomendada, sin claves: la cuenta de servicio está vinculada a la
+ *    VM de Compute Engine y el token temporal se pide al servidor de
+ *    metadatos de la propia VM. No hay ningún secreto guardado que se
+ *    pueda filtrar. Es lo que Google aconseja para programas que corren
+ *    dentro de Google Cloud.
+ *  - Con clave JSON (GOOGLE_CREDENCIALES): el token se firma con `crypto`.
+ *    Solo para ejecutar fuera de Google Cloud (por ejemplo, en local).
  *
  * Sirve tanto para un .xlsx subido a Drive como para una hoja de cálculo
  * de Google (se exporta como .xlsx).
@@ -22,6 +29,8 @@ const path = require('path');
 
 const ALCANCE = 'https://www.googleapis.com/auth/drive.readonly';
 const URL_TOKEN = 'https://oauth2.googleapis.com/token';
+// Servidor de metadatos de Compute Engine (solo accesible desde la VM).
+const METADATOS = 'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default';
 const API = 'https://www.googleapis.com/drive/v3/files';
 const HOJA_GOOGLE = 'application/vnd.google-apps.spreadsheet';
 const XLSX = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
@@ -50,7 +59,8 @@ function cargarCredenciales(ruta) {
 }
 
 /**
- * @param {{correo: string, clave: string}} credenciales
+ * @param {{correo: string, clave: string} | null} credenciales  null = usar
+ *   la cuenta de servicio vinculada a la VM (sin claves).
  * @param {{fetch?: Function, ahora?: () => number}} [opciones]
  */
 function crearClienteDrive(credenciales, { fetch = globalThis.fetch, ahora = Date.now } = {}) {
@@ -64,6 +74,18 @@ function crearClienteDrive(credenciales, { fetch = globalThis.fetch, ahora = Dat
       throw new ErrorDrive('No se pudo conectar con Google Drive.');
     }
     if (!respuesta.ok) {
+      let detalle = '';
+      try {
+        detalle = JSON.stringify(await respuesta.json());
+      } catch (error) {
+        // Sin cuerpo JSON: basta con el código.
+      }
+      // 403 por falta de permiso de Drive en la VM, no por no compartir el archivo.
+      if (respuesta.status === 403 && /scope/i.test(detalle)) {
+        throw new ErrorDrive(
+          'La VM no tiene el permiso de Drive: vincúlale la cuenta de servicio con el alcance drive.readonly (ver README).'
+        );
+      }
       const motivo = {
         401: 'Google rechazó las credenciales.',
         403: 'La cuenta de servicio no tiene acceso al archivo: compártelo con su correo como lector.',
@@ -74,9 +96,35 @@ function crearClienteDrive(credenciales, { fetch = globalThis.fetch, ahora = Dat
     return respuesta;
   }
 
+  /** Pide algo al servidor de metadatos de la VM. */
+  async function metadatosVm(ruta) {
+    let respuesta;
+    try {
+      respuesta = await fetch(`${METADATOS}/${ruta}`, {
+        headers: { 'Metadata-Flavor': 'Google' },
+        signal: AbortSignal.timeout(5_000),
+      });
+    } catch (error) {
+      throw new ErrorDrive(
+        'No se pudo obtener la identidad de la VM: esto solo funciona dentro de Google Cloud. Fuera de él, usa GOOGLE_CREDENCIALES.'
+      );
+    }
+    if (respuesta.status === 404) throw new ErrorDrive('La VM no tiene ninguna cuenta de servicio vinculada (ver README).');
+    if (!respuesta.ok) throw new ErrorDrive(`El servidor de metadatos de la VM respondió con el código ${respuesta.status}.`);
+    return respuesta;
+  }
+
   async function obtenerToken() {
     const segundos = Math.floor(ahora() / 1000);
     if (token && token.expira - 60 > segundos) return token.valor;
+    if (!credenciales) {
+      // Sin claves: la VM entrega un token temporal de su cuenta de servicio,
+      // con los alcances fijados al vincularla (drive.readonly, ver README).
+      const datos = await (await metadatosVm('token')).json();
+      if (!datos.access_token) throw new ErrorDrive('La VM no devolvió un token de acceso.');
+      token = { valor: datos.access_token, expira: segundos + Number(datos.expires_in || 300) };
+      return token.valor;
+    }
     const cabecera = base64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
     const cuerpo = base64url(JSON.stringify({ iss: credenciales.correo, scope: ALCANCE, aud: URL_TOKEN, iat: segundos, exp: segundos + 3600 }));
     let firma;
@@ -104,6 +152,12 @@ function crearClienteDrive(credenciales, { fetch = globalThis.fetch, ahora = Dat
   }
 
   return {
+    /** Correo de la cuenta de servicio (con quién hay que compartir el Excel). */
+    async cuenta() {
+      if (credenciales) return credenciales.correo;
+      return (await (await metadatosVm('email')).text()).trim();
+    },
+
     /** Nombre, tipo y fecha de última modificación del archivo. */
     async metadatos(archivoId) {
       if (!FORMATO_ID.test(archivoId || '')) throw new ErrorDrive('EXCEL_DRIVE_ID no tiene el formato de un id de Drive.');
