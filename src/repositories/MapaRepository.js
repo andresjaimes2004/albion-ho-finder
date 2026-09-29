@@ -54,6 +54,11 @@ class MapaRepository extends BaseRepository {
     return this.db.prepare('SELECT * FROM mapas WHERE nombre = $nombre').get({ $nombre: nombre });
   }
 
+  /** Id y nombre de todos los mapas. */
+  listarNombres() {
+    return this.db.prepare('SELECT id, nombre FROM mapas').all();
+  }
+
   obtenerPorId(id) {
     return this.db.prepare('SELECT * FROM mapas WHERE id = $id').get({ $id: id });
   }

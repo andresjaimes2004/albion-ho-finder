@@ -309,6 +309,15 @@
 
       <div id="admin-resumen" class="admin-resumen"></div>
 
+      <h3>{{Excel de Google Drive}}</h3>
+      <div class="admin-sincronizacion">
+        <p id="admin-sinc-estado" class="admin-sincronizacion__estado" aria-live="polite"></p>
+        <div class="admin-sincronizacion__acciones">
+          <button id="admin-sinc-ahora" type="button" class="boton boton--pequeno">{{Sincronizar ahora}}</button>
+          <button id="admin-sinc-forzar" type="button" class="boton boton--pequeno boton--peligro" hidden>{{Aplicar de todos modos}}</button>
+        </div>
+      </div>
+
       <h3>{{Gremios}}</h3>
       <input id="admin-buscar-gremio" type="search" placeholder="{{Buscar gremio para editar...}}" maxlength="60" />
       <ul id="admin-gremios" class="admin-lista"></ul>

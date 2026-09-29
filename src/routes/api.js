@@ -111,6 +111,9 @@ rutasAdmin.put('/usuarios/:id/rol', admin.cambiarRolUsuario);
 
 rutasAdmin.get('/auditoria', admin.auditoria);
 
+rutasAdmin.get('/sincronizacion', admin.estadoSincronizacion);
+rutasAdmin.post('/sincronizacion', admin.sincronizarAhora);
+
 router.use('/admin', rutasAdmin);
 
 // Cualquier ruta /api desconocida responde JSON, nunca el index.html.

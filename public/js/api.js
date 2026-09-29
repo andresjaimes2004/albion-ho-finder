@@ -114,6 +114,8 @@ export const api = {
 
   admin: {
     resumen: () => peticion('/api/admin/resumen'),
+    estadoSincronizacion: () => peticion('/api/admin/sincronizacion'),
+    sincronizar: (forzar = false) => peticion('/api/admin/sincronizacion', { metodo: 'POST', datos: { forzar } }),
     buscarGremios: (q) => peticion(`/api/admin/gremios?q=${encodeURIComponent(q || '')}`),
     renombrarGremio: (id, nombre) =>
       peticion(`/api/admin/gremios/${id}/nombre`, { metodo: 'PUT', datos: { nombre } }),

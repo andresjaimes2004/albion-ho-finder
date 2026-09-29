@@ -4,6 +4,9 @@ const AdminService = require('../services/AdminService');
 const GremioRepository = require('../repositories/GremioRepository');
 const { manejar } = require('./utilidades');
 const { entero, texto } = require('../security/validacion');
+const { obtenerSincronizacion } = require('../services/SincronizacionExcelService');
+const { ErrorDrive } = require('../excel/googleDrive');
+const { ErrorExcel } = require('../excel/leerXlsx');
 
 /**
  * adminController
@@ -21,6 +24,41 @@ function idUsuario(req) {
 
 const resumen = manejar((req, res) => {
   res.json({ ok: true, resumen: servicio.resumen() });
+});
+
+// ------------------------------------------------ Excel de Google Drive ---
+
+/** Si la configuración está mal, se informa en vez de romper el panel. */
+function sincronizacion() {
+  try {
+    return { servicio: obtenerSincronizacion() };
+  } catch (error) {
+    return { error: error.message };
+  }
+}
+
+const estadoSincronizacion = manejar((req, res) => {
+  const { servicio: sinc, error } = sincronizacion();
+  res.set('Cache-Control', 'no-store');
+  res.json({ ok: true, sincronizacion: sinc ? sinc.estado() : { configurada: false, error } });
+});
+
+const sincronizarAhora = manejar(async (req, res) => {
+  const { servicio: sinc, error } = sincronizacion();
+  if (!sinc || !sinc.configurada()) {
+    return res.status(409).json({ ok: false, mensaje: error || 'La sincronización con Google Drive no está configurada.' });
+  }
+  const forzar = Boolean(req.body && req.body.forzar === true);
+  try {
+    const resultado = await sinc.sincronizar({ forzar, usuarioId: idUsuario(req) });
+    return res.json({ ok: true, sincronizacion: sinc.estado(), resultado });
+  } catch (fallo) {
+    // Mensajes redactados para el administrador (Drive, Excel o protección).
+    if (fallo instanceof ErrorDrive || fallo instanceof ErrorExcel || fallo.publico) {
+      return res.status(fallo.estado || 502).json({ ok: false, mensaje: fallo.message, requiereForzar: Boolean(fallo.requiereForzar) });
+    }
+    throw fallo;
+  }
 });
 
 // -------------------------------------------------------------- gremios ---
@@ -161,4 +199,6 @@ module.exports = {
   cambiarRolUsuario,
   auditoria,
   servirLogo,
+  estadoSincronizacion,
+  sincronizarAhora,
 };

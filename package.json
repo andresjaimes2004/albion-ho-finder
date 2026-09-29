@@ -21,8 +21,5 @@
     "admin:promover": "node scripts/hacerAdmin.js"
   },
   "dependencies": {},
-  "license": "MIT",
-  "optionalDependencies": {
-    "xlsx": "^0.18.5"
-  }
+  "license": "MIT"
 }

@@ -3349,3 +3349,20 @@ html:has(dialog[open]) { overflow: hidden; }
 .hideouts-camino__mensaje:empty { display: none; }
 .tarjeta-mapa__gremios-camino { margin: 0; padding: 0 14px 12px; font-size: 0.86rem; color: var(--color-texto-suave); }
 .tarjeta-mapa__gremios-camino mark { background: rgba(232, 201, 92, 0.25); color: var(--color-oro-claro); border-radius: 3px; padding: 0 2px; }
+
+/* Sincronización con el Excel de Google Drive (panel de administración) */
+.admin-sincronizacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 10px 14px;
+  margin-bottom: 18px;
+  border: 1px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  background: rgba(255, 255, 255, 0.03);
+}
+.admin-sincronizacion__estado { margin: 0; flex: 1 1 280px; font-size: 0.86rem; color: var(--color-texto-suave); }
+.admin-sincronizacion__estado--error { color: #e58a8a; }
+.admin-sincronizacion__acciones { display: flex; gap: 8px; flex-wrap: wrap; }

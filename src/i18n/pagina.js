@@ -78,6 +78,9 @@ const EN = {
   'Pega capturas nuevas, quita las conexiones que sobran, cambia el orden con ↑ ↓ o corrige los tiempos. Las capturas que tenías pendientes vuelven al terminar.':
     'Paste new screenshots, remove the connections you do not need, reorder them with ↑ ↓ or fix the times. Your pending screenshots come back when you finish.',
   'Cancelar edición': 'Cancel editing',
+  'Excel de Google Drive': 'Google Drive spreadsheet',
+  'Sincronizar ahora': 'Sync now',
+  'Aplicar de todos modos': 'Apply anyway',
   'Zoom del mapa': 'Map zoom',
   'Acercar': 'Zoom in',
   'Alejar': 'Zoom out',
