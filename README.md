@@ -8,6 +8,22 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v12.2 — Rutas que continúan entre envíos y lector sin atascos
+
+- **Una captura nueva continúa una ruta ya guardada.** Antes, las rutas solo
+  se armaban con las capturas del mismo envío: si una parte de la ruta ya
+  estaba guardada (por ti o por otro miembro), los portales siguientes nunca
+  formaban ruta. Ahora el panel de registro encadena también con las
+  conexiones abiertas del servidor y marca los tramos "ya guardados".
+- **Lector sin atascos:** cada captura dejaba su imagen completa en memoria
+  y una lectura colgada bloqueaba toda la cola ("Leyendo..." para siempre y
+  sin poder guardar). Ahora la memoria se libera y una lectura que pasa de
+  60 s se descarta para que sigan las demás.
+- Hasta 100 conexiones por envío (antes 50).
+- Aclaración: no hay límite de rutas activas en total. Al borrar una ruta se
+  borran de verdad (no se ocultan) la ruta y las conexiones que solo usaba
+  ella; las que comparte con otras rutas se conservan.
+
 ### v12.1 — Mapa global usable en el móvil
 
 - **Gestos táctiles** en el mapa de la Zona Negra y en la ventana de cada mapa:

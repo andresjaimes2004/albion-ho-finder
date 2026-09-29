@@ -38,8 +38,10 @@ function normalizar(texto) {
 
 
 export class PanelCaminos {
-  constructor({ abrirMapa }) {
+  constructor({ abrirMapa, alActualizar = null }) {
     this.abrirMapa = abrirMapa;
+    // Avisa de cada resumen nuevo (el panel de registro usa sus conexiones).
+    this.alActualizar = alActualizar;
 
     this.input = document.getElementById('input-camino');
     this.sugerencias = document.getElementById('caminos-sugerencias');
@@ -126,6 +128,7 @@ export class PanelCaminos {
       this._renderizarSugerencias();
       this._renderizarLista();
       this._renderizarRutas();
+      if (this.alActualizar) this.alActualizar(this.datos);
       if (this.mapaAbierto) this.abrirDetalle(this.mapaAbierto, { silencioso: true });
     } catch (error) {
       if (!this.datos) {

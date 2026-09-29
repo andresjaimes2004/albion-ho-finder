@@ -24,17 +24,20 @@ const { cargarZonas, claveZona } = require('./zonas');
  *    en lugar de duplicarse (el último reporte manda).
  *  - Solo el autor o un administrador pueden borrarla.
  *
- * Rutas: varias conexiones del mismo envío pueden agruparse en orden
- * (mapa de Zona Negra → camino 1 → … → mapa final). Cada tramo debe
- * compartir una zona con el siguiente (los portales son de ida y vuelta,
- * así que cada tramo se orienta según la ruta) y ninguna zona se repite.
+ * Rutas: varias conexiones pueden agruparse en orden (mapa de Zona
+ * Negra → camino 1 → … → mapa final). Cada tramo debe compartir una zona
+ * con el siguiente (los portales son de ida y vuelta, así que cada tramo
+ * se orienta según la ruta) y ninguna zona se repite. Un tramo puede ser
+ * una conexión del mismo envío (su posición en la lista) o una que ya
+ * estaba guardada y sigue abierta ({ id }): así una captura nueva puede
+ * continuar una ruta registrada antes, sin volver a subir sus capturas.
  * Registrar de nuevo la misma secuencia actualiza la ruta existente.
  * ----------------------------------------------------------------------
  */
 
 // Se pueden pegar muchas capturas de golpe y, con bifurcaciones, salen
 // varias rutas que comparten tramos (el mismo tope que el navegador).
-const MAX_POR_ENVIO = 50;
+const MAX_POR_ENVIO = 100;
 const MAX_RUTAS_POR_ENVIO = 40;
 const MAX_MINUTOS = 24 * 60;
 const CONSERVAR_CERRADAS_MS = 24 * 3600 * 1000;
@@ -100,32 +103,48 @@ class ReportesCaminosService {
   }
 
   /**
+   * Resuelve los tramos de una ruta: cada uno es la posición de una
+   * conexión del envío o { id } de una conexión guardada que sigue abierta.
+   */
+  _tramosDeRuta(items, validas, numeroRuta, ahoraIso) {
+    const prefijo = `Ruta ${numeroRuta}: `;
+    if (!Array.isArray(items) || items.length < 2) {
+      throw new ErrorValidacion(`${prefijo}necesita al menos dos tramos.`);
+    }
+    const claves = items.map((item) => (item && typeof item === 'object' ? `g${item.id}` : `n${item}`));
+    if (new Set(claves).size !== claves.length) {
+      throw new ErrorValidacion(`${prefijo}repite un tramo.`);
+    }
+    return items.map((item) => {
+      if (Number.isInteger(item) && item >= 0 && item < validas.length) {
+        return { ...validas[item], indice: item };
+      }
+      if (item && typeof item === 'object' && Number.isInteger(item.id) && item.id > 0) {
+        const guardada = this.repositorio.obtener(item.id);
+        if (!guardada || guardada.cierraEn <= ahoraIso) {
+          throw new ErrorValidacion(`${prefijo}usa una conexión guardada que ya cerró o se borró. Actualiza la página.`);
+        }
+        return { origen: guardada.origen, destino: guardada.destino, id: guardada.id };
+      }
+      throw new ErrorValidacion(`${prefijo}hace referencia a una conexión que no existe.`);
+    });
+  }
+
+  /**
    * Ordena los tramos de una ruta: devuelve la secuencia de zonas
    * (tramos + 1) o lanza un error si no se encadenan.
    */
-  _secuenciaDeRuta(indices, validas, numeroRuta) {
+  _secuenciaDeRuta(tramos, numeroRuta) {
     const prefijo = `Ruta ${numeroRuta}: `;
-    if (!Array.isArray(indices) || indices.length < 2) {
-      throw new ErrorValidacion(`${prefijo}necesita al menos dos tramos.`);
-    }
-    if (new Set(indices).size !== indices.length) {
-      throw new ErrorValidacion(`${prefijo}repite un tramo.`);
-    }
-    for (const i of indices) {
-      if (!Number.isInteger(i) || i < 0 || i >= validas.length) {
-        throw new ErrorValidacion(`${prefijo}hace referencia a una conexión que no existe.`);
-      }
-    }
-
-    const primero = validas[indices[0]];
-    const segundo = validas[indices[1]];
+    const primero = tramos[0];
+    const segundo = tramos[1];
     // El primer tramo se orienta hacia la zona que comparte con el segundo.
     const zonas = [segundo.origen, segundo.destino].includes(primero.destino)
       ? [primero.origen, primero.destino]
       : [primero.destino, primero.origen];
 
-    for (let k = 1; k < indices.length; k++) {
-      const tramo = validas[indices[k]];
+    for (let k = 1; k < tramos.length; k++) {
+      const tramo = tramos[k];
       const final = zonas[zonas.length - 1];
       if (tramo.origen === final) zonas.push(tramo.destino);
       else if (tramo.destino === final) zonas.push(tramo.origen);
@@ -143,9 +162,9 @@ class ReportesCaminosService {
 
   /**
    * Registra una o varias conexiones y, opcionalmente, rutas que las
-   * agrupan (`rutas`: listas de índices de `lista`, en orden). Se valida
-   * todo antes de guardar y se guarda en una transacción: o entra todo o
-   * nada.
+   * agrupan (`rutas`: listas en orden de posiciones de `lista` o de
+   * { id } de conexiones ya guardadas). Se valida todo antes de guardar y
+   * se guarda en una transacción: o entra todo o nada.
    */
   registrar(usuarioId, lista, rutas = []) {
     if (!Array.isArray(lista) || !lista.length) {
@@ -160,10 +179,13 @@ class ReportesCaminosService {
     if (rutas.length > MAX_RUTAS_POR_ENVIO) {
       throw new ErrorValidacion(`Como máximo ${MAX_RUTAS_POR_ENVIO} rutas por envío.`);
     }
-    const secuencias = rutas.map((indices, i) => ({ indices, zonas: this._secuenciaDeRuta(indices, validas, i + 1) }));
-
     const ahora = this.ahora();
     const ahoraIso = new Date(ahora).toISOString();
+
+    const secuencias = rutas.map((items, i) => {
+      const tramos = this._tramosDeRuta(items, validas, i + 1, ahoraIso);
+      return { tramos, zonas: this._secuenciaDeRuta(tramos, i + 1) };
+    });
 
     return this.transaccion(() => {
       this.repositorio.purgarCerradasAntesDe(new Date(ahora - CONSERVAR_CERRADAS_MS).toISOString());
@@ -182,8 +204,8 @@ class ReportesCaminosService {
         return this.repositorio.crear(datos);
       });
 
-      const rutasGuardadas = secuencias.map(({ indices, zonas }) => {
-        const conexionIds = indices.map((i) => guardadas[i].id);
+      const rutasGuardadas = secuencias.map(({ tramos, zonas }) => {
+        const conexionIds = tramos.map((t) => (t.id !== undefined ? t.id : guardadas[t.indice].id));
         const existente = this.rutas.buscarPorZonas(zonas) || this.rutas.buscarPorZonas([...zonas].reverse());
         if (existente) {
           // Misma ruta registrada en sentido contrario: se conserva el nuevo orden.
