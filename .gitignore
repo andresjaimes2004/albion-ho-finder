@@ -1,5 +1,8 @@
 node_modules/
 .env
+# Clave de la cuenta de servicio de Google (sincronización con Drive)
+credenciales*.json
+*-service-account*.json
 database/*.db
 database/*.db-journal
 database/*.db-wal

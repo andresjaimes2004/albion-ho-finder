@@ -1,7 +1,7 @@
 'use strict';
 
 import api from './api.js';
-import { t } from './i18n.js';
+import { t, regional } from './i18n.js';
 
 /**
  * admin.js
@@ -36,6 +36,58 @@ export class PanelAdmin {
     });
 
     document.getElementById('admin-recargar').addEventListener('click', () => this.refrescar());
+
+    this.sincEstado = document.getElementById('admin-sinc-estado');
+    this.sincAhora = document.getElementById('admin-sinc-ahora');
+    this.sincForzar = document.getElementById('admin-sinc-forzar');
+    this.sincAhora.addEventListener('click', () => this._sincronizar(false));
+    this.sincForzar.addEventListener('click', () => {
+      // Aplicar un Excel que borraría muchos hideouts: se confirma antes.
+      if (window.confirm(t('El Excel borraría o cambiaría muchos hideouts. ¿Seguro que es correcto?'))) this._sincronizar(true);
+    });
+  }
+
+  /** Estado de la sincronización con el Excel de Google Drive. */
+  _pintarSincronizacion(estado) {
+    this.sincForzar.hidden = true;
+    this.sincEstado.classList.remove('admin-sincronizacion__estado--error');
+    if (!estado.configurada) {
+      this.sincAhora.disabled = true;
+      this.sincEstado.textContent = estado.error
+        ? t('Mal configurada: {error}', { error: estado.error })
+        : t('No configurada. Falta EXCEL_DRIVE_ID y GOOGLE_CREDENCIALES en el .env del servidor (ver README).');
+      return;
+    }
+    this.sincAhora.disabled = false;
+    const ultimo = estado.ultimo;
+    if (!ultimo) {
+      this.sincEstado.textContent = t('Configurada. Todavía no se ha revisado el Excel desde que arrancó el servidor.');
+      return;
+    }
+    const cuando = new Date(ultimo.en).toLocaleString(regional);
+    this.sincEstado.textContent = `${t('Última revisión: {cuando}.', { cuando })} ${ultimo.ok ? '' : t('Error:')} ${ultimo.mensaje}`;
+    this.sincEstado.classList.toggle('admin-sincronizacion__estado--error', !ultimo.ok);
+    this.sincForzar.hidden = !ultimo.requiereForzar;
+  }
+
+  async _sincronizar(forzar) {
+    this.sincAhora.disabled = true;
+    this.sincForzar.disabled = true;
+    this.sincEstado.textContent = t('Revisando el Excel de Drive…');
+    try {
+      const r = await api.admin.sincronizar(forzar);
+      this._pintarSincronizacion(r.sincronizacion);
+      await this.refrescar();
+    } catch (error) {
+      try {
+        this._pintarSincronizacion((await api.admin.estadoSincronizacion()).sincronizacion);
+      } catch (otro) {
+        this.sincEstado.textContent = error.message;
+      }
+    } finally {
+      this.sincAhora.disabled = false;
+      this.sincForzar.disabled = false;
+    }
   }
 
   async establecerUsuario(usuario) {
@@ -48,12 +100,14 @@ export class PanelAdmin {
     if (!this.visible) return;
     this.mensaje.textContent = '';
     try {
-      const [resumen, usuarios, auditoria] = await Promise.all([
+      const [resumen, usuarios, auditoria, sincronizacion] = await Promise.all([
         api.admin.resumen(),
         api.admin.usuarios(),
         api.admin.auditoria(),
+        api.admin.estadoSincronizacion(),
       ]);
       this._pintarResumen(resumen.resumen);
+      this._pintarSincronizacion(sincronizacion.sincronizacion);
       this._pintarUsuarios(usuarios.usuarios);
       this._pintarAuditoria(auditoria.auditoria);
       await this._buscarGremios(this.buscador.value);

@@ -8,6 +8,22 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v12.7 — Sincronización con el Excel de Google Drive
+
+- El servidor revisa cada hora (configurable) el Excel que el equipo edita en
+  Google Drive y **aplica solo las diferencias** a la temporada activa:
+  hideouts nuevos, destruidos, de otro gremio o de otro tipo. Las posiciones
+  y notas se conservan mientras el gremio del slot no cambie. Si el archivo
+  no cambió desde la última revisión, no se descarga.
+- Acceso **privado**: el archivo se comparte solo con una cuenta de servicio
+  de Google (lectura); la clave vive únicamente en la VM.
+- Protección: si el Excel borraría o cambiaría más del 30 % de los hideouts
+  no se aplica nada (un administrador puede forzarlo desde el panel).
+- Panel de administración: estado de la última revisión y "Sincronizar ahora".
+- Lector de .xlsx propio (`src/excel/leerXlsx.js`); se quita el paquete
+  `xlsx` de npm, que tiene fallos de seguridad sin corregir. Comprobado contra
+  un lector de referencia con Excel reales: 0 diferencias en 783 celdas.
+
 ### v12.6 — Hideouts en caminos de Avalon
 
 - **Rutas que terminan en un camino de hideouts.** Los caminos de tipo
@@ -498,8 +514,8 @@ hosting de Node.js sin pasos extra:
 ## Requisitos
 
 - Node.js **22.5 o superior** (usa el módulo nativo `node:sqlite`).
-- Sin dependencias de npm para ejecutar (`xlsx` es opcional, solo para
-  importar un Excel nuevo).
+- Sin dependencias de npm (ni siquiera para leer Excel: el lector de .xlsx
+  es propio).
 
 ## Actualizar la geografía de los mapas
 
@@ -555,8 +571,7 @@ un ZIP o guarda el resultado en una carpeta.
 npm start            # http://localhost:3000 — siembra la BD automáticamente
 ```
 
-No hace falta `npm install`: la aplicación no tiene dependencias en tiempo
-de ejecución (solo el script opcional de importar Excel necesita `xlsx`).
+No hace falta `npm install`: la aplicación no tiene dependencias.
 
 ### Cuenta de administrador
 
@@ -690,6 +705,66 @@ Administración (rol `ADMIN` + token CSRF):
   protección contra *path traversal* en los archivos estáticos, cabeceras
   `X-Frame-Options`, `Referrer-Policy` y HSTS en producción, y bitácora de
   auditoría de cada cambio administrativo.
+
+## Sincronización con el Excel de Google Drive
+
+El Excel de hideouts (hoja **"Mapas BZ"**: columna A = mapa, B..K = HO 1..HO 10,
+con "(HQ)" o "(P)" al final del gremio cuando corresponde) puede vivir en Google
+Drive. El servidor lo revisa cada `EXCEL_SYNC_MINUTOS` minutos y aplica los
+cambios. Sirve un `.xlsx` subido a Drive o una hoja de cálculo de Google.
+
+**Reglas**
+
+- El Excel manda: si alguien cambia un hideout desde el panel y el Excel dice
+  otra cosa, la siguiente sincronización deja lo del Excel.
+- Solo cambia lo que es distinto. Si en un slot sigue el mismo gremio, su
+  posición en el mapa y su nota se conservan; si entra otro gremio, se borran
+  (eran del anterior).
+- Los mapas que el Excel escribe mal se ignoran y se avisan; los mapas que
+  faltan en el Excel no se vacían.
+- Si se borrarían o cambiarían más del 30 % de los hideouts, no se aplica
+  nada. Si es correcto (por ejemplo, un reinicio de temporada), un
+  administrador pulsa "Aplicar de todos modos" en el panel.
+- Una temporada nueva se sigue creando con `npm run db:import`.
+
+**Configuración (una sola vez, en la consola de Google Cloud del mismo
+proyecto que la VM)**
+
+1. *APIs y servicios → Biblioteca*: busca **Google Drive API** y actívala.
+2. *IAM y administración → Cuentas de servicio → Crear cuenta de servicio*:
+   nombre `albion-excel-lector`. No le des ningún rol del proyecto.
+3. Abre la cuenta → *Claves → Agregar clave → Crear clave nueva → JSON*. Se
+   descarga un archivo `.json`: es una contraseña, **no lo subas a GitHub ni
+   lo compartas**.
+4. Súbelo a la VM (en la ventana SSH del navegador: engranaje → *Subir
+   archivo*) y déjalo en la carpeta del proyecto con permisos solo para ti:
+   ```bash
+   mv ~/*.json ~/albion-ho-finder/credenciales-drive.json
+   chmod 600 ~/albion-ho-finder/credenciales-drive.json
+   ```
+   (`credenciales*.json` está en `.gitignore`.)
+5. En Google Drive, **comparte el Excel** con el correo de la cuenta de
+   servicio (algo como `albion-excel-lector@<proyecto>.iam.gserviceaccount.com`)
+   como **Lector**. No hace falta ningún enlace público.
+6. Copia el **id del archivo** de su URL: lo que va entre `/d/` y `/edit`
+   (`https://docs.google.com/spreadsheets/d/ESTE_ES_EL_ID/edit`) o entre
+   `/d/` y `/view` en `drive.google.com/file/d/.../view`.
+7. Añade al `.env` de la VM:
+   ```
+   EXCEL_DRIVE_ID=ESTE_ES_EL_ID
+   GOOGLE_CREDENCIALES=/home/TU_USUARIO/albion-ho-finder/credenciales-drive.json
+   EXCEL_SYNC_MINUTOS=60
+   ```
+8. Reinicia y mira el registro: la primera revisión ocurre a los 30 s.
+   ```bash
+   sudo systemctl restart albion
+   journalctl -u albion -n 30 --no-pager
+   ```
+   En el panel de administración aparece el estado y el botón
+   "Sincronizar ahora". Cada sincronización con cambios queda en la bitácora.
+
+Si la clave se filtra, bórrala en la consola (*Claves*) y crea otra: el permiso
+es solo de lectura y solo sobre los archivos compartidos con esa cuenta.
 
 ## Actualizar los datos en una nueva temporada
 

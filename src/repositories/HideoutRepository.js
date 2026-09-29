@@ -129,6 +129,34 @@ class HideoutRepository extends BaseRepository {
     this.db.prepare('DELETE FROM hideouts WHERE id = $id').run({ $id: id });
   }
 
+  /** Todos los hideouts de una temporada, con el tipo tal cual (HQ, P o ESTANDAR). */
+  listarTemporada(temporadaId) {
+    return this.db
+      .prepare(
+        `SELECT h.id, h.mapa_id AS mapaId, m.nombre AS mapa, h.slot, h.gremio_id AS gremioId,
+                g.nombre AS gremio, h.tipo
+         FROM hideouts h
+         INNER JOIN mapas   m ON m.id = h.mapa_id
+         INNER JOIN gremios g ON g.id = h.gremio_id
+         WHERE h.temporada_id = $temporadaId`
+      )
+      .all({ $temporadaId: temporadaId });
+  }
+
+  /**
+   * Otro gremio ocupa el slot (se destruyó un hideout y se construyó otro):
+   * la posición marcada y la nota eran del anterior, así que se borran.
+   */
+  reemplazarGremio(id, { gremioId, tipo }) {
+    this.db
+      .prepare(
+        `UPDATE hideouts SET gremio_id = $gremioId, tipo = $tipo, pos_x = NULL, pos_y = NULL,
+                             nota = NULL, actualizado_en = datetime('now')
+         WHERE id = $id`
+      )
+      .run({ $id: id, $gremioId: gremioId, $tipo: tipo });
+  }
+
   insertarLote(temporadaId, mapaId, hideouts) {
     const insertar = this.db.prepare(
       `INSERT INTO hideouts (temporada_id, mapa_id, gremio_id, slot, tipo)
