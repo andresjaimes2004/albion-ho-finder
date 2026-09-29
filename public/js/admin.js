@@ -6,8 +6,9 @@ import { t, regional } from './i18n.js';
 /**
  * admin.js
  * ----------------------------------------------------------------------
- * Panel de administración embebido en la propia web: edición de gremios
- * (nombre, logo, notas), gestión de usuarios y bitácora de cambios.
+ * Panel de administración embebido en la propia web: sincronización con
+ * el Excel de Drive, gestión de usuarios y bitácora de cambios. (Los
+ * gremios ya no se editan aquí: los mantiene el Excel.)
  *
  * La interfaz solo aparece si el servidor confirma que la sesión tiene
  * rol ADMIN; ocultar botones no es la protección real: cada endpoint del
@@ -18,8 +19,6 @@ export class PanelAdmin {
   constructor() {
     this.seccion = document.getElementById('panel-admin');
     this.resumen = document.getElementById('admin-resumen');
-    this.buscador = document.getElementById('admin-buscar-gremio');
-    this.listaGremios = document.getElementById('admin-gremios');
     this.listaUsuarios = document.getElementById('admin-usuarios');
     this.listaAuditoria = document.getElementById('admin-auditoria');
     this.mensaje = document.getElementById('admin-mensaje');
@@ -29,12 +28,6 @@ export class PanelAdmin {
   }
 
   _prepararEventos() {
-    let temporizador = null;
-    this.buscador.addEventListener('input', () => {
-      clearTimeout(temporizador);
-      temporizador = setTimeout(() => this._buscarGremios(this.buscador.value), 300);
-    });
-
     document.getElementById('admin-recargar').addEventListener('click', () => this.refrescar());
 
     this.sincEstado = document.getElementById('admin-sinc-estado');
@@ -111,7 +104,6 @@ export class PanelAdmin {
       this._pintarSincronizacion(sincronizacion.sincronizacion);
       this._pintarUsuarios(usuarios.usuarios);
       this._pintarAuditoria(auditoria.auditoria);
-      await this._buscarGremios(this.buscador.value);
     } catch (error) {
       this.mensaje.textContent = error.message;
     }
@@ -141,96 +133,6 @@ export class PanelAdmin {
 
       tarjeta.append(titulo, dato);
       this.resumen.appendChild(tarjeta);
-    }
-  }
-
-  async _buscarGremios(consulta) {
-    if (!this.visible) return;
-    try {
-      const datos = await api.admin.buscarGremios(consulta);
-      this._pintarGremios(datos.gremios);
-    } catch (error) {
-      this.mensaje.textContent = error.message;
-    }
-  }
-
-  _pintarGremios(gremios) {
-    this.listaGremios.replaceChildren();
-
-    if (!gremios.length) {
-      const vacio = document.createElement('li');
-      vacio.textContent = t('Ningún gremio coincide con la búsqueda.');
-      this.listaGremios.appendChild(vacio);
-      return;
-    }
-
-    for (const gremio of gremios) {
-      const item = document.createElement('li');
-      item.className = 'admin-fila';
-
-      const logo = document.createElement('img');
-      logo.className = 'admin-fila__logo';
-      logo.alt = '';
-      logo.width = 36;
-      logo.height = 36;
-      logo.src = gremio.tieneLogo ? `/api/gremios/${gremio.id}/logo?t=${Date.now()}` : '/assets/logo.svg';
-
-      const nombre = document.createElement('input');
-      nombre.type = 'text';
-      nombre.value = gremio.nombre;
-      nombre.maxLength = 60;
-      nombre.className = 'admin-fila__nombre';
-
-      const conteo = document.createElement('span');
-      conteo.className = 'admin-fila__conteo';
-      conteo.textContent = `${gremio.totalHideouts} HO`;
-
-      const guardar = document.createElement('button');
-      guardar.type = 'button';
-      guardar.className = 'boton boton--pequeno';
-      guardar.textContent = t('Guardar nombre');
-      guardar.addEventListener('click', async () => {
-        try {
-          await api.admin.renombrarGremio(gremio.id, nombre.value);
-          this.mensaje.textContent = t('Gremio actualizado: {nombre}', { nombre: nombre.value });
-        } catch (error) {
-          this.mensaje.textContent = error.message;
-        }
-      });
-
-      const archivo = document.createElement('input');
-      archivo.type = 'file';
-      archivo.accept = 'image/png,image/jpeg,image/webp';
-      archivo.className = 'admin-fila__archivo';
-      archivo.addEventListener('change', async () => {
-        const fichero = archivo.files && archivo.files[0];
-        if (!fichero) return;
-        try {
-          await api.admin.subirLogo(gremio.id, fichero);
-          logo.src = `/api/gremios/${gremio.id}/logo?t=${Date.now()}`;
-          this.mensaje.textContent = t('Logo actualizado para {nombre}.', { nombre: gremio.nombre });
-        } catch (error) {
-          this.mensaje.textContent = error.message;
-        } finally {
-          archivo.value = '';
-        }
-      });
-
-      item.append(logo, nombre, conteo, guardar, archivo);
-
-      if (gremio.tieneLogo) {
-        const borrar = document.createElement('button');
-        borrar.type = 'button';
-        borrar.className = 'boton boton--pequeno boton--sutil';
-        borrar.textContent = t('Quitar logo');
-        borrar.addEventListener('click', async () => {
-          await api.admin.borrarLogo(gremio.id);
-          logo.src = '/assets/logo.svg';
-        });
-        item.appendChild(borrar);
-      }
-
-      this.listaGremios.appendChild(item);
     }
   }
 
