@@ -230,6 +230,15 @@ export const EN = {
   'En {n} rutas: {lista}': 'In {n} routes: {lista}',
   'Hay demasiadas combinaciones: se muestran las primeras {n} rutas.': 'Too many combinations: showing the first {n} routes.',
   ' · {n} tramos': ' · {n} legs',
+  // --- Rutas por portal de ciudad ---
+  'en {portal}': 'at {portal}',
+  'a {n} mapa de {portal}': '{n} map from {portal}',
+  'a {n} mapas de {portal}': '{n} maps from {portal}',
+  'Entrada: {mapa}, {cercania}': 'Entry: {mapa}, {cercania}',
+  'Filtrar rutas por portal de ciudad': 'Filter routes by city portal',
+  'Todas': 'All',
+  'Otras': 'Other',
+  'Lejos de los portales de ciudad': 'Far from the city portals',
   ' ({n} ya guardado)': ' ({n} already saved)',
   ' ({n} ya guardados)': ' ({n} already saved)',
   'La lectura tardó demasiado. Escribe los datos a mano, o quita la captura y pégala otra vez.':

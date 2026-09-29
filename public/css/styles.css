@@ -3196,3 +3196,71 @@ html:has(dialog[open]) { overflow: hidden; }
 /* Sin la imagen de la wiki, un fondo que deje ver puntos y conexiones. */
 #mapa-mundial__svg.mundo--sin-fondo { background: radial-gradient(circle at 50% 45%, #3c4a52, #27313a 75%); }
 #mapa-mundial__svg.mundo--sin-fondo .mundo__aristas line { stroke: rgba(232, 220, 190, 0.35); }
+
+/* ============================================================================
+   Rutas del gremio por portal de ciudad y por mapa de entrada
+   ============================================================================ */
+.rutas-portales { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 12px; }
+.rutas-portales__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.84rem;
+  color: var(--color-texto);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-borde-suave);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.rutas-portales__chip:hover { border-color: rgba(var(--acento-rgb), 0.6); }
+.rutas-portales__chip[aria-pressed='true'] {
+  color: var(--color-oro-claro);
+  background: rgba(var(--acento-rgb), 0.14);
+  border-color: rgba(var(--acento-rgb), 0.7);
+}
+.rutas-portales__cantidad {
+  min-width: 1.4em;
+  padding: 0 5px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.08);
+}
+.rutas-portal__titulo {
+  margin: 14px 0 8px;
+  font-family: var(--fuente-titulos);
+  font-size: 0.95rem;
+  color: var(--color-oro-claro);
+}
+.rutas-entradas { display: flex; flex-direction: column; gap: 8px; }
+.rutas-entrada {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+}
+.rutas-entrada[open] { border-color: rgba(var(--acento-rgb), 0.45); }
+.rutas-entrada__resumen {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 9px 12px;
+  cursor: pointer;
+  list-style: none;
+}
+.rutas-entrada__resumen::-webkit-details-marker { display: none; }
+.rutas-entrada__resumen:focus-visible { outline: 2px solid var(--color-oro-claro); outline-offset: 2px; border-radius: var(--radio); }
+.rutas-entrada__cabeza { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.rutas-entrada__cabeza::before { content: '▸'; color: var(--color-texto-tenue); transition: transform 0.2s ease; }
+.rutas-entrada[open] .rutas-entrada__cabeza::before { transform: rotate(90deg); }
+.rutas-entrada__cercania, .rutas-entrada__cantidad { font-size: 0.8rem; color: var(--color-texto-tenue); }
+.rutas-entrada__cantidad { margin-left: auto; }
+.rutas-entrada__destinos { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.82rem; padding-left: 16px; }
+.rutas-entrada__destino { white-space: nowrap; }
+.rutas-entrada > .lista-rutas { padding: 0 10px 10px; }
+.ruta__cercania { flex-basis: 100%; font-size: 0.78rem; color: var(--color-texto-tenue); }
+@media (prefers-reduced-motion: reduce) {
+  .rutas-entrada__cabeza::before { transition: none; }
+}
