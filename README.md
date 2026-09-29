@@ -8,6 +8,25 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v13 — Correcciones del gremio (segunda ronda)
+
+- **Editar rutas**: quitando todas las conexiones (a mano o con "Vaciar") el
+  botón pasa a "Borrar la ruta" y la borra entera; "Invertir sentido"; y la
+  captura que faltaba se coloca sola en su sitio de la cadena al pegarla.
+- **Cerradas hace poco** con el mismo filtro y agrupación por portal de ciudad
+  que las abiertas; los filtros muestran "+N" cerradas.
+- **Conexiones sueltas** (sin ruta, sin mapa inicial ni final) se borran solas
+  30 minutos después de registrarse.
+- **Administradores**: borrar todas las rutas, las abiertas, las del portal
+  filtrado o las que pasan por un mapa (`DELETE /api/tracking/rutas?alcance=`).
+- **Buscador de hideouts**: sugerencias al escribir (gremios y mapas) y
+  búsqueda sin espacios ni separadores ("requiem" encuentra "R E Q U I E M").
+- **Nombres de usuario ofensivos** (español e inglés) rechazados al crear
+  cuentas (`src/security/nombresOfensivos.js`).
+- Campo para anotar gremios en caminos de hideouts con el estilo del buscador,
+  y sin la subsección "Gremios" en el panel de administración (la mantiene el
+  Excel de Drive).
+
 ### v12.7 — Sincronización con el Excel de Google Drive
 
 - El servidor revisa cada hora (configurable) el Excel que el equipo edita en
