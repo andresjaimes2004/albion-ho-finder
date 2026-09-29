@@ -69,6 +69,12 @@ export function iniciarRelojes() {
 
 // -------------------------------------------------------------- rutas --
 
+/** "a 2 mapas de Lymhurst Portal", "en Lymhurst Portal". */
+export function textoCercania({ portal, saltos }) {
+  if (!saltos) return t('en {portal}', { portal });
+  return tn(saltos, 'a {n} mapa de {portal}', 'a {n} mapas de {portal}', { portal });
+}
+
 /**
  * Tarjeta de una ruta del gremio.
  * @param {object} ruta  { id, zonas:[{nombre, etiqueta, tier, clase}], tramos:[{cierraEn}], cierraEn, reportadoPor, reportadoPorId }
@@ -108,6 +114,11 @@ export function crearTarjetaRuta(ruta, { usuario = null, resaltar = null, alEleg
     fuente.append(' ', borrar);
   }
   cabecera.append(fuente);
+  if (ruta.cercania) {
+    cabecera.append(
+      crear('span', 'ruta__cercania', t('Entrada: {mapa}, {cercania}', { mapa: ruta.cercania.desde, cercania: textoCercania(ruta.cercania) }))
+    );
+  }
 
   const pasos = crear('ol', 'ruta__pasos');
   ruta.zonas.forEach((zona, k) => {

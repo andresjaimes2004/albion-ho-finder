@@ -7,6 +7,7 @@ const MapaRepository = require('../repositories/MapaRepository');
 const ConexionReportadaRepository = require('../repositories/ConexionReportadaRepository');
 const RutaReportadaRepository = require('../repositories/RutaReportadaRepository');
 const { cargarZonas, ETIQUETAS_GRUPO } = require('./zonas');
+const { crearCercania } = require('./portales');
 
 /**
  * TrackingService
@@ -80,6 +81,7 @@ class TrackingService {
     this.reportes = reportesRepository;
     this.rutasRepo = rutasRepository;
     this.zonaPorNombre = new Map(zonas.map((z) => [normalizar(z.nombre), z]));
+    this.portales = zonas.filter((z) => z.grupo === 'portalCiudad').map((z) => z.nombre);
     this.ahora = ahora;
 
     this.caminos = catalogo.caminos.map((c) => ({
@@ -113,27 +115,53 @@ class TrackingService {
     };
   }
 
+  /** Portal de ciudad más cercano a una zona (se calcula una vez). */
+  _cercania(nombre) {
+    if (!this._funcionCercania) {
+      const mapas = typeof this.mapas.listarSalidas === 'function' ? this.mapas.listarSalidas() : [];
+      this._funcionCercania = crearCercania(mapas, this.portales);
+    }
+    return this._funcionCercania(nombre);
+  }
+
   /**
    * Rutas del gremio con todos sus tramos abiertos. Cada tramo lleva su
    * propio cierre; la ruta cierra cuando cierra el primero.
+   *
+   * Cada ruta se orienta desde el extremo más cercano a un portal de
+   * ciudad y lleva esa cercanía (portal, saltos) para agruparlas: así se
+   * leen como "saliendo de Lymhurst Portal, a 2 mapas...". Se ordenan de
+   * la más cercana a la más lejana.
    */
   _rutasVigentes(reportadas, indiceZonaNegra) {
     const porId = new Map(reportadas.map((r) => [r.id, r]));
     const rutas = [];
     for (const ruta of this.rutasRepo.listarCompletas()) {
-      const tramos = ruta.conexionIds.map((id) => porId.get(id));
-      if (tramos.some((t) => !t)) continue;
-      const cierres = tramos.map((t) => Date.parse(t.cierraEn));
+      const guardadas = ruta.conexionIds.map((id) => porId.get(id));
+      if (guardadas.some((t) => !t)) continue;
+      let zonas = ruta.zonas.map((nombre) => this._extremo(nombre, indiceZonaNegra));
+      let tramos = guardadas.map((t) => ({ reporteId: t.id, cierraEn: Date.parse(t.cierraEn) }));
+
+      const inicio = this._cercania(zonas[0].nombre);
+      const fin = this._cercania(zonas[zonas.length - 1].nombre);
+      if (fin && (!inicio || fin.saltos < inicio.saltos)) {
+        zonas = [...zonas].reverse();
+        tramos = [...tramos].reverse();
+      }
+      const cercania = fin && (!inicio || fin.saltos < inicio.saltos) ? fin : inicio;
+
       rutas.push({
         id: ruta.id,
-        zonas: ruta.zonas.map((nombre) => this._extremo(nombre, indiceZonaNegra)),
-        tramos: tramos.map((t, k) => ({ reporteId: t.id, cierraEn: cierres[k] })),
-        cierraEn: Math.min(...cierres),
+        zonas,
+        tramos,
+        cierraEn: Math.min(...tramos.map((t) => t.cierraEn)),
+        cercania: cercania ? { ...cercania, desde: zonas[0].nombre } : null,
         reportadoPor: ruta.usuario || null,
         reportadoPorId: ruta.usuarioId,
       });
     }
-    return rutas.sort((a, b) => b.cierraEn - a.cierraEn);
+    const saltos = (r) => (r.cercania ? r.cercania.saltos : Infinity);
+    return rutas.sort((a, b) => saltos(a) - saltos(b) || b.cierraEn - a.cierraEn);
   }
 
   /** Conexiones vigentes que tocan una zona, vistas desde ella. */
@@ -237,6 +265,8 @@ class TrackingService {
       })),
       conexiones,
       rutas,
+      // Para agrupar las rutas por el portal de ciudad más cercano.
+      portales: this.portales,
     };
   }
 

@@ -1,7 +1,7 @@
 'use strict';
 
 import api from './api.js';
-import { crear, crearReloj, crearTarjetaRuta } from './rutas.js';
+import { crear, crearReloj, crearTarjetaRuta, textoCercania } from './rutas.js';
 import { t, tn } from './i18n.js';
 
 /**
@@ -99,6 +99,8 @@ export class PanelCaminos {
 
   establecerUsuario(usuario) {
     this.usuario = usuario;
+    // Los botones de cada ruta (borrar...) dependen de quién mira.
+    if (this.datos) this._renderizarRutas();
     if (this.mapaAbierto) this.abrirDetalle(this.mapaAbierto, { silencioso: true });
   }
 
@@ -498,7 +500,16 @@ export class PanelCaminos {
 
   // ----------------------------------------------------------------- rutas --
 
-  /** Lista general "Rutas del gremio" (todas las vigentes). */
+  /**
+   * Lista general "Rutas del gremio", organizada para leerla rápido:
+   *
+   *  1. Un filtro por portal de ciudad (Lymhurst, Martlock...): cada ruta
+   *     cuenta para el portal más cercano a uno de sus extremos.
+   *  2. Dentro, las rutas se agrupan por mapa de entrada (el extremo más
+   *     cercano al portal) en bloques plegables, de la entrada más cercana
+   *     a la más lejana. El resumen de cada bloque ya dice a dónde llevan
+   *     sus rutas; se despliega solo el que interesa.
+   */
   _renderizarRutas() {
     const contenedor = document.getElementById('caminos-rutas');
     const rutas = (this.datos && this.datos.rutas) || [];
@@ -507,26 +518,127 @@ export class PanelCaminos {
       contenedor.replaceChildren();
       return;
     }
-    contenedor.replaceChildren(this._crearBloqueRutas(rutas, { titulo: t('Rutas del gremio') }));
+
+    const OTRAS = '';
+    const porPortal = new Map();
+    for (const ruta of rutas) {
+      const portal = ruta.cercania ? ruta.cercania.portal : OTRAS;
+      if (!porPortal.has(portal)) porPortal.set(portal, []);
+      porPortal.get(portal).push(ruta);
+    }
+    const orden = [...(this.datos.portales || []), OTRAS].filter((p) => porPortal.has(p));
+
+    if (this._portalElegido === undefined) {
+      this._portalElegido = null;
+      try {
+        this._portalElegido = localStorage.getItem('rutas-portal');
+      } catch (error) {
+        // Sin almacenamiento (modo privado estricto): se muestran todas.
+      }
+    }
+    const elegido = this._portalElegido !== null && porPortal.has(this._portalElegido) ? this._portalElegido : null;
+
+    const bloque = crear('div', 'caminos-detalle__bloque bloque-rutas');
+    bloque.append(crear('h4', null, `${t('Rutas del gremio')} (${rutas.length})`));
+
+    // Filtro por portal.
+    const filtro = crear('div', 'rutas-portales');
+    filtro.setAttribute('role', 'group');
+    filtro.setAttribute('aria-label', t('Filtrar rutas por portal de ciudad'));
+    const chip = (valor, texto, cantidad) => {
+      const boton = crear('button', 'rutas-portales__chip');
+      boton.type = 'button';
+      boton.setAttribute('aria-pressed', String(valor === elegido));
+      boton.append(texto, ' ', crear('span', 'rutas-portales__cantidad', String(cantidad)));
+      boton.addEventListener('click', () => {
+        this._portalElegido = valor;
+        try {
+          if (valor === null) localStorage.removeItem('rutas-portal');
+          else localStorage.setItem('rutas-portal', valor);
+        } catch (error) {
+          // Sin almacenamiento: el filtro vale hasta la próxima recarga.
+        }
+        this._renderizarRutas();
+      });
+      return boton;
+    };
+    filtro.append(chip(null, t('Todas'), rutas.length));
+    for (const portal of orden) {
+      filtro.append(chip(portal, portal === OTRAS ? t('Otras') : portal.replace(/ Portal$/, ''), porPortal.get(portal).length));
+    }
+    bloque.append(filtro);
+
+    const portalesVisibles = elegido === null ? orden : [elegido];
+    for (const portal of portalesVisibles) {
+      if (elegido === null) {
+        bloque.append(crear('h5', 'rutas-portal__titulo', portal === OTRAS ? t('Lejos de los portales de ciudad') : portal));
+      }
+      bloque.append(this._crearEntradas(porPortal.get(portal)));
+    }
+    contenedor.replaceChildren(bloque);
+  }
+
+  /** Rutas de un portal agrupadas por su mapa de entrada, en bloques plegables. */
+  _crearEntradas(rutas) {
+    const porEntrada = new Map();
+    for (const ruta of rutas) {
+      const desde = ruta.zonas[0].nombre;
+      if (!porEntrada.has(desde)) porEntrada.set(desde, []);
+      porEntrada.get(desde).push(ruta);
+    }
+
+    // Los bloques abiertos siguen abiertos cuando la lista se refresca.
+    if (!this._entradasAbiertas) this._entradasAbiertas = new Set();
+    const lista = crear('div', 'rutas-entradas');
+    for (const [desde, grupo] of porEntrada) {
+      const detalles = crear('details', 'rutas-entrada');
+      detalles.open = this._entradasAbiertas.has(desde);
+      detalles.addEventListener('toggle', () => {
+        if (detalles.open) this._entradasAbiertas.add(desde);
+        else this._entradasAbiertas.delete(desde);
+      });
+      const resumen = crear('summary', 'rutas-entrada__resumen');
+      const cabeza = crear('span', 'rutas-entrada__cabeza');
+      cabeza.append(crear('strong', null, desde));
+      const cercania = grupo[0].cercania;
+      if (cercania) cabeza.append(crear('span', 'rutas-entrada__cercania', textoCercania(cercania)));
+      cabeza.append(crear('span', 'rutas-entrada__cantidad', tn(grupo.length, '{n} ruta', '{n} rutas')));
+
+      // A dónde lleva cada ruta y cuánto le queda, sin desplegar.
+      const destinos = crear('span', 'rutas-entrada__destinos');
+      for (const ruta of grupo) {
+        const destino = crear('span', 'rutas-entrada__destino');
+        destino.append(`→ ${ruta.zonas[ruta.zonas.length - 1].nombre} `, crearReloj(ruta.cierraEn, { prefijo: '' }));
+        destinos.append(destino);
+      }
+      resumen.append(cabeza, destinos);
+      detalles.append(resumen);
+
+      const tarjetas = crear('div', 'lista-rutas');
+      for (const ruta of grupo) tarjetas.append(this._tarjetaRuta(ruta));
+      detalles.append(tarjetas);
+      lista.append(detalles);
+    }
+    return lista;
+  }
+
+  _tarjetaRuta(ruta, resaltar = null) {
+    return crearTarjetaRuta(ruta, {
+      usuario: this.usuario,
+      resaltar,
+      alElegirZona: (nombre) => this.abrirDetalle(nombre),
+      alBorrar: async (r) => {
+        await api.borrarRuta(r.id);
+        await this.refrescar();
+      },
+    });
   }
 
   _crearBloqueRutas(rutas, { titulo = t('Rutas que pasan por aquí'), resaltar = null } = {}) {
     const bloque = crear('div', 'caminos-detalle__bloque bloque-rutas');
     bloque.append(crear('h4', null, `${titulo} (${rutas.length})`));
     const lista = crear('div', 'lista-rutas');
-    for (const ruta of rutas) {
-      lista.append(
-        crearTarjetaRuta(ruta, {
-          usuario: this.usuario,
-          resaltar,
-          alElegirZona: (nombre) => this.abrirDetalle(nombre),
-          alBorrar: async (r) => {
-            await api.borrarRuta(r.id);
-            await this.refrescar();
-          },
-        })
-      );
-    }
+    for (const ruta of rutas) lista.append(this._tarjetaRuta(ruta, resaltar));
     bloque.append(lista);
     return bloque;
   }

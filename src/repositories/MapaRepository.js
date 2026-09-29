@@ -175,6 +175,25 @@ class MapaRepository extends BaseRepository {
     return conexiones;
   }
 
+  /**
+   * Cada mapa con los nombres de todas las zonas a las que sale (también
+   * portales de ciudad, descansos...), para medir distancias a los portales.
+   */
+  listarSalidas() {
+    return this.db
+      .prepare(
+        `SELECT m.nombre AS nombre, g.salidas AS salidas
+         FROM mapas m INNER JOIN mapas_geo g ON g.mapa_id = m.id`
+      )
+      .all()
+      .map((fila) => ({
+        nombre: fila.nombre,
+        destinos: parsearJson(fila.salidas, [])
+          .map((salida) => salida.destino)
+          .filter(Boolean),
+      }));
+  }
+
   /** Mapas con geografía cargada, con su id de cluster en los dumps. */
   listarClusters() {
     return this.db

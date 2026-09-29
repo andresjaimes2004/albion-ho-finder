@@ -8,6 +8,20 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v12.3 — Rutas organizadas por portal de ciudad
+
+- **Filtro por portal** en "Rutas del gremio": Bridgewatch, Fort Sterling,
+  Lymhurst, Martlock, Thetford (y "Otras"). Cada ruta cuenta para el portal
+  más cercano a uno de sus extremos, medido en saltos por la Zona Negra con
+  las salidas oficiales de cada mapa (`src/services/portales.js`). Una ciudad
+  real cuenta como su propio portal. El filtro elegido se recuerda.
+- **Agrupadas por mapa de entrada**, de la más cercana a la más lejana, en
+  bloques plegables. El resumen de cada bloque ya dice a dónde lleva cada
+  ruta y cuánto le queda; se despliega solo el que interesa.
+- Cada ruta se muestra empezando por el extremo más cercano al portal y
+  lleva la línea "Entrada: mapa, a N mapas de X Portal" (también en la vista
+  de hideouts y en la ficha de cada mapa).
+
 ### v12.2 — Rutas que continúan entre envíos y lector sin atascos
 
 - **Una captura nueva continúa una ruta ya guardada.** Antes, las rutas solo
