@@ -2,7 +2,7 @@
 
 const BaseRepository = require('./BaseRepository');
 const Hideout = require('../models/Hideout');
-const { normalizar } = require('./GremioRepository');
+const { normalizar, compactar, sqlCompacto } = require('./GremioRepository');
 const db = require('../config/database');
 
 /** Escapa % y _ para que no actúen como comodines de LIKE dentro del texto buscado. */
@@ -19,7 +19,9 @@ class HideoutRepository extends BaseRepository {
   /**
    * Busca hideouts cuyo nombre de gremio contenga el texto dado
    * (substring, insensible a mayúsculas) dentro de una temporada.
-   * Replica el comportamiento de la fórmula SEARCH() del Excel original.
+   * Replica el comportamiento de la fórmula SEARCH() del Excel original y,
+   * además, compara sin espacios ni separadores: "requiem" encuentra a
+   * "R E Q U I E M".
    *
    * @param {string} textoBusqueda
    * @param {number} temporadaId
@@ -27,6 +29,9 @@ class HideoutRepository extends BaseRepository {
    */
   buscarPorGremio(textoBusqueda, temporadaId) {
     const patron = `%${escaparParaLike(normalizar(textoBusqueda))}%`;
+    const compacto = compactar(textoBusqueda);
+    // Si solo había separadores, se busca como siempre.
+    const patronCompacto = compacto.length >= 2 ? `%${escaparParaLike(compacto)}%` : patron;
 
     const filas = this.db
       .prepare(
@@ -35,10 +40,11 @@ class HideoutRepository extends BaseRepository {
          INNER JOIN mapas   m ON m.id = h.mapa_id
          INNER JOIN gremios g ON g.id = h.gremio_id
          WHERE h.temporada_id = $temporadaId
-           AND g.nombre_normalizado LIKE $patron ESCAPE '\\'
+           AND (g.nombre_normalizado LIKE $patron ESCAPE '\\'
+                OR ${sqlCompacto('g.nombre_normalizado')} LIKE $compacto ESCAPE '\\')
          ORDER BY m.nombre ASC, h.slot ASC`
       )
-      .all({ $temporadaId: temporadaId, $patron: patron });
+      .all({ $temporadaId: temporadaId, $patron: patron, $compacto: patronCompacto });
 
     return filas.map((fila) => new Hideout(fila));
   }
@@ -127,6 +133,19 @@ class HideoutRepository extends BaseRepository {
 
   eliminar(id) {
     this.db.prepare('DELETE FROM hideouts WHERE id = $id').run({ $id: id });
+  }
+
+  /** Nombres de los gremios con algún hideout en la temporada (para sugerencias). */
+  listarGremiosTemporada(temporadaId) {
+    return this.db
+      .prepare(
+        `SELECT DISTINCT g.nombre AS nombre
+         FROM hideouts h INNER JOIN gremios g ON g.id = h.gremio_id
+         WHERE h.temporada_id = $temporadaId
+         ORDER BY g.nombre COLLATE NOCASE`
+      )
+      .all({ $temporadaId: temporadaId })
+      .map((fila) => fila.nombre);
   }
 
   /** Todos los hideouts de una temporada, con el tipo tal cual (HQ, P o ESTANDAR). */

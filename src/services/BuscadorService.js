@@ -74,6 +74,25 @@ class BuscadorService {
   }
 
   /**
+   * Sugerencias para el buscador (se filtran en el navegador mientras se
+   * escribe): gremios con hideout en la temporada o anotados en caminos de
+   * hideouts, y mapas de la Zona Negra.
+   */
+  sugerencias() {
+    const temporada = this.temporadaRepository.obtenerActiva();
+    const gremios = new Set(temporada ? this.hideoutRepository.listarGremiosTemporada(temporada.id) : []);
+    if (this.hideoutsCamino) {
+      for (const nombres of this.hideoutsCamino.porCamino().values()) for (const g of nombres) gremios.add(g);
+    }
+    const ordenar = (lista) => [...lista].sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+    return {
+      ok: true,
+      gremios: ordenar(gremios),
+      mapas: ordenar(this.mapaRepository.listarNombres().map((m) => m.nombre)),
+    };
+  }
+
+  /**
    * @param {string} textoBusqueda nombre (o parte) del gremio o del mapa
    * @param {{usuarioId?: number|null}} opciones
    */

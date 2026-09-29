@@ -1,6 +1,7 @@
 'use strict';
 
 const BaseRepository = require('./BaseRepository');
+const { compactar, sqlCompacto } = require('./GremioRepository');
 
 /**
  * HideoutCaminoRepository
@@ -55,16 +56,18 @@ class HideoutCaminoRepository extends BaseRepository {
       .all();
   }
 
-  /** Por parte del nombre del gremio (ya normalizado). */
+  /** Por parte del nombre del gremio (ya normalizado), también sin espacios. */
   buscarPorGremio(textoNormalizado, limite = 50) {
+    const compacto = compactar(textoNormalizado);
     return this.db
       .prepare(
         `SELECT ${COLUMNAS} FROM hideouts_camino h LEFT JOIN usuarios u ON u.id = h.usuario_id
          WHERE instr(h.gremio_normalizado, $texto) > 0
+            OR ($compacto <> '' AND instr(${sqlCompacto('h.gremio_normalizado')}, $compacto) > 0)
          ORDER BY h.camino, h.gremio COLLATE NOCASE
          LIMIT $limite`
       )
-      .all({ $texto: textoNormalizado, $limite: limite });
+      .all({ $texto: textoNormalizado, $compacto: compacto.length >= 2 ? compacto : '', $limite: limite });
   }
 
   eliminar(id) {

@@ -35,6 +35,7 @@ router.use(limitarGeneral);
 // ---------------------------------------------------------------- público ---
 
 router.get('/buscar', buscador.buscarGremio);
+router.get('/buscar/sugerencias', buscador.sugerencias);
 router.get('/mapas', mapas.mundo);
 router.get('/mapas/:nombre', mapas.detalle);
 router.get('/mapas/:nombre/imagen', mapas.imagen);

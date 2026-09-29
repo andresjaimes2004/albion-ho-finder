@@ -7,6 +7,18 @@ function normalizar(texto) {
   return texto.trim().toLowerCase();
 }
 
+/**
+ * Nombre sin espacios ni separadores, para que "requiem" encuentre a
+ * "R E Q U I E M" o "R.E.Q.U.I.E.M". `sqlCompacto` hace lo mismo en SQLite.
+ */
+function compactar(texto) {
+  return String(texto || '').toLowerCase().replace(/[\s._-]+/g, '');
+}
+
+function sqlCompacto(columna) {
+  return `replace(replace(replace(replace(${columna}, ' ', ''), '.', ''), '-', ''), '_', '')`;
+}
+
 /** Escapa los comodines de LIKE para que se busquen como texto literal. */
 function escaparParaLike(texto) {
   return texto.replace(/[\\%_]/g, (caracter) => `\\${caracter}`);
@@ -106,3 +118,5 @@ class GremioRepository extends BaseRepository {
 module.exports = GremioRepository;
 module.exports.normalizar = normalizar;
 module.exports.escaparParaLike = escaparParaLike;
+module.exports.compactar = compactar;
+module.exports.sqlCompacto = sqlCompacto;

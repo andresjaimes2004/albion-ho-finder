@@ -79,6 +79,7 @@ export const api = {
   buscar: (texto, senal) =>
     peticion(`/api/buscar?q=${encodeURIComponent(texto)}`, { senal }),
 
+  sugerencias: () => peticion('/api/buscar/sugerencias'),
   mundo: () => peticion('/api/mapas'),
   detalleMapa: (nombre) => peticion(`/api/mapas/${encodeURIComponent(nombre)}`),
 

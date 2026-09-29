@@ -107,3 +107,29 @@ test('solo hay dos tipos: los hideouts "P" antiguos se entregan como HO', () => 
   const antiguo = resultado.resultados.flatMap((r) => r.hideouts).find((h) => h.slot === 3);
   assert.equal(antiguo.etiquetaTipo, 'Hideout (HO)');
 });
+
+test('encuentra gremios escritos con espacios o separadores entre las letras', () => {
+  const temporada = new TemporadaRepository().obtenerActiva();
+  const mapa = new MapaRepository().obtenerOCrear('Battlebrae Lake');
+  const gremio = new GremioRepository().obtenerOCrear('R E Q U I E M');
+  new HideoutRepository().insertarLote(temporada.id, mapa.id, [{ gremioId: gremio.id, slot: 5, tipo: 'ESTANDAR' }]);
+  const servicio = new BuscadorService();
+
+  for (const texto of ['requiem', 'REQUIEM', 'r e q u i e m', 'r.e.q.u', 'quiem']) {
+    const r = servicio.buscarPorGremio(texto);
+    assert.deepEqual(
+      r.resultados.flatMap((m) => m.hideouts.map((h) => h.gremio)),
+      ['R E Q U I E M'],
+      `"${texto}" encuentra a R E Q U I E M`
+    );
+  }
+  // Y al revés: "ganker sletales" (espacio mal puesto) sigue encontrando a Gankers Letales.
+  assert.ok(servicio.buscarPorGremio('ganker sletales').resultados.length > 0);
+});
+
+test('sugerencias: gremios de la temporada y mapas, sin repetir y ordenados', () => {
+  const r = new BuscadorService().sugerencias();
+  assert.equal(r.ok, true);
+  assert.deepEqual(r.gremios, ['ARCH Company', 'Gankers Letales', 'R E Q U I E M']);
+  assert.ok(r.mapas.includes('Deepwood Copse'));
+});
