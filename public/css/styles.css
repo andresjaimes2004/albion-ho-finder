@@ -3277,3 +3277,41 @@ html:has(dialog[open]) { overflow: hidden; }
 .ruta__tramo--desconectado { color: var(--color-texto-tenue); font-style: italic; }
 .ruta__tramo--desconectado::before { color: var(--color-texto-tenue); }
 .ruta__zona--desconectada { opacity: 0.5; }
+
+/* ============================================================================
+   Editar una ruta guardada (panel de registro en modo edición)
+   ============================================================================ */
+.registro__edicion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  border: 1px solid rgba(232, 201, 92, 0.45);
+  border-radius: var(--radio);
+  background: rgba(232, 201, 92, 0.08);
+  font-size: 0.86rem;
+}
+.registro__edicion p { margin: 0; flex: 1 1 280px; }
+.registro__edicion strong { color: var(--color-oro-claro); }
+/* En edición no hacen falta los pasos para sacar capturas. */
+.registro--edicion .registro__pasos { display: none; }
+
+.registro__mover { display: none; grid-area: mover; justify-self: end; gap: 4px; }
+.registro--edicion .registro__mover { display: inline-flex; }
+.registro--edicion .registro__fila {
+  grid-template-areas:
+    'vista campos quitar'
+    'vista estado mover';
+}
+@media (max-width: 560px) {
+  .registro--edicion .registro__fila {
+    grid-template-areas:
+      'vista quitar'
+      'campos campos'
+      'estado mover';
+  }
+}
+.ruta__editar { padding: 3px 10px; font-size: 0.78rem; }

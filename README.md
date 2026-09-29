@@ -8,6 +8,22 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v12.5 — Editar rutas guardadas
+
+- Botón **Editar** en cada ruta (su autor o un administrador), también en las
+  "Cerradas hace poco". Abre el panel de registro en modo edición con cada
+  tramo como una fila: se pueden **pegar capturas nuevas, quitar conexiones,
+  cambiar el orden con ↑ ↓ y corregir los tiempos**. La vista previa dice si
+  la ruta se encadena o qué conexión no continúa.
+- Un portal que ya cerró aparece marcado para reemplazarlo: así se repara una
+  ruta cerrada sin borrarla y volver a crearla.
+- Las capturas que tenías pendientes se apartan durante la edición y vuelven
+  al terminar o cancelar.
+- API: `PUT /api/tracking/rutas/:id` con `{ conexiones: [...] }` en el orden
+  de la ruta. Las conexiones que ya existían entre las mismas zonas se
+  reutilizan; las que la ruta deja de usar se borran si ninguna otra las usa.
+  La ruta conserva su autor.
+
 ### v12.4 — Rutas que se cierran sin dejar conexiones sueltas
 
 - Cuando cierra un portal de una ruta, lo que viene **después** (leyendo la

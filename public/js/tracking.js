@@ -38,8 +38,9 @@ function normalizar(texto) {
 
 
 export class PanelCaminos {
-  constructor({ abrirMapa, alActualizar = null }) {
+  constructor({ abrirMapa, alActualizar = null, alEditarRuta = null }) {
     this.abrirMapa = abrirMapa;
+    this.alEditarRuta = alEditarRuta;
     // Avisa de cada resumen nuevo (el panel de registro usa sus conexiones).
     this.alActualizar = alActualizar;
 
@@ -663,6 +664,7 @@ export class PanelCaminos {
         await api.borrarRuta(r.id);
         await this.refrescar();
       },
+      alEditar: this.alEditarRuta,
     });
   }
 

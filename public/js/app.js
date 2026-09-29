@@ -66,6 +66,8 @@ class BuscadorUI {
       abrirMapa: (nombre) => this.ventanaMapa.abrir(nombre),
       // Las conexiones guardadas permiten continuar rutas desde el registro.
       alActualizar: (datos) => this.panelRegistro.establecerGuardadas(datos.conexiones),
+      // "Editar" en una ruta la abre en el panel de registro.
+      alEditarRuta: (ruta) => this.panelRegistro.editarRuta(ruta),
     });
 
     this.panelRegistro = new PanelRegistro({

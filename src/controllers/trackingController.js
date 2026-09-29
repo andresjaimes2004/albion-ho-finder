@@ -19,6 +19,7 @@ const { manejar } = require('./utilidades');
  *                                      sus conexiones vigentes
  * POST   /api/tracking/reportes      → registrar conexiones (con sesión)
  * DELETE /api/tracking/reportes/:id  → borrar una (autor o admin)
+ * PUT    /api/tracking/rutas/:id     → editar una ruta (autor o admin)
  * DELETE /api/tracking/rutas/:id     → borrar una ruta (autor o admin)
  * ----------------------------------------------------------------------
  */
@@ -73,9 +74,15 @@ const eliminar = manejar((req, res) => {
   res.json({ ok: true });
 });
 
+const editarRuta = manejar((req, res) => {
+  const cuerpo = req.body || {};
+  const ruta = reportes.editarRuta(req.usuario, entero(req.params.id, 'id', { min: 1 }), cuerpo.conexiones);
+  res.json({ ok: true, ruta });
+});
+
 const eliminarRuta = manejar((req, res) => {
   reportes.eliminarRuta(req.usuario, entero(req.params.id, 'id', { min: 1 }));
   res.json({ ok: true });
 });
 
-module.exports = { resumen, zonas, rutasDeMapas, detalle, registrar, eliminar, eliminarRuta };
+module.exports = { resumen, zonas, rutasDeMapas, detalle, registrar, eliminar, editarRuta, eliminarRuta };

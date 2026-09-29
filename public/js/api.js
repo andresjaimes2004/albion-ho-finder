@@ -90,6 +90,8 @@ export const api = {
     peticion('/api/tracking/reportes', { metodo: 'POST', datos: { conexiones, rutas } }),
   borrarReporte: (id) => peticion(`/api/tracking/reportes/${id}`, { metodo: 'DELETE' }),
   borrarRuta: (id) => peticion(`/api/tracking/rutas/${id}`, { metodo: 'DELETE' }),
+  editarRuta: (id, conexiones) =>
+    peticion(`/api/tracking/rutas/${id}`, { metodo: 'PUT', datos: { conexiones } }),
   rutasDeMapas: (nombres, senal) =>
     peticion(`/api/tracking/rutas?mapas=${encodeURIComponent(nombres.join(','))}`, { senal }),
 

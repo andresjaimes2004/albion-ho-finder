@@ -40,6 +40,7 @@ const { cargarZonas, claveZona } = require('./zonas');
 const MAX_POR_ENVIO = 100;
 const MAX_RUTAS_POR_ENVIO = 40;
 const MAX_MINUTOS = 24 * 60;
+const MAX_TRAMOS_EDICION = 30;
 
 function errorPublico(mensaje, estado) {
   const error = new Error(mensaje);
@@ -133,8 +134,7 @@ class ReportesCaminosService {
    * Ordena los tramos de una ruta: devuelve la secuencia de zonas
    * (tramos + 1) o lanza un error si no se encadenan.
    */
-  _secuenciaDeRuta(tramos, numeroRuta) {
-    const prefijo = `Ruta ${numeroRuta}: `;
+  _secuenciaDeRuta(tramos, prefijo) {
     const primero = tramos[0];
     const segundo = tramos[1];
     // El primer tramo se orienta hacia la zona que comparte con el segundo.
@@ -149,7 +149,7 @@ class ReportesCaminosService {
       else if (tramo.destino === final) zonas.push(tramo.origen);
       else {
         throw new ErrorValidacion(
-          `${prefijo}el tramo ${k} (${tramo.origen} – ${tramo.destino}) no continúa desde ${final}.`
+          `${prefijo}la conexión ${k + 1} (${tramo.origen} – ${tramo.destino}) no continúa desde ${final}.`
         );
       }
     }
@@ -183,7 +183,7 @@ class ReportesCaminosService {
 
     const secuencias = rutas.map((items, i) => {
       const tramos = this._tramosDeRuta(items, validas, i + 1, ahoraIso);
-      return { tramos, zonas: this._secuenciaDeRuta(tramos, i + 1) };
+      return { tramos, zonas: this._secuenciaDeRuta(tramos, `Ruta ${i + 1}: `) };
     });
 
     // Las conexiones cerradas las purga el mantenimiento (TrackingService),
@@ -214,6 +214,49 @@ class ReportesCaminosService {
       });
 
       return { creadas, actualizadas, conexiones: guardadas, rutas: rutasGuardadas };
+    });
+  }
+
+  /**
+   * Edita una ruta: la nueva lista de conexiones, en el orden de la ruta
+   * (se pueden agregar, quitar, reordenar o cambiar tiempos). Cada tramo
+   * debe continuar desde el anterior. Las conexiones que ya existían entre
+   * las mismas zonas se actualizan; las que la ruta deja de usar se borran
+   * si ninguna otra ruta las usa. La ruta conserva su autor.
+   */
+  editarRuta(usuario, id, lista) {
+    const ruta = this.rutas.obtener(id);
+    if (!ruta) throw errorPublico('Esa ruta no existe.', 404);
+    if (ruta.usuarioId !== usuario.id && usuario.rol !== 'ADMIN') {
+      throw errorPublico('Solo quien registró la ruta o un administrador puede editarla.', 403);
+    }
+    if (!Array.isArray(lista) || lista.length < 2) {
+      throw new ErrorValidacion('La ruta necesita al menos dos conexiones.');
+    }
+    if (lista.length > MAX_TRAMOS_EDICION) {
+      throw new ErrorValidacion(`Como máximo ${MAX_TRAMOS_EDICION} conexiones por ruta.`);
+    }
+
+    const validas = lista.map((c, i) => this._validar(c, i));
+    const zonas = this._secuenciaDeRuta(validas, '');
+    const igual = this.rutas.buscarPorZonas(zonas) || this.rutas.buscarPorZonas([...zonas].reverse());
+    if (igual && igual.id !== id) {
+      throw errorPublico('Ya hay otra ruta con ese mismo recorrido.', 409);
+    }
+
+    const ahora = this.ahora();
+    const ahoraIso = new Date(ahora).toISOString();
+    return this.transaccion(() => {
+      const conexionIds = validas.map(({ origen, destino, minutos }) => {
+        const datos = { origen, destino, cierraEn: new Date(ahora + minutos * 60_000).toISOString(), usuarioId: usuario.id };
+        const existente = this.repositorio.buscarVigenteEntre(origen, destino, ahoraIso);
+        return existente ? this.repositorio.actualizar(existente.id, datos).id : this.repositorio.crear(datos).id;
+      });
+      this.rutas.actualizarRecorrido(id, { zonas, conexionIds });
+      for (const anterior of ruta.conexionIds) {
+        if (!conexionIds.includes(anterior) && !this.rutas.usaConexion(anterior)) this.repositorio.eliminar(anterior);
+      }
+      return this.rutas.obtener(id);
     });
   }
 
