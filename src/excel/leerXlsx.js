@@ -25,7 +25,7 @@ const zlib = require('zlib');
  */
 
 const MAX_ARCHIVO = 20 * 1024 * 1024;
-const MAX_PARTE = 50 * 1024 * 1024;
+const MAX_PARTE = 10 * 1024 * 1024;
 const MAX_FILAS = 20_000;
 const MAX_COLUMNAS = 200;
 
