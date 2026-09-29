@@ -8,6 +8,21 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v12.4 — Rutas que se cierran sin dejar conexiones sueltas
+
+- Cuando cierra un portal de una ruta, lo que viene **después** (leyendo la
+  ruta desde su entrada, el lado del portal de ciudad) ya no se alcanza:
+  esos tramos dejan de contar como conexiones abiertas al instante, salvo
+  que otra ruta abierta los use (`src/services/estadoRutas.js`).
+- La ruta pasa a **"Cerradas hace poco"** durante 30 minutos: se ve entera,
+  con el portal cerrado en rojo y lo desconectado apagado, para saber a
+  dónde llevaba y corregirla.
+- Pasados los 30 minutos, una **tarea automática** (cada minuto,
+  `src/tareas.js`) borra la ruta y esos tramos siguientes, y purga las
+  conexiones ya cerradas. La misma tarea limpia cada hora las sesiones
+  caducadas y los intentos de inicio de sesión viejos (antes esa limpieza
+  existía pero nunca se ejecutaba).
+
 ### v12.3 — Rutas organizadas por portal de ciudad
 
 - **Filtro por portal** en "Rutas del gremio": Bridgewatch, Fort Sterling,

@@ -40,7 +40,6 @@ const { cargarZonas, claveZona } = require('./zonas');
 const MAX_POR_ENVIO = 100;
 const MAX_RUTAS_POR_ENVIO = 40;
 const MAX_MINUTOS = 24 * 60;
-const CONSERVAR_CERRADAS_MS = 24 * 3600 * 1000;
 
 function errorPublico(mensaje, estado) {
   const error = new Error(mensaje);
@@ -187,10 +186,9 @@ class ReportesCaminosService {
       return { tramos, zonas: this._secuenciaDeRuta(tramos, i + 1) };
     });
 
+    // Las conexiones cerradas las purga el mantenimiento (TrackingService),
+    // que antes borra los tramos que quedaron después de un portal cerrado.
     return this.transaccion(() => {
-      this.repositorio.purgarCerradasAntesDe(new Date(ahora - CONSERVAR_CERRADAS_MS).toISOString());
-      this.rutas.purgarIncompletas();
-
       let creadas = 0;
       let actualizadas = 0;
       const guardadas = validas.map(({ origen, destino, minutos }) => {

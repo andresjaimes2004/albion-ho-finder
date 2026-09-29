@@ -71,6 +71,20 @@ class ConexionReportadaRepository extends BaseRepository {
       .all({ $ahora: ahoraIso });
   }
 
+  /** Conexiones que cierran después de `limiteIso` (abiertas y recién cerradas). */
+  listarDesde(limiteIso) {
+    return this.db
+      .prepare(
+        `SELECT c.id, c.origen, c.destino, c.cierra_en AS cierraEn, c.creado_en AS creadoEn,
+                c.usuario_id AS usuarioId, u.usuario AS usuario
+         FROM conexiones_reportadas c
+         LEFT JOIN usuarios u ON u.id = c.usuario_id
+         WHERE c.cierra_en > $limite
+         ORDER BY c.cierra_en ASC`
+      )
+      .all({ $limite: limiteIso });
+  }
+
   eliminar(id) {
     return this.db.prepare('DELETE FROM conexiones_reportadas WHERE id = $id').run({ $id: id }).changes > 0;
   }
