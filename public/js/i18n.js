@@ -287,6 +287,8 @@ export const EN = {
   'Mapa o camino cuyas rutas se borran': 'Map or road whose routes will be deleted',
   'Borrar las de este mapa': "Delete this map's routes",
   '¿Borrar todas las rutas que pasan por {zona}?': 'Delete all routes that go through {zona}?',
+  // --- Sin rutas (admin) ---
+  'No hay rutas registradas ahora.': 'There are no routes registered right now.',
   // --- Editar rutas ---
   'Editar': 'Edit',
   'Editar esta ruta': 'Edit this route',

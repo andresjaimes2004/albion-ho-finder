@@ -597,7 +597,10 @@ export class PanelCaminos {
     const contenedor = document.getElementById('caminos-rutas');
     const rutas = (this.datos && this.datos.rutas) || [];
     const cerradas = (this.datos && this.datos.rutasCerradas) || [];
-    contenedor.hidden = !rutas.length && !cerradas.length;
+    const esAdmin = Boolean(this.usuario && this.usuario.rol === 'ADMIN');
+    // Un administrador ve siempre el bloque, con su barra de borrado (y el
+    // resultado de la última acción) aunque ya no quede ninguna ruta.
+    contenedor.hidden = !rutas.length && !cerradas.length && !esAdmin;
     if (contenedor.hidden) {
       contenedor.replaceChildren();
       return;
@@ -671,7 +674,8 @@ export class PanelCaminos {
       );
     }
     bloque.append(filtro);
-    if (this.usuario && this.usuario.rol === 'ADMIN') bloque.append(this._crearHerramientasAdmin(elegido));
+    if (esAdmin) bloque.append(this._crearHerramientasAdmin(elegido));
+    if (!rutas.length && !cerradas.length) bloque.append(crear('p', 'caminos-detalle__vacio', t('No hay rutas registradas ahora.')));
 
     const portalesVisibles = elegido === null ? orden : [elegido];
     const tituloPortal = (portal) => (portal === OTRAS ? t('Lejos de los portales de ciudad') : portal);
@@ -706,8 +710,9 @@ export class PanelCaminos {
       boton.disabled = true;
       try {
         const r = await api.borrarRutas(alcance, valor);
-        await this.refrescar();
+        // Se muestra en la barra que se pinta al refrescar.
         this._mensajeAdmin = t('Borradas: {rutas} rutas y {conexiones} conexiones.', r);
+        await this.refrescar();
       } catch (error) {
         mensaje.textContent = error.message || t('No se pudo borrar.');
         boton.disabled = false;

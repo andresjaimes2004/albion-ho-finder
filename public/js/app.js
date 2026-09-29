@@ -183,6 +183,7 @@ class BuscadorUI {
   _bindEventos() {
     this.input.addEventListener('focus', () => this._cargarSugerencias());
     this.input.addEventListener('input', () => {
+      this._cargarSugerencias();
       clearTimeout(this.temporizadorDebounce);
       const texto = this.input.value.trim();
 
