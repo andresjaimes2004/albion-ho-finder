@@ -429,7 +429,9 @@ export class PanelCaminos {
       return bloque;
     }
     const formulario = crear('form', 'hideouts-camino__formulario');
-    const entrada = crear('input');
+    // Mismo estilo que el buscador de caminos: caja con borde y entrada lisa.
+    const caja = crear('div', 'panel-busqueda__caja hideouts-camino__caja');
+    const entrada = crear('input', 'entrada-busqueda');
     entrada.type = 'text';
     entrada.maxLength = 40;
     entrada.minLength = 2;
@@ -441,7 +443,8 @@ export class PanelCaminos {
     anotar.type = 'submit';
     const mensaje = crear('p', 'hideouts-camino__mensaje');
     mensaje.setAttribute('aria-live', 'polite');
-    formulario.append(entrada, anotar, mensaje);
+    caja.append(entrada);
+    formulario.append(caja, anotar, mensaje);
     formulario.addEventListener('submit', async (evento) => {
       evento.preventDefault();
       anotar.disabled = true;

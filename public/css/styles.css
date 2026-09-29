@@ -3344,7 +3344,7 @@ html:has(dialog[open]) { overflow: hidden; }
 .hideouts-camino__meta { font-size: 0.76rem; color: var(--color-texto-tenue); }
 .hideouts-camino__gremio .conexion__borrar { margin-left: auto; }
 .hideouts-camino__formulario { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.hideouts-camino__formulario input { flex: 1 1 180px; min-width: 0; }
+.hideouts-camino__caja { flex: 1 1 200px; min-width: 0; padding: 9px 14px; }
 .hideouts-camino__mensaje { flex-basis: 100%; margin: 0; font-size: 0.8rem; color: var(--color-error); }
 .hideouts-camino__mensaje:empty { display: none; }
 .tarjeta-mapa__gremios-camino { margin: 0; padding: 0 14px 12px; font-size: 0.86rem; color: var(--color-texto-suave); }
