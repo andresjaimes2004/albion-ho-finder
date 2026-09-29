@@ -39,8 +39,10 @@ const { crearClienteDrive, cargarCredenciales } = require('../excel/googleDrive'
  *    aplica nada (una hoja vaciada por error no borra la web) salvo que
  *    un administrador lo fuerce.
  *
- * Configuración (.env): EXCEL_DRIVE_ID, GOOGLE_CREDENCIALES y, opcional,
- * EXCEL_SYNC_MINUTOS (por defecto 60, mínimo 15).
+ * Configuración (.env): EXCEL_DRIVE_ID y, opcional, EXCEL_SYNC_MINUTOS
+ * (por defecto 60, mínimo 15). En la VM de Google Cloud no hace falta
+ * ninguna clave: se usa la cuenta de servicio vinculada a la VM. Solo
+ * fuera de Google Cloud se indica GOOGLE_CREDENCIALES (clave JSON).
  * ----------------------------------------------------------------------
  */
 
@@ -85,6 +87,8 @@ class SincronizacionExcelService {
     this.enCurso = null;
     this.ultimaModificacion = null;
     this.ultimo = null; // { en, ok, mensaje, resultado, archivo }
+    // Correo de la cuenta de servicio: con él se comparte el Excel.
+    this.cuenta = null;
   }
 
   configurada() {
@@ -92,7 +96,7 @@ class SincronizacionExcelService {
   }
 
   estado() {
-    return { configurada: this.configurada(), ultimo: this.ultimo };
+    return { configurada: this.configurada(), cuenta: this.cuenta, ultimo: this.ultimo };
   }
 
   /**
@@ -113,6 +117,9 @@ class SincronizacionExcelService {
 
   async _sincronizar({ forzar, usuarioId }) {
     const en = new Date(this.ahora()).toISOString();
+    if (!this.cuenta && typeof this.drive.cuenta === 'function') {
+      this.cuenta = await this.drive.cuenta().catch(() => null);
+    }
     try {
       const meta = await this.drive.metadatos(this.archivoId);
       const archivo = { nombre: meta.name, modificadoEn: meta.modifiedTime };
@@ -233,7 +240,8 @@ function obtenerSincronizacion() {
     const archivoId = (process.env.EXCEL_DRIVE_ID || '').trim() || null;
     const ruta = (process.env.GOOGLE_CREDENCIALES || '').trim();
     let drive = null;
-    if (archivoId && ruta) drive = crearClienteDrive(cargarCredenciales(ruta));
+    // Sin GOOGLE_CREDENCIALES se usa la cuenta vinculada a la VM (sin claves).
+    if (archivoId) drive = crearClienteDrive(ruta ? cargarCredenciales(ruta) : null);
     compartida = new SincronizacionExcelService({ drive, archivoId });
   }
   return compartida;

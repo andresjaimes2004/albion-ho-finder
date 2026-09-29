@@ -314,3 +314,55 @@ test('sincronizar no descarga el Excel si no cambió desde la última revisión'
   const sinConfigurar = new SincronizacionExcelService();
   await assert.rejects(() => sinConfigurar.sincronizar(), /no está configurada/);
 });
+
+test('sin claves: el token lo entrega la VM a través de su servidor de metadatos', async () => {
+  const xlsx = crearXlsx([['Mapa', 'HO 1'], ['Mapa 1', 'Gremio 1']]);
+  const meta = { id: 'archivo_de_prueba_123', name: 'Buscador.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', modifiedTime: '2026-09-29T10:00:00Z' };
+  const llamadas = [];
+  const fetch = async (url, opciones = {}) => {
+    llamadas.push(url);
+    if (url.startsWith('http://metadata.google.internal/')) {
+      assert.equal(opciones.headers['Metadata-Flavor'], 'Google', 'el servidor de metadatos exige esta cabecera');
+      if (url.endsWith('/token')) return new Response(JSON.stringify({ access_token: 'token-de-la-vm', expires_in: 3599 }));
+      if (url.endsWith('/email')) return new Response('albion-excel-lector@proyecto.iam.gserviceaccount.com\n');
+    }
+    assert.equal(opciones.headers.Authorization, 'Bearer token-de-la-vm');
+    if (url.includes('fields=')) return new Response(JSON.stringify(meta));
+    return new Response(xlsx);
+  };
+  const drive = crearClienteDrive(null, { fetch });
+  assert.equal(await drive.cuenta(), 'albion-excel-lector@proyecto.iam.gserviceaccount.com');
+  const leidos = await drive.metadatos('archivo_de_prueba_123');
+  assert.equal(leerHideoutsXlsx(await drive.descargar(leidos)).length, 1);
+  assert.equal(llamadas.filter((u) => u.endsWith('/token')).length, 1, 'el token se reutiliza');
+  assert.equal(llamadas.some((u) => u.includes('oauth2.googleapis.com')), false, 'no firma nada ni usa claves');
+
+  // La VM sin el permiso de Drive: Google responde 403 por "scopes".
+  const sinAlcance = crearClienteDrive(null, {
+    fetch: async (url) =>
+      url.startsWith('http://metadata')
+        ? new Response(JSON.stringify({ access_token: 't', expires_in: 3599 }))
+        : new Response(JSON.stringify({ error: { message: 'Request had insufficient authentication scopes.' } }), { status: 403 }),
+  });
+  await assert.rejects(() => sinAlcance.metadatos('archivo_de_prueba_123'), /no tiene el permiso de Drive/);
+
+  // Sin cuenta vinculada, o fuera de Google Cloud.
+  const sinCuenta = crearClienteDrive(null, { fetch: async () => new Response('', { status: 404 }) });
+  await assert.rejects(() => sinCuenta.metadatos('archivo_de_prueba_123'), /no tiene ninguna cuenta de servicio vinculada/);
+  const fuera = crearClienteDrive(null, { fetch: async () => { throw new Error('ENOTFOUND'); } });
+  await assert.rejects(() => fuera.metadatos('archivo_de_prueba_123'), /solo funciona dentro de Google Cloud/);
+});
+
+test('el estado de la sincronización incluye la cuenta con la que compartir el Excel', async () => {
+  sembrar();
+  const drive = {
+    cuenta: async () => 'albion-excel-lector@proyecto.iam.gserviceaccount.com',
+    metadatos: async () => {
+      throw Object.assign(new Error('La cuenta de servicio no tiene acceso al archivo: compártelo con su correo como lector.'));
+    },
+  };
+  const s = new SincronizacionExcelService({ drive, archivoId: 'x' });
+  await assert.rejects(() => s.sincronizar(), /no tiene acceso/);
+  assert.equal(s.estado().cuenta, 'albion-excel-lector@proyecto.iam.gserviceaccount.com');
+  assert.equal(s.estado().ultimo.ok, false);
+});

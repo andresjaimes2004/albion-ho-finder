@@ -242,7 +242,8 @@ export const EN = {
   // --- Sincronización con el Excel de Drive (admin) ---
   'El Excel borraría o cambiaría muchos hideouts. ¿Seguro que es correcto?': 'The spreadsheet would delete or change many hideouts. Are you sure it is correct?',
   'Mal configurada: {error}': 'Misconfigured: {error}',
-  'No configurada. Falta EXCEL_DRIVE_ID y GOOGLE_CREDENCIALES en el .env del servidor (ver README).': 'Not configured. EXCEL_DRIVE_ID and GOOGLE_CREDENCIALES are missing from the server .env (see README).',
+  'No configurada. Falta EXCEL_DRIVE_ID en el .env del servidor (ver README).': 'Not configured. EXCEL_DRIVE_ID is missing from the server .env (see README).',
+  'Cuenta con la que compartir el Excel: {cuenta}.': 'Account to share the spreadsheet with: {cuenta}.',
   'Configurada. Todavía no se ha revisado el Excel desde que arrancó el servidor.': 'Configured. The spreadsheet has not been checked since the server started.',
   'Última revisión: {cuando}.': 'Last check: {cuando}.',
   'Error:': 'Error:',
