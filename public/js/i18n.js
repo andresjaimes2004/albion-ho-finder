@@ -239,6 +239,14 @@ export const EN = {
   'Todas': 'All',
   'Otras': 'Other',
   'Lejos de los portales de ciudad': 'Far from the city portals',
+  // --- Rutas que cerraron hace poco ---
+  'Cerrada': 'Closed',
+  'se borra en ': 'removed in ',
+  'portal cerrado': 'portal closed',
+  'desconectado': 'disconnected',
+  'Cerradas hace poco': 'Recently closed',
+  'Se ven 30 minutos después de cerrar un portal, para corregirlas.':
+    'Shown for 30 minutes after a portal closes, so you can fix them.',
   ' ({n} ya guardado)': ' ({n} already saved)',
   ' ({n} ya guardados)': ' ({n} already saved)',
   'La lectura tardó demasiado. Escribe los datos a mano, o quita la captura y pégala otra vez.':

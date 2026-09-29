@@ -8,6 +8,8 @@ const ConexionReportadaRepository = require('../repositories/ConexionReportadaRe
 const RutaReportadaRepository = require('../repositories/RutaReportadaRepository');
 const { cargarZonas, ETIQUETAS_GRUPO } = require('./zonas');
 const { crearCercania } = require('./portales');
+const { clasificarRutas, VENTANA_CERRADAS_MS } = require('./estadoRutas');
+const db = require('../config/database');
 
 /**
  * TrackingService
@@ -75,6 +77,7 @@ class TrackingService {
     rutasRepository = new RutaReportadaRepository(),
     zonas = cargarZonas(),
     ahora = () => Date.now(),
+    transaccion = (fn) => db.transaccion(fn),
   } = {}) {
     this.catalogo = catalogo;
     this.mapas = mapaRepository;
@@ -83,6 +86,7 @@ class TrackingService {
     this.zonaPorNombre = new Map(zonas.map((z) => [normalizar(z.nombre), z]));
     this.portales = zonas.filter((z) => z.grupo === 'portalCiudad').map((z) => z.nombre);
     this.ahora = ahora;
+    this.transaccion = transaccion;
 
     this.caminos = catalogo.caminos.map((c) => ({
       ...c,
@@ -93,26 +97,107 @@ class TrackingService {
 
   // ---------------------------------------------------------- vigentes --
 
-  /** Conexiones y rutas del gremio que siguen abiertas. */
+  /**
+   * Conexiones y rutas del gremio: las abiertas y las rutas que cerraron
+   * hace menos de 30 minutos (ver estadoRutas.js). Los tramos que quedaron
+   * después de un portal cerrado no cuentan como conexiones abiertas.
+   */
   _conexionesVigentes() {
     const ahora = this.ahora();
     const indiceZonaNegra = this._indiceZonaNegra();
 
-    const reportadas = this.reportes.listarVigentes(new Date(ahora).toISOString());
+    const reportadas = this.reportes.listarDesde(new Date(ahora - VENTANA_CERRADAS_MS).toISOString());
+    const cierres = new Map(reportadas.map((r) => [r.id, Date.parse(r.cierraEn)]));
+    const orientadas = this.rutasRepo.listarCompletas().map((ruta) => this._orientar(ruta));
+    const { activas, cerradas, desconectadas } = clasificarRutas(orientadas, cierres, ahora);
+
     const conexiones = reportadas
+      .filter((r) => cierres.get(r.id) > ahora && !desconectadas.has(r.id))
       .map((r) => this._conexionReportada(r, indiceZonaNegra))
       .sort((a, b) => a.cierraEn - b.cierraEn);
-    const rutas = this._rutasVigentes(reportadas, indiceZonaNegra);
+
+    const saltos = (r) => (r.cercania ? r.cercania.saltos : Infinity);
+    const rutas = activas
+      .map((ruta) => this._rutaPublica(ruta, cierres, indiceZonaNegra))
+      .sort((a, b) => saltos(a) - saltos(b) || b.cierraEn - a.cierraEn);
+
+    const rutasCerradas = cerradas
+      .map(({ ruta, cerradaEn, indiceCierre }) => {
+        const publica = this._rutaPublica(ruta, cierres, indiceZonaNegra);
+        publica.tramos.forEach((tramo, k) => {
+          if (k === indiceCierre) tramo.estado = 'cerrado';
+          else if (k > indiceCierre) tramo.estado = 'desconectado';
+          else tramo.estado = tramo.cierraEn > ahora ? 'abierto' : 'cerrado';
+        });
+        return { ...publica, cerradaEn, tramoCerrado: indiceCierre, borraEn: cerradaEn + VENTANA_CERRADAS_MS };
+      })
+      .sort((a, b) => b.cerradaEn - a.cerradaEn);
 
     return {
       conexiones,
       rutas,
+      rutasCerradas,
       estado: {
         consultadoEn: new Date(ahora).toISOString(),
         activas: conexiones.length,
         rutas: rutas.length,
       },
     };
+  }
+
+  /**
+   * Orienta una ruta desde el extremo más cercano a un portal de ciudad:
+   * así se lee como "saliendo de Lymhurst Portal, a 2 mapas...".
+   */
+  _orientar(ruta) {
+    const inicio = this._cercania(ruta.zonas[0]);
+    const fin = this._cercania(ruta.zonas[ruta.zonas.length - 1]);
+    const invertir = Boolean(fin && (!inicio || fin.saltos < inicio.saltos));
+    return {
+      ...ruta,
+      zonas: invertir ? [...ruta.zonas].reverse() : ruta.zonas,
+      conexionIds: invertir ? [...ruta.conexionIds].reverse() : ruta.conexionIds,
+      cercania: invertir ? fin : inicio,
+    };
+  }
+
+  /** Ruta ya orientada, con los datos que ve el navegador. */
+  _rutaPublica(ruta, cierres, indiceZonaNegra) {
+    const zonas = ruta.zonas.map((nombre) => this._extremo(nombre, indiceZonaNegra));
+    const tramos = ruta.conexionIds.map((id) => ({ reporteId: id, cierraEn: cierres.get(id) }));
+    return {
+      id: ruta.id,
+      zonas,
+      tramos,
+      cierraEn: Math.min(...tramos.map((t) => t.cierraEn)),
+      cercania: ruta.cercania ? { ...ruta.cercania, desde: zonas[0].nombre } : null,
+      reportadoPor: ruta.usuario || null,
+      reportadoPorId: ruta.usuarioId,
+    };
+  }
+
+  /**
+   * Mantenimiento (cada minuto): borra las rutas que cerraron hace más de
+   * 30 minutos junto con los tramos que quedaron después del portal
+   * cerrado (si ninguna otra ruta los usa), y las conexiones ya cerradas.
+   */
+  mantenimiento() {
+    const ahora = this.ahora();
+    const cierres = new Map(this.reportes.listarDesde('').map((r) => [r.id, Date.parse(r.cierraEn)]));
+    const orientadas = this.rutasRepo.listarCompletas().map((ruta) => this._orientar(ruta));
+    const { expiradas } = clasificarRutas(orientadas, cierres, ahora);
+
+    return this.transaccion(() => {
+      for (const { ruta, siguientes } of expiradas) {
+        this.rutasRepo.eliminar(ruta.id);
+        for (const id of siguientes) {
+          if (!this.rutasRepo.usaConexion(id)) this.reportes.eliminar(id);
+        }
+      }
+      const cerradas = this.reportes.purgarCerradasAntesDe(new Date(ahora - VENTANA_CERRADAS_MS).toISOString());
+      const incompletas = this.rutasRepo.purgarIncompletas();
+      return { rutas: expiradas.length + incompletas, conexiones: cerradas };
+    });
   }
 
   /** Portal de ciudad más cercano a una zona (se calcula una vez). */
@@ -122,46 +207,6 @@ class TrackingService {
       this._funcionCercania = crearCercania(mapas, this.portales);
     }
     return this._funcionCercania(nombre);
-  }
-
-  /**
-   * Rutas del gremio con todos sus tramos abiertos. Cada tramo lleva su
-   * propio cierre; la ruta cierra cuando cierra el primero.
-   *
-   * Cada ruta se orienta desde el extremo más cercano a un portal de
-   * ciudad y lleva esa cercanía (portal, saltos) para agruparlas: así se
-   * leen como "saliendo de Lymhurst Portal, a 2 mapas...". Se ordenan de
-   * la más cercana a la más lejana.
-   */
-  _rutasVigentes(reportadas, indiceZonaNegra) {
-    const porId = new Map(reportadas.map((r) => [r.id, r]));
-    const rutas = [];
-    for (const ruta of this.rutasRepo.listarCompletas()) {
-      const guardadas = ruta.conexionIds.map((id) => porId.get(id));
-      if (guardadas.some((t) => !t)) continue;
-      let zonas = ruta.zonas.map((nombre) => this._extremo(nombre, indiceZonaNegra));
-      let tramos = guardadas.map((t) => ({ reporteId: t.id, cierraEn: Date.parse(t.cierraEn) }));
-
-      const inicio = this._cercania(zonas[0].nombre);
-      const fin = this._cercania(zonas[zonas.length - 1].nombre);
-      if (fin && (!inicio || fin.saltos < inicio.saltos)) {
-        zonas = [...zonas].reverse();
-        tramos = [...tramos].reverse();
-      }
-      const cercania = fin && (!inicio || fin.saltos < inicio.saltos) ? fin : inicio;
-
-      rutas.push({
-        id: ruta.id,
-        zonas,
-        tramos,
-        cierraEn: Math.min(...tramos.map((t) => t.cierraEn)),
-        cercania: cercania ? { ...cercania, desde: zonas[0].nombre } : null,
-        reportadoPor: ruta.usuario || null,
-        reportadoPorId: ruta.usuarioId,
-      });
-    }
-    const saltos = (r) => (r.cercania ? r.cercania.saltos : Infinity);
-    return rutas.sort((a, b) => saltos(a) - saltos(b) || b.cierraEn - a.cierraEn);
   }
 
   /** Conexiones vigentes que tocan una zona, vistas desde ella. */
@@ -233,7 +278,7 @@ class TrackingService {
 
   /** Catálogo completo + todas las conexiones vigentes. */
   async resumen() {
-    const { conexiones, rutas, estado } = this._conexionesVigentes();
+    const { conexiones, rutas, rutasCerradas, estado } = this._conexionesVigentes();
 
     const conteo = new Map();
     for (const c of conexiones) {
@@ -265,6 +310,8 @@ class TrackingService {
       })),
       conexiones,
       rutas,
+      // Rutas que cerraron hace menos de 30 minutos, para corregirlas.
+      rutasCerradas,
       // Para agrupar las rutas por el portal de ciudad más cercano.
       portales: this.portales,
     };

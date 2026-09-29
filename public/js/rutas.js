@@ -85,15 +85,25 @@ export function textoCercania({ portal, saltos }) {
  *   - alBorrar(ruta): al borrar (autor o admin)
  */
 export function crearTarjetaRuta(ruta, { usuario = null, resaltar = null, alElegirZona = null, alBorrar = null } = {}) {
-  const tarjeta = crear('article', 'ruta');
+  // Ruta que cerró hace poco: sus tramos traen estado (abierto, cerrado,
+  // desconectado) y se ve hasta `borraEn`.
+  const cerrada = Boolean(ruta.borraEn);
+  const tarjeta = crear('article', cerrada ? 'ruta ruta--cerrada' : 'ruta');
 
   const cabecera = crear('div', 'ruta__cabecera');
   const tramos = ruta.tramos.length;
   cabecera.append(
     crear('span', 'ruta__titulo', `${ruta.zonas[0].nombre} → ${ruta.zonas[ruta.zonas.length - 1].nombre}`),
-    crear('span', 'ruta__tramos', tn(tramos, '{n} tramo', '{n} tramos')),
-    crearReloj(ruta.cierraEn, { clase: 'reloj ruta__cierre' })
+    crear('span', 'ruta__tramos', tn(tramos, '{n} tramo', '{n} tramos'))
   );
+  if (cerrada) {
+    cabecera.append(
+      crear('span', 'insignia ruta__insignia-cerrada', t('Cerrada')),
+      crearReloj(ruta.borraEn, { clase: 'reloj ruta__cierre', prefijo: t('se borra en ') })
+    );
+  } else {
+    cabecera.append(crearReloj(ruta.cierraEn, { clase: 'reloj ruta__cierre' }));
+  }
 
   const fuente = crear('span', 'conexion__fuente conexion__fuente--gremio', ruta.reportadoPor ? t('gremio · {usuario}', { usuario: ruta.reportadoPor }) : t('gremio'));
   const puedeBorrar = alBorrar && usuario && (usuario.id === ruta.reportadoPorId || usuario.rol === 'ADMIN');
@@ -121,9 +131,12 @@ export function crearTarjetaRuta(ruta, { usuario = null, resaltar = null, alEleg
   }
 
   const pasos = crear('ol', 'ruta__pasos');
+  // Las zonas después del portal cerrado ya no se alcanzan desde la entrada.
+  const indiceCierre = cerrada ? ruta.tramoCerrado : -1;
   ruta.zonas.forEach((zona, k) => {
     const paso = crear('li', 'ruta__zona');
     if (resaltar && zona.nombre === resaltar) paso.classList.add('ruta__zona--resaltada');
+    if (indiceCierre >= 0 && k > indiceCierre) paso.classList.add('ruta__zona--desconectada');
 
     const nombre = zona.nombre || t('Zona desconocida');
     if (alElegirZona && zona.nombre) {
@@ -141,7 +154,13 @@ export function crearTarjetaRuta(ruta, { usuario = null, resaltar = null, alEleg
     if (k < ruta.tramos.length) {
       const tramo = crear('li', 'ruta__tramo');
       tramo.setAttribute('aria-label', t('Portal'));
-      tramo.append(crearReloj(ruta.tramos[k].cierraEn, { prefijo: '' }));
+      const estado = ruta.tramos[k].estado;
+      if (estado === 'cerrado' || estado === 'desconectado') {
+        tramo.classList.add(`ruta__tramo--${estado}`);
+        tramo.append(crear('span', null, estado === 'cerrado' ? t('portal cerrado') : t('desconectado')));
+      } else {
+        tramo.append(crearReloj(ruta.tramos[k].cierraEn, { prefijo: '' }));
+      }
       pasos.append(tramo);
     }
   });

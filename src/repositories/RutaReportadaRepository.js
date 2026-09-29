@@ -95,6 +95,13 @@ class RutaReportadaRepository extends BaseRepository {
       .map((f) => f.id);
   }
 
+  /** ¿Alguna ruta usa esta conexión? */
+  usaConexion(conexionId) {
+    return Boolean(
+      this.db.prepare('SELECT 1 FROM rutas_tramos WHERE conexion_id = $id LIMIT 1').get({ $id: conexionId })
+    );
+  }
+
   eliminar(id) {
     return this.db.prepare('DELETE FROM rutas_reportadas WHERE id = $id').run({ $id: id }).changes > 0;
   }

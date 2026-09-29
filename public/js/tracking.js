@@ -513,8 +513,9 @@ export class PanelCaminos {
   _renderizarRutas() {
     const contenedor = document.getElementById('caminos-rutas');
     const rutas = (this.datos && this.datos.rutas) || [];
-    contenedor.hidden = !rutas.length;
-    if (!rutas.length) {
+    const cerradas = (this.datos && this.datos.rutasCerradas) || [];
+    contenedor.hidden = !rutas.length && !cerradas.length;
+    if (contenedor.hidden) {
       contenedor.replaceChildren();
       return;
     }
@@ -562,11 +563,15 @@ export class PanelCaminos {
       });
       return boton;
     };
-    filtro.append(chip(null, t('Todas'), rutas.length));
-    for (const portal of orden) {
-      filtro.append(chip(portal, portal === OTRAS ? t('Otras') : portal.replace(/ Portal$/, ''), porPortal.get(portal).length));
+    if (rutas.length) {
+      filtro.append(chip(null, t('Todas'), rutas.length));
+      for (const portal of orden) {
+        filtro.append(chip(portal, portal === OTRAS ? t('Otras') : portal.replace(/ Portal$/, ''), porPortal.get(portal).length));
+      }
+      bloque.append(filtro);
     }
-    bloque.append(filtro);
+
+    if (cerradas.length) bloque.append(this._crearCerradas(cerradas));
 
     const portalesVisibles = elegido === null ? orden : [elegido];
     for (const portal of portalesVisibles) {
@@ -576,6 +581,33 @@ export class PanelCaminos {
       bloque.append(this._crearEntradas(porPortal.get(portal)));
     }
     contenedor.replaceChildren(bloque);
+  }
+
+  /**
+   * Rutas que cerraron hace menos de 30 minutos: se ven enteras (con el
+   * portal cerrado y lo que quedó desconectado) para saber a dónde
+   * llevaban y corregirlas antes de que se borren.
+   */
+  _crearCerradas(cerradas) {
+    const detalles = crear('details', 'rutas-entrada rutas-cerradas');
+    detalles.open = Boolean(this._cerradasAbiertas);
+    detalles.addEventListener('toggle', () => {
+      this._cerradasAbiertas = detalles.open;
+    });
+    const resumen = crear('summary', 'rutas-entrada__resumen');
+    const cabeza = crear('span', 'rutas-entrada__cabeza');
+    cabeza.append(
+      crear('strong', null, t('Cerradas hace poco')),
+      crear('span', 'rutas-entrada__cercania', t('Se ven 30 minutos después de cerrar un portal, para corregirlas.')),
+      crear('span', 'rutas-entrada__cantidad', tn(cerradas.length, '{n} ruta', '{n} rutas'))
+    );
+    resumen.append(cabeza);
+    detalles.append(resumen);
+
+    const tarjetas = crear('div', 'lista-rutas');
+    for (const ruta of cerradas) tarjetas.append(this._tarjetaRuta(ruta));
+    detalles.append(tarjetas);
+    return detalles;
   }
 
   /** Rutas de un portal agrupadas por su mapa de entrada, en bloques plegables. */

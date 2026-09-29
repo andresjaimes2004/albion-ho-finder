@@ -3264,3 +3264,16 @@ html:has(dialog[open]) { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
   .rutas-entrada__cabeza::before { transition: none; }
 }
+
+/* Rutas que cerraron hace poco: el portal cerrado en rojo y lo que quedó
+   después, apagado. */
+.rutas-cerradas { border-color: rgba(201, 79, 79, 0.45); background: rgba(201, 79, 79, 0.05); margin-bottom: 10px; }
+.rutas-cerradas[open] { border-color: rgba(201, 79, 79, 0.7); }
+.rutas-cerradas .rutas-entrada__cabeza strong { color: #e58a8a; }
+.ruta--cerrada { border-left-color: var(--color-error); }
+.ruta__insignia-cerrada { color: #e58a8a; border-color: rgba(201, 79, 79, 0.5); background: rgba(201, 79, 79, 0.12); }
+.ruta__tramo--cerrado { color: #e58a8a; font-weight: 600; }
+.ruta__tramo--cerrado::before { content: '✕'; color: var(--color-error); }
+.ruta__tramo--desconectado { color: var(--color-texto-tenue); font-style: italic; }
+.ruta__tramo--desconectado::before { color: var(--color-texto-tenue); }
+.ruta__zona--desconectada { opacity: 0.5; }
