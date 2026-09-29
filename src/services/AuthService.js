@@ -3,6 +3,7 @@
 const UsuarioRepository = require('../repositories/UsuarioRepository');
 const SesionRepository = require('../repositories/SesionRepository');
 const IntentoLoginRepository = require('../repositories/IntentoLoginRepository');
+const { esOfensivo } = require('../security/nombresOfensivos');
 const claves = require('../security/claves');
 const tokens = require('../security/tokens');
 const { ErrorValidacion, nombreUsuario } = require('../security/validacion');
@@ -56,6 +57,11 @@ class AuthService {
 
   registrar({ usuario, clave, rol = 'USUARIO' }) {
     const nombre = nombreUsuario(usuario);
+    // Sin insultos ni términos denigrantes (español e inglés). No se dice
+    // qué palabra falló: no se enseña a esquivar el filtro.
+    if (esOfensivo(nombre)) {
+      throw new ErrorValidacion('Ese nombre de usuario no está permitido. Elige uno sin insultos ni palabras ofensivas.');
+    }
     const problema = claves.validarFortaleza(clave);
     if (problema) throw new ErrorValidacion(problema);
 
