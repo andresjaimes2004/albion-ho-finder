@@ -3367,3 +3367,6 @@ html:has(dialog[open]) { overflow: hidden; }
 .admin-sincronizacion__estado--error { color: #e58a8a; }
 .admin-sincronizacion__acciones { display: flex; gap: 8px; flex-wrap: wrap; }
 .registro__edicion-acciones { display: flex; flex-wrap: wrap; gap: 8px; }
+.rutas-portales__cerradas { font-size: 0.72rem; color: #e58a8a; }
+.rutas-cerradas__grupos { padding: 0 10px 10px; }
+.rutas-cerradas__grupos .rutas-portal__titulo { margin-top: 8px; font-size: 0.86rem; }

@@ -270,6 +270,10 @@ export const EN = {
   'Borrar la ruta': 'Delete the route',
   '¿Borrar la ruta {ruta} entera?': 'Delete the whole route {ruta}?',
   'Ruta borrada.': 'Route deleted.',
+  // --- Cerradas por portal ---
+  '{n} cerrada hace poco': '{n} recently closed',
+  '{n} cerradas hace poco': '{n} recently closed',
+  'No hay rutas abiertas cerca de este portal.': 'There are no open routes near this portal.',
   // --- Editar rutas ---
   'Editar': 'Edit',
   'Editar esta ruta': 'Edit this route',

@@ -600,14 +600,21 @@ export class PanelCaminos {
       return;
     }
 
+    // Las abiertas y las cerradas hace poco se agrupan igual, por el portal
+    // de ciudad más cercano: el mismo filtro vale para las dos.
     const OTRAS = '';
-    const porPortal = new Map();
-    for (const ruta of rutas) {
-      const portal = ruta.cercania ? ruta.cercania.portal : OTRAS;
-      if (!porPortal.has(portal)) porPortal.set(portal, []);
-      porPortal.get(portal).push(ruta);
-    }
-    const orden = [...(this.datos.portales || []), OTRAS].filter((p) => porPortal.has(p));
+    const agrupar = (lista) => {
+      const mapa = new Map();
+      for (const ruta of lista) {
+        const portal = ruta.cercania ? ruta.cercania.portal : OTRAS;
+        if (!mapa.has(portal)) mapa.set(portal, []);
+        mapa.get(portal).push(ruta);
+      }
+      return mapa;
+    };
+    const porPortal = agrupar(rutas);
+    const cerradasPorPortal = agrupar(cerradas);
+    const orden = [...(this.datos.portales || []), OTRAS].filter((p) => porPortal.has(p) || cerradasPorPortal.has(p));
 
     if (this._portalElegido === undefined) {
       this._portalElegido = null;
@@ -617,7 +624,7 @@ export class PanelCaminos {
         // Sin almacenamiento (modo privado estricto): se muestran todas.
       }
     }
-    const elegido = this._portalElegido !== null && porPortal.has(this._portalElegido) ? this._portalElegido : null;
+    const elegido = this._portalElegido !== null && orden.includes(this._portalElegido) ? this._portalElegido : null;
 
     const bloque = crear('div', 'caminos-detalle__bloque bloque-rutas');
     bloque.append(crear('h4', null, `${t('Rutas del gremio')} (${rutas.length})`));
@@ -626,11 +633,16 @@ export class PanelCaminos {
     const filtro = crear('div', 'rutas-portales');
     filtro.setAttribute('role', 'group');
     filtro.setAttribute('aria-label', t('Filtrar rutas por portal de ciudad'));
-    const chip = (valor, texto, cantidad) => {
+    const chip = (valor, texto, cantidad, cantidadCerradas) => {
       const boton = crear('button', 'rutas-portales__chip');
       boton.type = 'button';
       boton.setAttribute('aria-pressed', String(valor === elegido));
       boton.append(texto, ' ', crear('span', 'rutas-portales__cantidad', String(cantidad)));
+      if (cantidadCerradas) {
+        const extra = crear('span', 'rutas-portales__cerradas', `+${cantidadCerradas}`);
+        extra.title = tn(cantidadCerradas, '{n} cerrada hace poco', '{n} cerradas hace poco');
+        boton.append(' ', extra);
+      }
       boton.addEventListener('click', () => {
         this._portalElegido = valor;
         try {
@@ -643,22 +655,34 @@ export class PanelCaminos {
       });
       return boton;
     };
-    if (rutas.length) {
-      filtro.append(chip(null, t('Todas'), rutas.length));
-      for (const portal of orden) {
-        filtro.append(chip(portal, portal === OTRAS ? t('Otras') : portal.replace(/ Portal$/, ''), porPortal.get(portal).length));
-      }
-      bloque.append(filtro);
+    const cuantas = (mapa, portal) => (mapa.get(portal) || []).length;
+    filtro.append(chip(null, t('Todas'), rutas.length, cerradas.length));
+    for (const portal of orden) {
+      filtro.append(
+        chip(
+          portal,
+          portal === OTRAS ? t('Otras') : portal.replace(/ Portal$/, ''),
+          cuantas(porPortal, portal),
+          cuantas(cerradasPorPortal, portal)
+        )
+      );
     }
-
-    if (cerradas.length) bloque.append(this._crearCerradas(cerradas));
+    bloque.append(filtro);
 
     const portalesVisibles = elegido === null ? orden : [elegido];
+    const tituloPortal = (portal) => (portal === OTRAS ? t('Lejos de los portales de ciudad') : portal);
+    const cerradasVisibles = portalesVisibles.filter((p) => cerradasPorPortal.has(p));
+    if (cerradasVisibles.length) {
+      bloque.append(this._crearCerradas(cerradasVisibles.map((p) => [elegido === null ? tituloPortal(p) : null, cerradasPorPortal.get(p)])));
+    }
+
     for (const portal of portalesVisibles) {
-      if (elegido === null) {
-        bloque.append(crear('h5', 'rutas-portal__titulo', portal === OTRAS ? t('Lejos de los portales de ciudad') : portal));
-      }
+      if (!porPortal.has(portal)) continue;
+      if (elegido === null) bloque.append(crear('h5', 'rutas-portal__titulo', tituloPortal(portal)));
       bloque.append(this._crearEntradas(porPortal.get(portal)));
+    }
+    if (elegido !== null && !porPortal.has(elegido)) {
+      bloque.append(crear('p', 'caminos-detalle__vacio', t('No hay rutas abiertas cerca de este portal.')));
     }
     contenedor.replaceChildren(bloque);
   }
@@ -666,9 +690,14 @@ export class PanelCaminos {
   /**
    * Rutas que cerraron hace menos de 30 minutos: se ven enteras (con el
    * portal cerrado y lo que quedó desconectado) para saber a dónde
-   * llevaban y corregirlas antes de que se borren.
+   * llevaban y corregirlas antes de que se borren. Van agrupadas por el
+   * portal de ciudad más cercano (y filtradas con el mismo filtro que las
+   * abiertas), para ver rápido por dónde hay que salir.
+   *
+   * @param {Array<[string|null, object[]]>} grupos  [título del portal, rutas]
    */
-  _crearCerradas(cerradas) {
+  _crearCerradas(grupos) {
+    const cerradas = grupos.flatMap(([, rutas]) => rutas);
     const detalles = crear('details', 'rutas-entrada rutas-cerradas');
     detalles.open = Boolean(this._cerradasAbiertas);
     detalles.addEventListener('toggle', () => {
@@ -684,9 +713,14 @@ export class PanelCaminos {
     resumen.append(cabeza);
     detalles.append(resumen);
 
-    const tarjetas = crear('div', 'lista-rutas');
-    for (const ruta of cerradas) tarjetas.append(this._tarjetaRuta(ruta));
-    detalles.append(tarjetas);
+    const contenido = crear('div', 'rutas-cerradas__grupos');
+    for (const [titulo, rutas] of grupos) {
+      if (titulo) contenido.append(crear('h5', 'rutas-portal__titulo', titulo));
+      const tarjetas = crear('div', 'lista-rutas');
+      for (const ruta of rutas) tarjetas.append(this._tarjetaRuta(ruta));
+      contenido.append(tarjetas);
+    }
+    detalles.append(contenido);
     return detalles;
   }
 
