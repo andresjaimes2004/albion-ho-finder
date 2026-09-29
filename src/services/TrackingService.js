@@ -78,6 +78,7 @@ class TrackingService {
     zonas = cargarZonas(),
     ahora = () => Date.now(),
     transaccion = (fn) => db.transaccion(fn),
+    hideoutsCamino = null,
   } = {}) {
     this.catalogo = catalogo;
     this.mapas = mapaRepository;
@@ -87,6 +88,8 @@ class TrackingService {
     this.portales = zonas.filter((z) => z.grupo === 'portalCiudad').map((z) => z.nombre);
     this.ahora = ahora;
     this.transaccion = transaccion;
+    // Gremios anotados en caminos de hideouts (opcional).
+    this.hideoutsCamino = hideoutsCamino;
 
     this.caminos = catalogo.caminos.map((c) => ({
       ...c,
@@ -110,6 +113,7 @@ class TrackingService {
     const cierres = new Map(reportadas.map((r) => [r.id, Date.parse(r.cierraEn)]));
     const orientadas = this.rutasRepo.listarCompletas().map((ruta) => this._orientar(ruta));
     const { activas, cerradas, desconectadas } = clasificarRutas(orientadas, cierres, ahora);
+    this._gremiosPorCamino = this.hideoutsCamino ? this.hideoutsCamino.porCamino() : new Map();
 
     const conexiones = reportadas
       .filter((r) => cierres.get(r.id) > ahora && !desconectadas.has(r.id))
@@ -163,7 +167,12 @@ class TrackingService {
 
   /** Ruta ya orientada, con los datos que ve el navegador. */
   _rutaPublica(ruta, cierres, indiceZonaNegra) {
-    const zonas = ruta.zonas.map((nombre) => this._extremo(nombre, indiceZonaNegra));
+    const zonas = ruta.zonas.map((nombre) => {
+      const zona = this._extremo(nombre, indiceZonaNegra);
+      // En un camino de hideouts, los gremios que se anotaron allí.
+      const gremios = this._gremiosPorCamino && this._gremiosPorCamino.get(zona.nombre);
+      return gremios ? { ...zona, gremios } : zona;
+    });
     const tramos = ruta.conexionIds.map((id) => ({ reporteId: id, cierraEn: cierres.get(id) }));
     return {
       id: ruta.id,
@@ -249,7 +258,9 @@ class TrackingService {
 
     const camino = this.caminoPorNombre.get(clave);
     if (camino) {
-      return { clave, nombre: camino.nombre, clase: 'avalon', tier: camino.tier, etiqueta: camino.etiqueta };
+      const zona = { clave, nombre: camino.nombre, clase: 'avalon', tier: camino.tier, etiqueta: camino.etiqueta };
+      // Camino de hideouts: se pueden anotar los gremios que tienen hideout allí.
+      return camino.grupo === 'hideout' ? { ...zona, esHideout: true } : zona;
     }
 
     const zonaNegra = indiceZonaNegra.porNombre.get(clave);
@@ -330,7 +341,16 @@ class TrackingService {
 
     const camino = this.caminoPorNombre.get(clave);
     if (camino) {
-      return { ok: true, estado, mapa: { nombre: camino.nombre, clase: 'avalon', camino }, conexiones: propias, rutas };
+      const esHideout = Boolean(this.hideoutsCamino && this.hideoutsCamino.esCaminoHideout(camino.nombre));
+      return {
+        ok: true,
+        estado,
+        mapa: { nombre: camino.nombre, clase: 'avalon', camino, esHideout },
+        conexiones: propias,
+        rutas,
+        // Gremios con hideout en este camino (solo en caminos de hideouts).
+        hideouts: esHideout ? this.hideoutsCamino.listar(camino.nombre) : undefined,
+      };
     }
 
     const zonaNegra = this._indiceZonaNegra().porNombre.get(clave);

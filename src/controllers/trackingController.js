@@ -2,6 +2,7 @@
 
 const TrackingService = require('../services/TrackingService');
 const ReportesCaminosService = require('../services/ReportesCaminosService');
+const HideoutsCaminoService = require('../services/HideoutsCaminoService');
 const { texto, entero, ErrorValidacion } = require('../security/validacion');
 
 const MAX_MAPAS_CONSULTA = 50;
@@ -19,11 +20,16 @@ const { manejar } = require('./utilidades');
  *                                      sus conexiones vigentes
  * POST   /api/tracking/reportes      → registrar conexiones (con sesión)
  * DELETE /api/tracking/reportes/:id  → borrar una (autor o admin)
+ * GET    /api/tracking/hideouts?camino=X → gremios con hideout en un
+ *                                      camino de Avalon de hideouts
+ * POST   /api/tracking/hideouts      → anotar un gremio (con sesión)
+ * DELETE /api/tracking/hideouts/:id  → borrar la anotación (autor o admin)
  * PUT    /api/tracking/rutas/:id     → editar una ruta (autor o admin)
  * DELETE /api/tracking/rutas/:id     → borrar una ruta (autor o admin)
  * ----------------------------------------------------------------------
  */
-const servicio = new TrackingService();
+const hideouts = new HideoutsCaminoService();
+const servicio = new TrackingService({ hideoutsCamino: hideouts });
 const reportes = new ReportesCaminosService();
 
 const resumen = manejar(async (req, res) => {
@@ -33,7 +39,11 @@ const resumen = manejar(async (req, res) => {
 
 const zonas = manejar((req, res) => {
   res.set('Cache-Control', 'public, max-age=86400');
-  res.json({ ok: true, zonas: reportes.zonasPublicas() });
+  // `hideout`: camino de Avalon de hideouts (una ruta puede terminar ahí).
+  const zonas = reportes
+    .zonasPublicas()
+    .map((z) => (z.grupo === 'avalon' && hideouts.esCaminoHideout(z.nombre) ? { ...z, hideout: true } : z));
+  res.json({ ok: true, zonas });
 });
 
 const detalle = manejar(async (req, res) => {
@@ -80,9 +90,38 @@ const editarRuta = manejar((req, res) => {
   res.json({ ok: true, ruta });
 });
 
+const listarHideoutsCamino = manejar((req, res) => {
+  const camino = texto(req.query.camino, 'camino', { min: 2, max: 80 });
+  res.set('Cache-Control', 'no-store');
+  res.json({ ok: true, hideouts: hideouts.listar(camino) });
+});
+
+const agregarHideoutCamino = manejar((req, res) => {
+  const cuerpo = req.body || {};
+  const registro = hideouts.agregar(req.usuario, cuerpo.camino, cuerpo.gremio);
+  res.status(registro.nuevo ? 201 : 200).json({ ok: true, hideout: registro });
+});
+
+const eliminarHideoutCamino = manejar((req, res) => {
+  hideouts.eliminar(req.usuario, entero(req.params.id, 'id', { min: 1 }));
+  res.json({ ok: true });
+});
+
 const eliminarRuta = manejar((req, res) => {
   reportes.eliminarRuta(req.usuario, entero(req.params.id, 'id', { min: 1 }));
   res.json({ ok: true });
 });
 
-module.exports = { resumen, zonas, rutasDeMapas, detalle, registrar, eliminar, editarRuta, eliminarRuta };
+module.exports = {
+  resumen,
+  zonas,
+  rutasDeMapas,
+  detalle,
+  registrar,
+  eliminar,
+  editarRuta,
+  eliminarRuta,
+  listarHideoutsCamino,
+  agregarHideoutCamino,
+  eliminarHideoutCamino,
+};

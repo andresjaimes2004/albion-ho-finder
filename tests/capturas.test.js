@@ -369,3 +369,34 @@ test('continúa rutas con conexiones ya guardadas sin repetir las que ya existí
   });
   assert.deepEqual(repetida.rutas.map((r) => r.indices), [[0, 2, 3]]);
 });
+
+test('una ruta puede terminar en un camino de hideouts y seguir más allá', async () => {
+  const { agruparEnRutas } = await cargar('encadenar.js');
+  const grupos = { 'Deepwood Copse': 'zonaNegra', Martlock: 'ciudad' };
+  const grupoDe = (z) => grupos[z] || 'avalon';
+  const hideouts = new Set(['Hideout-Road']);
+
+  // Deepwood Copse → Ava1 → Hideout-Road (sin salida conocida).
+  const sinSalida = [
+    { origen: 'Deepwood Copse', destino: 'Ava1' },
+    { origen: 'Ava1', destino: 'Hideout-Road' },
+  ];
+  assert.deepEqual(agruparEnRutas(sinSalida, grupoDe).rutas, [], 'antes no formaba ruta');
+  const conHideout = agruparEnRutas(sinSalida, grupoDe, { puedeTerminar: (z) => hideouts.has(z) });
+  assert.deepEqual(conHideout.rutas.map((r) => r.zonas.join(' > ')), ['Deepwood Copse > Ava1 > Hideout-Road']);
+
+  // Si el camino de hideouts continúa hasta Martlock, salen las dos rutas.
+  const continua = agruparEnRutas([...sinSalida, { origen: 'Hideout-Road', destino: 'Martlock' }], grupoDe, {
+    puedeTerminar: (z) => hideouts.has(z),
+  });
+  assert.deepEqual(continua.rutas.map((r) => r.zonas.join(' > ')).sort(), [
+    'Deepwood Copse > Ava1 > Hideout-Road',
+    'Deepwood Copse > Ava1 > Hideout-Road > Martlock',
+  ]);
+
+  // Un solo portal hasta el camino de hideouts no es una ruta.
+  assert.deepEqual(
+    agruparEnRutas([{ origen: 'Deepwood Copse', destino: 'Hideout-Road' }], grupoDe, { puedeTerminar: (z) => hideouts.has(z) }).rutas,
+    []
+  );
+});

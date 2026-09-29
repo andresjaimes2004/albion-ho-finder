@@ -1,0 +1,152 @@
+'use strict';
+
+const path = require('path');
+const fs = require('fs');
+
+const HideoutCaminoRepository = require('../repositories/HideoutCaminoRepository');
+const { texto, ErrorValidacion } = require('../security/validacion');
+
+/**
+ * HideoutsCaminoService
+ * ----------------------------------------------------------------------
+ * Gremios con hideout en los caminos de Avalon de hideouts.
+ *
+ * Los caminos de tipo TUNNEL_HIDEOUT y TUNNEL_HIDEOUT_DEEP (dumps del
+ * juego) admiten hideouts, pero ni los datos oficiales ni el Excel dicen
+ * de quién son. Quien llega a uno por una ruta puede anotar los gremios
+ * que tienen hideout allí, y luego se buscan por gremio o por camino.
+ *
+ * Reglas:
+ *  - Solo usuarios con sesión; cada registro queda a su nombre.
+ *  - El camino debe ser un camino de hideouts del catálogo oficial (se
+ *    guarda su nombre canónico).
+ *  - El nombre del gremio: 2 a 40 caracteres, letras, números, espacios y
+ *    . _ - ' &. Se compara sin mayúsculas ni espacios de más: anotar otra
+ *    vez el mismo gremio solo renueva la fecha de confirmación.
+ *  - Como mucho MAX_POR_CAMINO gremios por camino (evita el spam).
+ *  - Solo quien lo anotó o un administrador pueden borrarlo.
+ * ----------------------------------------------------------------------
+ */
+
+const TIPOS_HIDEOUT = new Set(['TUNNEL_HIDEOUT', 'TUNNEL_HIDEOUT_DEEP']);
+const MAX_POR_CAMINO = 30;
+const FORMATO_GREMIO = /^[\p{L}\p{N} ._\-'&]+$/u;
+
+function clave(textoLibre) {
+  return String(textoLibre || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '');
+}
+
+/** Nombre de gremio para comparar: minúsculas y espacios simples. */
+function normalizarGremio(nombre) {
+  return nombre.trim().replace(/\s+/g, ' ').toLowerCase();
+}
+
+function errorPublico(mensaje, estado) {
+  const error = new Error(mensaje);
+  error.publico = true;
+  error.estado = estado;
+  return error;
+}
+
+function cargarCatalogo() {
+  return JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'data', 'caminos_avalon.json'), 'utf-8'));
+}
+
+class HideoutsCaminoService {
+  constructor({ catalogo = cargarCatalogo(), repositorio = new HideoutCaminoRepository() } = {}) {
+    this.repositorio = repositorio;
+    this.caminos = new Map(
+      catalogo.caminos.filter((c) => TIPOS_HIDEOUT.has(c.tipo)).map((c) => [clave(c.nombre), c])
+    );
+  }
+
+  /** El camino de hideouts con ese nombre (tolerando mayúsculas), o null. */
+  camino(nombre) {
+    return this.caminos.get(clave(nombre)) || null;
+  }
+
+  esCaminoHideout(nombre) {
+    return this.caminos.has(clave(nombre));
+  }
+
+  listar(nombreCamino) {
+    const camino = this.camino(nombreCamino);
+    if (!camino) throw errorPublico('Ese no es un camino de Avalon de hideouts.', 404);
+    return this.repositorio.listarPorCamino(camino.nombre);
+  }
+
+  /** Gremios por camino (nombre del camino → nombres de gremio). */
+  porCamino() {
+    const mapa = new Map();
+    for (const h of this.repositorio.listarTodos()) {
+      if (!mapa.has(h.camino)) mapa.set(h.camino, []);
+      mapa.get(h.camino).push(h.gremio);
+    }
+    return mapa;
+  }
+
+  agregar(usuario, nombreCamino, nombreGremio) {
+    const camino = this.camino(typeof nombreCamino === 'string' ? nombreCamino : '');
+    if (!camino) throw new ErrorValidacion('Ese no es un camino de Avalon de hideouts.');
+    const gremio = texto(nombreGremio, 'gremio', { min: 2, max: 40 }).replace(/\s+/g, ' ');
+    if (!FORMATO_GREMIO.test(gremio)) {
+      throw new ErrorValidacion('El nombre del gremio solo puede tener letras, números, espacios y . _ - \' &');
+    }
+    const normalizado = normalizarGremio(gremio);
+    const actuales = this.repositorio.listarPorCamino(camino.nombre);
+    const yaEsta = actuales.some((h) => normalizarGremio(h.gremio) === normalizado);
+    if (!yaEsta && actuales.length >= MAX_POR_CAMINO) {
+      throw new ErrorValidacion(`Ese camino ya tiene ${MAX_POR_CAMINO} gremios anotados. Borra los que ya no estén.`);
+    }
+    return this.repositorio.guardar({ camino: camino.nombre, gremio, gremioNormalizado: normalizado, usuarioId: usuario.id });
+  }
+
+  eliminar(usuario, id) {
+    const registro = this.repositorio.obtener(id);
+    if (!registro) throw errorPublico('Ese registro no existe.', 404);
+    if (registro.usuarioId !== usuario.id && usuario.rol !== 'ADMIN') {
+      throw errorPublico('Solo quien lo anotó o un administrador puede borrarlo.', 403);
+    }
+    this.repositorio.eliminar(id);
+  }
+
+  /**
+   * Para el buscador: caminos de hideouts con algún gremio cuyo nombre
+   * contiene el texto, o cuyo propio nombre contiene el texto. Cada camino
+   * con todos sus gremios anotados.
+   */
+  buscar(textoBuscado) {
+    const buscado = normalizarGremio(String(textoBuscado || ''));
+    const buscadoClave = clave(textoBuscado);
+    if (buscado.length < 2) return [];
+
+    const nombres = new Set(this.repositorio.buscarPorGremio(buscado).map((h) => h.camino));
+    if (buscadoClave.length >= 3) {
+      for (const camino of this.caminos.values()) {
+        if (clave(camino.nombre).includes(buscadoClave)) nombres.add(camino.nombre);
+      }
+    }
+    return [...nombres]
+      .sort((a, b) => a.localeCompare(b))
+      .slice(0, 20)
+      .map((nombre) => {
+        const camino = this.camino(nombre);
+        return {
+          camino: nombre,
+          tier: camino ? camino.tier : null,
+          profundo: camino ? camino.tipo === 'TUNNEL_HIDEOUT_DEEP' : false,
+          gremios: this.repositorio.listarPorCamino(nombre).map((h) => ({
+            id: h.id,
+            gremio: h.gremio,
+            usuario: h.usuario || null,
+            confirmadoEn: h.confirmadoEn,
+          })),
+        };
+      });
+  }
+}
+
+module.exports = HideoutsCaminoService;
+module.exports.MAX_POR_CAMINO = MAX_POR_CAMINO;

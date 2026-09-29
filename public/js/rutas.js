@@ -158,6 +158,19 @@ export function crearTarjetaRuta(ruta, { usuario = null, resaltar = null, alEleg
     }
     const meta = [zona.tier ? `T${zona.tier}` : null, zona.etiqueta && t(zona.etiqueta)].filter(Boolean).join(' · ');
     if (meta) paso.append(crear('span', 'ruta__meta', meta));
+    // Camino de hideouts: de quién son (lo anotan los usuarios).
+    if (zona.esHideout) {
+      const gremios = zona.gremios || [];
+      const linea = crear('span', 'ruta__gremios');
+      if (gremios.length) linea.append(t('Hideouts: {gremios}', { gremios: gremios.join(', ') }));
+      if (alElegirZona) {
+        const anotar = crear('button', 'ruta__anotar', gremios.length ? t('Ver o anotar') : t('¿De quién son los hideouts? Anótalo'));
+        anotar.type = 'button';
+        anotar.addEventListener('click', () => alElegirZona(zona.nombre));
+        linea.append(gremios.length ? ' · ' : '', anotar);
+      }
+      if (linea.childNodes.length) paso.append(linea);
+    }
     pasos.append(paso);
 
     if (k < ruta.tramos.length) {

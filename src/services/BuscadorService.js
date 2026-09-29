@@ -63,11 +63,14 @@ class BuscadorService {
     temporadaRepository = new TemporadaRepository(),
     mapaRepository = new MapaRepository(),
     busquedaRepository = new BusquedaRepository(),
+    hideoutsCamino = null,
   } = {}) {
     this.hideoutRepository = hideoutRepository;
     this.temporadaRepository = temporadaRepository;
     this.mapaRepository = mapaRepository;
     this.busquedaRepository = busquedaRepository;
+    // Gremios anotados en caminos de Avalon de hideouts (opcional).
+    this.hideoutsCamino = hideoutsCamino;
   }
 
   /**
@@ -149,6 +152,8 @@ class BuscadorService {
       // Resultado por nombre de mapa.
       mapas,
       totalMapasPorNombre: coincidentes.length,
+      // Caminos de Avalon de hideouts (por gremio anotado o por nombre).
+      caminos: this.hideoutsCamino ? this.hideoutsCamino.buscar(texto) : [],
     };
   }
 }
