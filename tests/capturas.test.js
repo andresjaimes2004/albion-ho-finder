@@ -340,3 +340,32 @@ test('detecta barra y título con colores alterados (brillo, saturación, luz no
   // Un elemento dorado grueso (no una barra) no se toma por la barra.
   assert.equal(det.detectarCarril(imagen(400, 300, [[50, 50, 250, 200, [200, 150, 40]]])), null);
 });
+
+test('continúa rutas con conexiones ya guardadas sin repetir las que ya existían', async () => {
+  const { agruparEnRutas } = await cargar('encadenar.js');
+  const grupos = { 'Deepwood Copse': 'zonaNegra', Martlock: 'ciudad', Lymhurst: 'ciudad' };
+  const grupoDe = (z) => grupos[z] || 'avalon';
+
+  // Capturas nuevas (índices 0 y 1) y conexiones guardadas antes (2 a 4):
+  // Deepwood Copse → Ava1 → Ava2 → Martlock ya era una ruta.
+  const tramos = [
+    { origen: 'Ava2', destino: 'Ava3' },
+    { origen: 'Ava3', destino: 'Lymhurst' },
+    { origen: 'Deepwood Copse', destino: 'Ava1' },
+    { origen: 'Ava1', destino: 'Ava2' },
+    { origen: 'Ava2', destino: 'Martlock' },
+  ];
+  const nuevas = 2;
+  const { rutas } = agruparEnRutas(tramos, grupoDe, { aceptar: (indices) => indices.some((i) => i < nuevas) });
+  assert.deepEqual(
+    rutas.map((r) => r.zonas.join(' > ')).sort(),
+    ['Deepwood Copse > Ava1 > Ava2 > Ava3 > Lymhurst', 'Lymhurst > Ava3 > Ava2 > Martlock'],
+    'solo las rutas que usan alguna captura nueva; la ya guardada no se repite'
+  );
+
+  // Una captura nueva que repite un portal guardado cuenta una vez (se queda la nueva).
+  const repetida = agruparEnRutas([{ origen: 'Ava1', destino: 'Deepwood Copse' }, ...tramos.slice(2)], grupoDe, {
+    aceptar: (indices) => indices.includes(0),
+  });
+  assert.deepEqual(repetida.rutas.map((r) => r.indices), [[0, 2, 3]]);
+});

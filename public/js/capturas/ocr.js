@@ -73,7 +73,10 @@ export async function leerCaptura(archivo, indiceZonas, { progreso } = {}) {
   lienzo.height = bitmap.height;
   const contexto = lienzo.getContext('2d', { willReadFrequently: true });
   contexto.drawImage(bitmap, 0, 0);
-  const imagen = contexto.getImageData(0, 0, bitmap.width, bitmap.height);
+  // Sin close() cada captura dejaba su imagen completa en memoria: tras
+  // muchas capturas la pestaña se volvía lenta hasta atascarse.
+  bitmap.close();
+  const imagen = contexto.getImageData(0, 0, lienzo.width, lienzo.height);
 
   const reconocer = async (preparada, { psm, permitidos = '' }) => {
     const worker = await obtenerTrabajador();
@@ -85,6 +88,16 @@ export async function leerCaptura(archivo, indiceZonas, { progreso } = {}) {
   const resultado = await leerImagen(imagen, indiceZonas, { reconocer });
   resultado.vista = resultado.recuadro ? vistaPrevia(lienzo, resultado.recuadro) : null;
   return resultado;
+}
+
+/**
+ * Descarta el worker (por ejemplo, si una lectura se quedó colgada): la
+ * siguiente captura crea uno nuevo en vez de esperar detrás de la atascada.
+ */
+export function reiniciarOcr() {
+  const actual = trabajador;
+  trabajador = null;
+  if (actual) actual.then((worker) => worker.terminate()).catch(() => {});
 }
 
 /** Descarga el OCR por adelantado (por ejemplo, al abrir el panel de registro). */

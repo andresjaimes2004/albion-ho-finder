@@ -230,6 +230,10 @@ export const EN = {
   'En {n} rutas: {lista}': 'In {n} routes: {lista}',
   'Hay demasiadas combinaciones: se muestran las primeras {n} rutas.': 'Too many combinations: showing the first {n} routes.',
   ' · {n} tramos': ' · {n} legs',
+  ' ({n} ya guardado)': ' ({n} already saved)',
+  ' ({n} ya guardados)': ' ({n} already saved)',
+  'La lectura tardó demasiado. Escribe los datos a mano, o quita la captura y pégala otra vez.':
+    'Reading took too long. Type the data by hand, or remove the screenshot and paste it again.',
   ' (se guardarán por separado)': ' (will be saved separately)',
   'Invertir sentido': 'Reverse direction',
   'Agrupar como ruta': 'Group as a route',

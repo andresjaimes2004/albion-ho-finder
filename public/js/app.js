@@ -64,6 +64,8 @@ class BuscadorUI {
 
     this.panelCaminos = new PanelCaminos({
       abrirMapa: (nombre) => this.ventanaMapa.abrir(nombre),
+      // Las conexiones guardadas permiten continuar rutas desde el registro.
+      alActualizar: (datos) => this.panelRegistro.establecerGuardadas(datos.conexiones),
     });
 
     this.panelRegistro = new PanelRegistro({

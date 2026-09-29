@@ -24,7 +24,10 @@ import { crearReloj, iniciarRelojes } from './rutas.js';
  *
  * Las filas que se encadenan (el destino de una es el origen de otra, en
  * cualquier sentido) se proponen como una ruta; el usuario puede
- * invertirla o guardar los tramos por separado.
+ * invertirla o guardar los tramos por separado. Al encadenar también
+ * cuentan las conexiones ya guardadas que siguen abiertas: una captura
+ * nueva continúa una ruta registrada antes (por otro miembro o en otro
+ * envío) sin volver a subir sus capturas.
  *
  * Mientras no se guardan, las capturas (imagen, lectura y correcciones)
  * se conservan en el navegador (capturas/borrador.js): si la página se
@@ -33,6 +36,11 @@ import { crearReloj, iniciarRelojes } from './rutas.js';
  */
 
 const CONFIANZA_SEGURA = 0.9;
+// Una lectura que tarde más que esto se da por atascada (con el OCR ya
+// cargado: la primera descarga no cuenta).
+const LECTURA_MAX_MS = 60_000;
+// Las conexiones guardadas a punto de cerrar no se proponen para rutas.
+const MARGEN_GUARDADAS_MS = 60_000;
 
 function nuevoId() {
   if (window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
@@ -65,6 +73,9 @@ export class PanelRegistro {
     // Decisiones del usuario sobre cada ruta detectada (por clave de zonas).
     this.preferencias = new Map();
     this.rutasDetectadas = [];
+    // Conexiones ya guardadas y abiertas: { id, origen, destino, cierraEn }.
+    this.guardadas = [];
+    this.guardadasEnRutas = [];
 
     this.alternar = document.getElementById('registro-alternar');
     this.cuerpo = document.getElementById('registro-cuerpo');
@@ -93,6 +104,17 @@ export class PanelRegistro {
       this._limpiarLista();
       if (ahora !== null) this._restaurar(ahora);
     }
+  }
+
+  /**
+   * Conexiones vigentes del servidor (las que muestra la pestaña de
+   * caminos), para continuar rutas ya registradas.
+   */
+  establecerGuardadas(conexiones = []) {
+    this.guardadas = conexiones
+      .filter((c) => c.reporteId && c.origen && c.origen.nombre && c.destino && c.destino.nombre)
+      .map((c) => ({ id: c.reporteId, origen: c.origen.nombre, destino: c.destino.nombre, cierraEn: c.cierraEn }));
+    if (this.filas.length) this._actualizarAcciones();
   }
 
   _claveUsuario() {
@@ -277,14 +299,28 @@ export class PanelRegistro {
 
   async _leer(fila, archivo) {
     fila.poner('leyendo', t('Leyendo la captura…'));
+    let temporizador = null;
     try {
       await this._cargarZonas();
-      const { leerCaptura } = await import('./capturas/ocr.js');
-      const resultado = await leerCaptura(archivo, this.indice, {
-        progreso: (m) => {
-          if (m.status && m.status.includes('loading')) fila.poner('leyendo', t('Preparando el lector de capturas (solo la primera vez)…'));
-        },
+      const { leerCaptura, precargarOcr, reiniciarOcr } = await import('./capturas/ocr.js');
+      await precargarOcr();
+      // Una lectura colgada no puede dejar esperando a todas las capturas
+      // que vienen detrás (el panel dejaba de admitir más).
+      const atascada = new Promise((_, rechazar) => {
+        temporizador = setTimeout(() => {
+          reiniciarOcr();
+          rechazar(Object.assign(new Error('tiempo'), { atascada: true }));
+        }, LECTURA_MAX_MS);
       });
+      const resultado = await Promise.race([
+        leerCaptura(archivo, this.indice, {
+          progreso: (m) => {
+            if (m.status && m.status.includes('loading')) fila.poner('leyendo', t('Preparando el lector de capturas (solo la primera vez)…'));
+          },
+        }),
+        atascada,
+      ]);
+      clearTimeout(temporizador);
 
       const origen = resultado.origen || this.ultimoOrigen;
       if (resultado.origen) this.ultimoOrigen = resultado.origen;
@@ -313,7 +349,13 @@ export class PanelRegistro {
         vista: await lienzoABlob(resultado.vista),
       });
     } catch (error) {
-      fila.poner('error', t('No se pudo leer la captura. Puedes escribir los datos a mano.'));
+      clearTimeout(temporizador);
+      fila.poner(
+        'error',
+        error && error.atascada
+          ? t('La lectura tardó demasiado. Escribe los datos a mano, o quita la captura y pégala otra vez.')
+          : t('No se pudo leer la captura. Puedes escribir los datos a mano.')
+      );
       borrador.actualizar(fila.id, { leida: true, valores: fila.valores(), dudoso: fila.dudosos(), error: true });
     }
     this._actualizarAcciones();
@@ -498,14 +540,25 @@ export class PanelRegistro {
 
   // ------------------------------------------------------------- rutas --
 
-  /** Recalcula qué filas forman rutas y las muestra para confirmar. */
+  /**
+   * Recalcula qué filas forman rutas y las muestra para confirmar. Los
+   * índices desde filas.length en adelante son conexiones ya guardadas;
+   * solo se proponen las rutas que usan alguna captura nueva.
+   */
   _actualizarRutas() {
+    const nuevas = this.filas.length;
     const tramos = this.filas.map((f) => (f.estadoActual !== 'leyendo' ? f.datos() : null));
+    const limite = Date.now() + MARGEN_GUARDADAS_MS;
+    this.guardadasEnRutas = nuevas ? this.guardadas.filter((g) => g.cierraEn > limite) : [];
+    for (const g of this.guardadasEnRutas) tramos.push({ origen: g.origen, destino: g.destino });
+
     const grupoDe = (zona) => {
       const z = this.porNombre && this.porNombre.get(zona.toLowerCase());
       return z ? z.grupo : undefined;
     };
-    const { rutas, truncado } = agruparEnRutas(tramos, grupoDe);
+    const { rutas, truncado } = agruparEnRutas(tramos, grupoDe, {
+      aceptar: (indices) => indices.some((i) => i < nuevas),
+    });
 
     this.rutasDetectadas = rutas.map((ruta) => {
       const clave = claveRuta(ruta.zonas);
@@ -537,16 +590,25 @@ export class PanelRegistro {
     this.contenedorRutas.replaceChildren(...avisos);
   }
 
+  /** Momento de cierre del tramo i: una fila del panel o una conexión guardada. */
+  _cierreTramo(i) {
+    const nuevas = this.filas.length;
+    return i < nuevas ? this.filas[i].cierraEn() : this.guardadasEnRutas[i - nuevas].cierraEn;
+  }
+
   _crearAvisoRuta(ruta, n) {
     const caja = crear('div', `registro__ruta${ruta.separada ? ' registro__ruta--separada' : ''}`);
     const titulo = crear('p', 'registro__ruta-titulo');
+    const yaGuardados = ruta.indices.filter((i) => i >= this.filas.length).length;
     titulo.append(
       crear('strong', null, t('Ruta {n}', { n: n + 1 })),
-      t(' · {n} tramos', { n: ruta.indices.length }) + (ruta.separada ? t(' (se guardarán por separado)') : '')
+      t(' · {n} tramos', { n: ruta.indices.length }) +
+        (yaGuardados ? tn(yaGuardados, ' ({n} ya guardado)', ' ({n} ya guardados)') : '') +
+        (ruta.separada ? t(' (se guardarán por separado)') : '')
     );
     // Una ruta solo sirve mientras siga abierto el primero de sus portales en cerrar.
     if (!ruta.separada) {
-      const cierre = Math.min(...ruta.indices.map((i) => this.filas[i].cierraEn()));
+      const cierre = Math.min(...ruta.indices.map((i) => this._cierreTramo(i)));
       titulo.append(' · ', crearReloj(cierre, { clase: 'reloj registro__ruta-reloj' }));
       iniciarRelojes();
     }
@@ -587,11 +649,15 @@ export class PanelRegistro {
     const listas = this.filas.filter((f) => f.valida());
     if (!listas.length) return;
 
-    // Las rutas se envían como listas de posiciones dentro de `conexiones`.
+    // Las rutas se envían como listas de posiciones dentro de `conexiones`
+    // o, para las conexiones ya guardadas, como { id }.
+    const nuevas = this.filas.length;
     const posicion = new Map(listas.map((f, i) => [this.filas.indexOf(f), i]));
     const rutas = this.rutasDetectadas
-      .filter((ruta) => !ruta.separada && ruta.indices.every((i) => posicion.has(i)))
-      .map((ruta) => ruta.indices.map((i) => posicion.get(i)));
+      .filter((ruta) => !ruta.separada && ruta.indices.every((i) => i >= nuevas || posicion.has(i)))
+      .map((ruta) =>
+        ruta.indices.map((i) => (i < nuevas ? posicion.get(i) : { id: this.guardadasEnRutas[i - nuevas].id }))
+      );
 
     this.guardar.disabled = true;
     this.estado.textContent = t('Guardando…');

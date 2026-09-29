@@ -25,7 +25,12 @@
  *  - Si no se conoce el grupo de ninguna zona, los extremos son las zonas
  *    con un solo portal (compatibilidad con datos sin catálogo).
  *
- * Tramos repetidos (el mismo portal pegado dos veces) cuentan una vez.
+ * Tramos repetidos (el mismo portal pegado dos veces) cuentan una vez: se
+ * queda el primero, así que las capturas nuevas van antes que las
+ * conexiones ya guardadas que se pasan para continuar rutas.
+ *
+ * `aceptar(indices)` decide qué rutas se devuelven (por ejemplo, solo las
+ * que usan alguna captura nueva); las rechazadas no gastan el tope.
  * Hay topes de rutas y de tramos por ruta para que muchas capturas con
  * muchas bifurcaciones no disparen la cantidad de combinaciones.
  *
@@ -35,16 +40,21 @@
 
 export const MAX_RUTAS = 40;
 export const MAX_TRAMOS_POR_RUTA = 15;
+const MAX_PASOS = 50_000;
 
 /**
  * @param {Array<{origen:string, destino:string} | null>} tramos  Un
  *   elemento por fila; null si la fila aún no es válida.
  * @param {(zona:string) => string|undefined} grupoDe  Grupo de la zona
  *   ('avalon', 'zonaNegra', 'ciudad'...).
- * @param {{maxRutas?: number, maxTramos?: number}} [limites]
+ * @param {{maxRutas?: number, maxTramos?: number, aceptar?: (indices:number[]) => boolean}} [limites]
  * @returns {{ rutas: Array<{indices:number[], zonas:string[]}>, sueltos: number[], truncado: boolean }}
  */
-export function agruparEnRutas(tramos, grupoDe = () => undefined, { maxRutas = MAX_RUTAS, maxTramos = MAX_TRAMOS_POR_RUTA } = {}) {
+export function agruparEnRutas(
+  tramos,
+  grupoDe = () => undefined,
+  { maxRutas = MAX_RUTAS, maxTramos = MAX_TRAMOS_POR_RUTA, aceptar = () => true } = {}
+) {
   // 1. Tramos válidos (sin repetir el mismo portal) y grafo de zonas.
   const vecinos = new Map();
   const primeraAparicion = new Map();
@@ -75,12 +85,15 @@ export function agruparEnRutas(tramos, grupoDe = () => undefined, { maxRutas = M
   const rutas = [];
   const encontradas = new Set();
   let truncado = false;
+  // Tope de pasos: con muchas conexiones guardadas en la misma red, el
+  // recorrido no debe congelar el navegador.
+  let pasos = 0;
 
   for (const inicio of extremos) {
     const visitadas = new Set([inicio]);
     const explorar = (zona, indices, zonas) => {
       for (const { i, otra } of vecinos.get(zona)) {
-        if (rutas.length >= maxRutas) {
+        if (rutas.length >= maxRutas || ++pasos > MAX_PASOS) {
           truncado = true;
           return;
         }
@@ -90,7 +103,7 @@ export function agruparEnRutas(tramos, grupoDe = () => undefined, { maxRutas = M
           // Un solo portal entre dos extremos no es una ruta de Avalon.
           if (nuevosIndices.length < 2) continue;
           const clave = [...nuevosIndices].sort((a, b) => a - b).join(',');
-          if (!encontradas.has(clave)) {
+          if (!encontradas.has(clave) && aceptar(nuevosIndices)) {
             encontradas.add(clave);
             rutas.push({ indices: nuevosIndices, zonas: [...zonas, otra] });
           }

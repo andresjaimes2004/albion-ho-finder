@@ -124,7 +124,7 @@ test('rechaza zonas desconocidas, iguales, sin camino o tiempos imposibles', () 
     assert.throws(() => s.registrar(autor.id, [conexion]), mensaje);
   }
   assert.throws(() => s.registrar(autor.id, []), /ninguna conexión/);
-  assert.throws(() => s.registrar(autor.id, Array(51).fill({ origen: 'Ouyos-Aoeuam', destino: 'Martlock', minutos: 5 })), /Como máximo 50/);
+  assert.throws(() => s.registrar(autor.id, Array(101).fill({ origen: 'Ouyos-Aoeuam', destino: 'Martlock', minutos: 5 })), /Como máximo 100/);
 
   // Si una falla, no se guarda ninguna.
   assert.throws(() => s.registrar(autor.id, [
@@ -356,4 +356,37 @@ test('guarda en un envío varias rutas que comparten tramos (bifurcaciones)', as
   assert.equal(rutas.length, 3);
   const deepwood = await servicio.paraMapas(['Deepwood Copse']);
   assert.equal(deepwood.mapas['Deepwood Copse'].rutas.length, 2, 'el mapa de Zona Negra aparece en sus dos rutas');
+});
+
+test('una ruta nueva puede continuar desde conexiones ya guardadas (sin volver a subir sus capturas)', async () => {
+  limpiarReportes();
+  const s = servicioReportes();
+  // Primer envío: Deepwood Copse → Ouyos-Aoeuam, todavía sin salida.
+  const primera = s.registrar(autor.id, [{ origen: 'Deepwood Copse', destino: 'Ouyos-Aoeuam', minutos: 120 }]);
+  const guardadaId = primera.conexiones[0].id;
+
+  // Más tarde, otro miembro captura los portales que siguen.
+  const r = s.registrar(
+    otro.id,
+    [
+      { origen: 'Ouyos-Aoeuam', destino: 'Cases-Ugumlos', minutos: 45 },
+      { origen: 'Cases-Ugumlos', destino: 'Martlock', minutos: 300 },
+    ],
+    [[{ id: guardadaId }, 0, 1]]
+  );
+  assert.equal(r.creadas, 2);
+  assert.deepEqual(r.rutas[0].zonas, ['Deepwood Copse', 'Ouyos-Aoeuam', 'Cases-Ugumlos', 'Martlock']);
+  assert.equal(r.rutas[0].conexionIds[0], guardadaId, 'reutiliza la conexión guardada');
+
+  const { servicio } = crearServicio();
+  assert.equal((await servicio.resumen()).rutas.length, 1);
+
+  // Una conexión guardada que ya cerró (o no existe) no puede usarse.
+  const tarde = servicioReportes(() => AHORA + 130 * 60_000);
+  assert.throws(
+    () => tarde.registrar(autor.id, [{ origen: 'Cases-Ugumlos', destino: 'Martlock', minutos: 30 }], [[{ id: guardadaId }, 0]]),
+    /ya cerró o se borró/
+  );
+  assert.throws(() => s.registrar(autor.id, RUTA, [[{ id: 999999 }, 0]]), /ya cerró o se borró/);
+  assert.throws(() => s.registrar(autor.id, RUTA, [[{ id: guardadaId }, { id: guardadaId }]]), /repite un tramo/);
 });
