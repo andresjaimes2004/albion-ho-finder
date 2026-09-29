@@ -538,3 +538,51 @@ test('una ruta cerrada hace poco se puede reparar reemplazando el portal que cer
   assert.equal(resumen.rutas.length, 1, 'vuelve a estar abierta');
   assert.equal(resumen.rutasCerradas.length, 0);
 });
+
+// ---------------------------------------------- limpieza y borrado masivo --
+
+test('el mantenimiento borra las conexiones sueltas (sin ruta) pasados 30 minutos', async () => {
+  limpiarReportes();
+  const s = servicioReportes();
+  s.registrar(autor.id, RUTA, [[0, 1, 2]]); // una ruta completa
+  // Una conexión suelta, sin mapa inicial ni final.
+  const suelta = s.registrar(autor.id, [{ origen: 'Cases-Ugumlos', destino: 'Lymhurst', minutos: 200 }]).conexiones[0];
+  const conexion = require('../src/config/database').getConnection();
+  // Se registró hace 10 minutos: todavía se conserva (quizá falta el resto de la ruta).
+  const hace = (min) => new Date(AHORA - min * 60_000).toISOString().replace('T', ' ').slice(0, 19);
+  conexion.prepare('UPDATE conexiones_reportadas SET creado_en = $f').run({ $f: hace(10) });
+  crearServicio().servicio.mantenimiento();
+  assert.ok(new ConexionReportadaRepository().obtener(suelta.id), 'dentro del margen se conserva');
+
+  conexion.prepare('UPDATE conexiones_reportadas SET creado_en = $f').run({ $f: hace(40) });
+  const r = crearServicio().servicio.mantenimiento();
+  assert.equal(r.conexiones, 1);
+  assert.equal(new ConexionReportadaRepository().obtener(suelta.id), undefined, 'la suelta se borró');
+  assert.equal(new ConexionReportadaRepository().listarDesde('').length, 3, 'las de la ruta siguen');
+});
+
+test('borrado masivo de rutas: por zona, por portal, las activas o todas', async () => {
+  limpiarReportes();
+  const s = servicioReportes();
+  const conexiones = [
+    { origen: 'Deepwood Copse', destino: 'Ouyos-Aoeuam', minutos: 120 },
+    { origen: 'Ouyos-Aoeuam', destino: 'Martlock', minutos: 90 },
+    { origen: 'Ouyos-Aoeuam', destino: 'Cases-Ugumlos', minutos: 60 },
+    { origen: 'Cases-Ugumlos', destino: 'Lymhurst', minutos: 200 },
+  ];
+  s.registrar(autor.id, conexiones, [[0, 1], [0, 2, 3]]);
+  const { servicio } = crearServicio();
+
+  // Por zona: solo la que pasa por Lymhurst, con sus conexiones exclusivas.
+  assert.deepEqual(servicio.borrarRutas({ alcance: 'zona', valor: 'lymhurst' }), { rutas: 1, conexiones: 2 });
+  assert.equal((await servicio.resumen()).rutas.length, 1);
+
+  assert.throws(() => servicio.borrarRutas({ alcance: 'portal', valor: 'Narnia Portal' }), /no es un portal/);
+  assert.throws(() => servicio.borrarRutas({ alcance: 'otra' }), /desconocido/);
+
+  assert.deepEqual(servicio.borrarRutas({ alcance: 'activas' }), { rutas: 1, conexiones: 2 });
+  s.registrar(autor.id, [{ origen: 'Ouyos-Aoeuam', destino: 'Cases-Ugumlos', minutos: 60 }]);
+  const todas = servicio.borrarRutas({ alcance: 'todas' });
+  assert.equal(todas.rutas, 0);
+  assert.equal(todas.conexiones, 1, 'también las sueltas');
+});

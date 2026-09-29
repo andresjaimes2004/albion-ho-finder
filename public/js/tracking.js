@@ -668,6 +668,7 @@ export class PanelCaminos {
       );
     }
     bloque.append(filtro);
+    if (this.usuario && this.usuario.rol === 'ADMIN') bloque.append(this._crearHerramientasAdmin(elegido));
 
     const portalesVisibles = elegido === null ? orden : [elegido];
     const tituloPortal = (portal) => (portal === OTRAS ? t('Lejos de los portales de ciudad') : portal);
@@ -685,6 +686,75 @@ export class PanelCaminos {
       bloque.append(crear('p', 'caminos-detalle__vacio', t('No hay rutas abiertas cerca de este portal.')));
     }
     contenedor.replaceChildren(bloque);
+  }
+
+  /**
+   * Borrado masivo de rutas, solo para administradores (el servidor lo
+   * vuelve a comprobar). Cada acción pide confirmación.
+   */
+  _crearHerramientasAdmin(portalElegido) {
+    const caja = crear('div', 'rutas-admin');
+    caja.append(crear('span', 'rutas-admin__titulo', t('Administrar rutas:')));
+    const mensaje = crear('span', 'rutas-admin__mensaje');
+    mensaje.setAttribute('aria-live', 'polite');
+
+    const borrar = async (alcance, valor, pregunta, boton) => {
+      if (!window.confirm(pregunta)) return;
+      boton.disabled = true;
+      try {
+        const r = await api.borrarRutas(alcance, valor);
+        await this.refrescar();
+        this._mensajeAdmin = t('Borradas: {rutas} rutas y {conexiones} conexiones.', r);
+      } catch (error) {
+        mensaje.textContent = error.message || t('No se pudo borrar.');
+        boton.disabled = false;
+      }
+    };
+    const accion = (texto, alcance, valor, pregunta) => {
+      const boton = crear('button', 'boton boton--pequeno boton--peligro', texto);
+      boton.type = 'button';
+      boton.addEventListener('click', () => borrar(alcance, valor, pregunta, boton));
+      return boton;
+    };
+
+    caja.append(
+      accion(t('Borrar todas'), 'todas', '', t('¿Borrar TODAS las rutas y conexiones (abiertas, cerradas y sueltas)?')),
+      accion(t('Borrar las abiertas'), 'activas', '', t('¿Borrar todas las rutas abiertas?'))
+    );
+    if (portalElegido) {
+      caja.append(
+        accion(
+          t('Borrar las de {portal}', { portal: portalElegido.replace(/ Portal$/, '') }),
+          'portal',
+          portalElegido,
+          t('¿Borrar todas las rutas cercanas a {portal}?', { portal: portalElegido })
+        )
+      );
+    }
+
+    // Por zona: todas las rutas que pasan por un mapa o camino.
+    const formulario = crear('form', 'rutas-admin__zona');
+    const zona = crear('input');
+    zona.type = 'text';
+    zona.maxLength = 80;
+    zona.required = true;
+    zona.setAttribute('list', 'caminos-sugerencias');
+    zona.placeholder = t('Mapa o camino (ej. Sandrift Coast)');
+    zona.setAttribute('aria-label', t('Mapa o camino cuyas rutas se borran'));
+    const botonZona = crear('button', 'boton boton--pequeno boton--peligro', t('Borrar las de este mapa'));
+    botonZona.type = 'submit';
+    formulario.append(zona, botonZona);
+    formulario.addEventListener('submit', (evento) => {
+      evento.preventDefault();
+      const valor = zona.value.trim();
+      if (valor) borrar('zona', valor, t('¿Borrar todas las rutas que pasan por {zona}?', { zona: valor }), botonZona);
+    });
+    caja.append(formulario, mensaje);
+    if (this._mensajeAdmin) {
+      mensaje.textContent = this._mensajeAdmin;
+      this._mensajeAdmin = null;
+    }
+    return caja;
   }
 
   /**

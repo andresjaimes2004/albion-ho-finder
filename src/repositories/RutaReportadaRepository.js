@@ -108,6 +108,11 @@ class RutaReportadaRepository extends BaseRepository {
       .map((f) => f.id);
   }
 
+  /** Borra todas las rutas (sus tramos se borran en cascada). */
+  eliminarTodas() {
+    return this.db.prepare('DELETE FROM rutas_reportadas').run().changes;
+  }
+
   /** ¿Alguna ruta usa esta conexión? */
   usaConexion(conexionId) {
     return Boolean(

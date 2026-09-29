@@ -3370,3 +3370,21 @@ html:has(dialog[open]) { overflow: hidden; }
 .rutas-portales__cerradas { font-size: 0.72rem; color: #e58a8a; }
 .rutas-cerradas__grupos { padding: 0 10px 10px; }
 .rutas-cerradas__grupos .rutas-portal__titulo { margin-top: 8px; font-size: 0.86rem; }
+
+/* Borrado masivo de rutas (solo administradores) */
+.rutas-admin {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  border: 1px dashed rgba(201, 79, 79, 0.45);
+  border-radius: var(--radio);
+  background: rgba(201, 79, 79, 0.04);
+}
+.rutas-admin__titulo { font-size: 0.8rem; color: var(--color-texto-tenue); }
+.rutas-admin__zona { display: flex; flex-wrap: wrap; gap: 6px; flex: 1 1 280px; }
+.rutas-admin__zona input { flex: 1 1 160px; min-width: 0; }
+.rutas-admin__mensaje { flex-basis: 100%; font-size: 0.8rem; color: var(--color-texto-suave); }
+.rutas-admin__mensaje:empty { display: none; }

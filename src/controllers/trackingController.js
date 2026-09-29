@@ -3,6 +3,7 @@
 const TrackingService = require('../services/TrackingService');
 const ReportesCaminosService = require('../services/ReportesCaminosService');
 const HideoutsCaminoService = require('../services/HideoutsCaminoService');
+const AuditoriaRepository = require('../repositories/AuditoriaRepository');
 const { texto, entero, ErrorValidacion } = require('../security/validacion');
 
 const MAX_MAPAS_CONSULTA = 50;
@@ -26,6 +27,8 @@ const { manejar } = require('./utilidades');
  * DELETE /api/tracking/hideouts/:id  → borrar la anotación (autor o admin)
  * PUT    /api/tracking/rutas/:id     → editar una ruta (autor o admin)
  * DELETE /api/tracking/rutas/:id     → borrar una ruta (autor o admin)
+ * DELETE /api/tracking/rutas?alcance=todas|activas|zona|portal&valor=X
+ *                                    → borrado masivo (solo admin)
  * ----------------------------------------------------------------------
  */
 const hideouts = new HideoutsCaminoService();
@@ -107,6 +110,21 @@ const eliminarHideoutCamino = manejar((req, res) => {
   res.json({ ok: true });
 });
 
+const auditoria = new AuditoriaRepository();
+
+const borrarRutasEnBloque = manejar((req, res) => {
+  const alcance = texto(req.query.alcance, 'alcance', { min: 4, max: 10 });
+  const valor = texto(req.query.valor, 'valor', { min: 2, max: 80, obligatorio: false });
+  const resultado = servicio.borrarRutas({ alcance, valor });
+  auditoria.registrar({
+    usuarioId: req.usuario.id,
+    accion: 'BORRAR_RUTAS',
+    entidad: 'rutas',
+    detalle: { alcance, valor, ...resultado },
+  });
+  res.json({ ok: true, ...resultado });
+});
+
 const eliminarRuta = manejar((req, res) => {
   reportes.eliminarRuta(req.usuario, entero(req.params.id, 'id', { min: 1 }));
   res.json({ ok: true });
@@ -121,6 +139,7 @@ module.exports = {
   eliminar,
   editarRuta,
   eliminarRuta,
+  borrarRutasEnBloque,
   listarHideoutsCamino,
   agregarHideoutCamino,
   eliminarHideoutCamino,

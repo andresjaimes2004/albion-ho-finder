@@ -35,6 +35,16 @@ const db = require('../config/database');
  */
 
 const MAX_TEXTO = 80;
+// Una conexión que no forma parte de ninguna ruta se borra pasado este
+// tiempo desde que se registró (por si el resto de la ruta llega después).
+const MARGEN_SUELTAS_MS = 30 * 60_000;
+
+function errorPublico(mensaje, estado) {
+  const error = new Error(mensaje);
+  error.publico = true;
+  error.estado = estado;
+  return error;
+}
 
 const CATEGORIAS = {
   TUNNEL_ROYAL: { grupo: 'real', etiqueta: 'Real' },
@@ -205,7 +215,56 @@ class TrackingService {
       }
       const cerradas = this.reportes.purgarCerradasAntesDe(new Date(ahora - VENTANA_CERRADAS_MS).toISOString());
       const incompletas = this.rutasRepo.purgarIncompletas();
-      return { rutas: expiradas.length + incompletas, conexiones: cerradas };
+      // Conexiones sueltas: sin ruta (ni mapa inicial ni final). Se les da
+      // un margen por si otro miembro está capturando el resto de la ruta.
+      const limiteSueltas = new Date(ahora - MARGEN_SUELTAS_MS).toISOString().replace('T', ' ').slice(0, 19);
+      const sueltas = this.reportes.purgarSueltasAntesDe(limiteSueltas);
+      return { rutas: expiradas.length + incompletas, conexiones: cerradas + sueltas };
+    });
+  }
+
+  /**
+   * Borrado masivo de rutas (solo administradores), con las conexiones que
+   * dejan de usar si ninguna otra ruta las usa:
+   *  - 'todas':   todas las rutas y todas las conexiones.
+   *  - 'activas': las rutas abiertas (no toca las cerradas hace poco).
+   *  - 'zona':    las rutas que pasan por esa zona (mapa o camino).
+   *  - 'portal':  las rutas cuyo portal de ciudad más cercano es ese.
+   */
+  borrarRutas({ alcance, valor = null }) {
+    if (alcance === 'todas') {
+      return this.transaccion(() => {
+        const rutas = this.rutasRepo.eliminarTodas();
+        const conexiones = this.reportes.eliminarTodas();
+        return { rutas, conexiones };
+      });
+    }
+
+    const ahora = this.ahora();
+    const cierres = new Map(this.reportes.listarDesde('').map((r) => [r.id, Date.parse(r.cierraEn)]));
+    const orientadas = this.rutasRepo.listarCompletas().map((ruta) => this._orientar(ruta));
+    let elegidas;
+    if (alcance === 'activas') {
+      elegidas = clasificarRutas(orientadas, cierres, ahora).activas;
+    } else if (alcance === 'zona') {
+      const clave = normalizar(valor);
+      if (!clave) throw errorPublico('Indica la zona.', 400);
+      elegidas = orientadas.filter((r) => r.zonas.some((z) => normalizar(z) === clave));
+    } else if (alcance === 'portal') {
+      if (!this.portales.includes(valor)) throw errorPublico('Ese no es un portal de ciudad.', 400);
+      elegidas = orientadas.filter((r) => r.cercania && r.cercania.portal === valor);
+    } else {
+      throw errorPublico('Alcance de borrado desconocido.', 400);
+    }
+
+    return this.transaccion(() => {
+      const usadas = new Set(elegidas.flatMap((r) => r.conexionIds));
+      for (const ruta of elegidas) this.rutasRepo.eliminar(ruta.id);
+      let conexiones = 0;
+      for (const id of usadas) {
+        if (!this.rutasRepo.usaConexion(id) && this.reportes.eliminar(id)) conexiones += 1;
+      }
+      return { rutas: elegidas.length, conexiones };
     });
   }
 
