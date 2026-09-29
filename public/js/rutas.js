@@ -69,6 +69,12 @@ export function iniciarRelojes() {
 
 // -------------------------------------------------------------- rutas --
 
+/** "a 2 mapas de Lymhurst Portal", "en Lymhurst Portal". */
+export function textoCercania({ portal, saltos }) {
+  if (!saltos) return t('en {portal}', { portal });
+  return tn(saltos, 'a {n} mapa de {portal}', 'a {n} mapas de {portal}', { portal });
+}
+
 /**
  * Tarjeta de una ruta del gremio.
  * @param {object} ruta  { id, zonas:[{nombre, etiqueta, tier, clase}], tramos:[{cierraEn}], cierraEn, reportadoPor, reportadoPorId }
@@ -77,17 +83,28 @@ export function iniciarRelojes() {
  *   - resaltar: nombre de zona a destacar (p. ej. el mapa del hideout)
  *   - alElegirZona(nombre): al tocar una zona
  *   - alBorrar(ruta): al borrar (autor o admin)
+ *   - alEditar(ruta): al pulsar "Editar" (autor o admin)
  */
-export function crearTarjetaRuta(ruta, { usuario = null, resaltar = null, alElegirZona = null, alBorrar = null } = {}) {
-  const tarjeta = crear('article', 'ruta');
+export function crearTarjetaRuta(ruta, { usuario = null, resaltar = null, alElegirZona = null, alBorrar = null, alEditar = null } = {}) {
+  // Ruta que cerró hace poco: sus tramos traen estado (abierto, cerrado,
+  // desconectado) y se ve hasta `borraEn`.
+  const cerrada = Boolean(ruta.borraEn);
+  const tarjeta = crear('article', cerrada ? 'ruta ruta--cerrada' : 'ruta');
 
   const cabecera = crear('div', 'ruta__cabecera');
   const tramos = ruta.tramos.length;
   cabecera.append(
     crear('span', 'ruta__titulo', `${ruta.zonas[0].nombre} → ${ruta.zonas[ruta.zonas.length - 1].nombre}`),
-    crear('span', 'ruta__tramos', tn(tramos, '{n} tramo', '{n} tramos')),
-    crearReloj(ruta.cierraEn, { clase: 'reloj ruta__cierre' })
+    crear('span', 'ruta__tramos', tn(tramos, '{n} tramo', '{n} tramos'))
   );
+  if (cerrada) {
+    cabecera.append(
+      crear('span', 'insignia ruta__insignia-cerrada', t('Cerrada')),
+      crearReloj(ruta.borraEn, { clase: 'reloj ruta__cierre', prefijo: t('se borra en ') })
+    );
+  } else {
+    cabecera.append(crearReloj(ruta.cierraEn, { clase: 'reloj ruta__cierre' }));
+  }
 
   const fuente = crear('span', 'conexion__fuente conexion__fuente--gremio', ruta.reportadoPor ? t('gremio · {usuario}', { usuario: ruta.reportadoPor }) : t('gremio'));
   const puedeBorrar = alBorrar && usuario && (usuario.id === ruta.reportadoPorId || usuario.rol === 'ADMIN');
@@ -108,11 +125,27 @@ export function crearTarjetaRuta(ruta, { usuario = null, resaltar = null, alEleg
     fuente.append(' ', borrar);
   }
   cabecera.append(fuente);
+  const esSuya = usuario && (usuario.id === ruta.reportadoPorId || usuario.rol === 'ADMIN');
+  if (alEditar && esSuya) {
+    const editar = crear('button', 'boton boton--pequeno boton--sutil ruta__editar', t('Editar'));
+    editar.type = 'button';
+    editar.title = t('Editar esta ruta');
+    editar.addEventListener('click', () => alEditar(ruta));
+    cabecera.append(editar);
+  }
+  if (ruta.cercania) {
+    cabecera.append(
+      crear('span', 'ruta__cercania', t('Entrada: {mapa}, {cercania}', { mapa: ruta.cercania.desde, cercania: textoCercania(ruta.cercania) }))
+    );
+  }
 
   const pasos = crear('ol', 'ruta__pasos');
+  // Las zonas después del portal cerrado ya no se alcanzan desde la entrada.
+  const indiceCierre = cerrada ? ruta.tramoCerrado : -1;
   ruta.zonas.forEach((zona, k) => {
     const paso = crear('li', 'ruta__zona');
     if (resaltar && zona.nombre === resaltar) paso.classList.add('ruta__zona--resaltada');
+    if (indiceCierre >= 0 && k > indiceCierre) paso.classList.add('ruta__zona--desconectada');
 
     const nombre = zona.nombre || t('Zona desconocida');
     if (alElegirZona && zona.nombre) {
@@ -125,12 +158,31 @@ export function crearTarjetaRuta(ruta, { usuario = null, resaltar = null, alEleg
     }
     const meta = [zona.tier ? `T${zona.tier}` : null, zona.etiqueta && t(zona.etiqueta)].filter(Boolean).join(' · ');
     if (meta) paso.append(crear('span', 'ruta__meta', meta));
+    // Camino de hideouts: de quién son (lo anotan los usuarios).
+    if (zona.esHideout) {
+      const gremios = zona.gremios || [];
+      const linea = crear('span', 'ruta__gremios');
+      if (gremios.length) linea.append(t('Hideouts: {gremios}', { gremios: gremios.join(', ') }));
+      if (alElegirZona) {
+        const anotar = crear('button', 'ruta__anotar', gremios.length ? t('Ver o anotar') : t('¿De quién son los hideouts? Anótalo'));
+        anotar.type = 'button';
+        anotar.addEventListener('click', () => alElegirZona(zona.nombre));
+        linea.append(gremios.length ? ' · ' : '', anotar);
+      }
+      if (linea.childNodes.length) paso.append(linea);
+    }
     pasos.append(paso);
 
     if (k < ruta.tramos.length) {
       const tramo = crear('li', 'ruta__tramo');
       tramo.setAttribute('aria-label', t('Portal'));
-      tramo.append(crearReloj(ruta.tramos[k].cierraEn, { prefijo: '' }));
+      const estado = ruta.tramos[k].estado;
+      if (estado === 'cerrado' || estado === 'desconectado') {
+        tramo.classList.add(`ruta__tramo--${estado}`);
+        tramo.append(crear('span', null, estado === 'cerrado' ? t('portal cerrado') : t('desconectado')));
+      } else {
+        tramo.append(crearReloj(ruta.tramos[k].cierraEn, { prefijo: '' }));
+      }
       pasos.append(tramo);
     }
   });

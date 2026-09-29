@@ -20,6 +20,8 @@ const servidor = app.crearServidor();
 
 servidor.listen(PORT, () => {
   console.log(`Servidor "Albion Navigator" escuchando en el puerto ${PORT}`);
+  // Limpieza periódica: rutas cerradas, sesiones caducadas...
+  require('./src/tareas')();
 });
 
 // Cierre ordenado: deja de aceptar conexiones antes de terminar el proceso.

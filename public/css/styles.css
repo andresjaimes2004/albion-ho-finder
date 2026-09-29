@@ -3196,3 +3196,173 @@ html:has(dialog[open]) { overflow: hidden; }
 /* Sin la imagen de la wiki, un fondo que deje ver puntos y conexiones. */
 #mapa-mundial__svg.mundo--sin-fondo { background: radial-gradient(circle at 50% 45%, #3c4a52, #27313a 75%); }
 #mapa-mundial__svg.mundo--sin-fondo .mundo__aristas line { stroke: rgba(232, 220, 190, 0.35); }
+
+/* ============================================================================
+   Rutas del gremio por portal de ciudad y por mapa de entrada
+   ============================================================================ */
+.rutas-portales { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 12px; }
+.rutas-portales__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.84rem;
+  color: var(--color-texto);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-borde-suave);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.rutas-portales__chip:hover { border-color: rgba(var(--acento-rgb), 0.6); }
+.rutas-portales__chip[aria-pressed='true'] {
+  color: var(--color-oro-claro);
+  background: rgba(var(--acento-rgb), 0.14);
+  border-color: rgba(var(--acento-rgb), 0.7);
+}
+.rutas-portales__cantidad {
+  min-width: 1.4em;
+  padding: 0 5px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.08);
+}
+.rutas-portal__titulo {
+  margin: 14px 0 8px;
+  font-family: var(--fuente-titulos);
+  font-size: 0.95rem;
+  color: var(--color-oro-claro);
+}
+.rutas-entradas { display: flex; flex-direction: column; gap: 8px; }
+.rutas-entrada {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+}
+.rutas-entrada[open] { border-color: rgba(var(--acento-rgb), 0.45); }
+.rutas-entrada__resumen {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 9px 12px;
+  cursor: pointer;
+  list-style: none;
+}
+.rutas-entrada__resumen::-webkit-details-marker { display: none; }
+.rutas-entrada__resumen:focus-visible { outline: 2px solid var(--color-oro-claro); outline-offset: 2px; border-radius: var(--radio); }
+.rutas-entrada__cabeza { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.rutas-entrada__cabeza::before { content: '▸'; color: var(--color-texto-tenue); transition: transform 0.2s ease; }
+.rutas-entrada[open] .rutas-entrada__cabeza::before { transform: rotate(90deg); }
+.rutas-entrada__cercania, .rutas-entrada__cantidad { font-size: 0.8rem; color: var(--color-texto-tenue); }
+.rutas-entrada__cantidad { margin-left: auto; }
+.rutas-entrada__destinos { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.82rem; padding-left: 16px; }
+.rutas-entrada__destino { white-space: nowrap; }
+.rutas-entrada > .lista-rutas { padding: 0 10px 10px; }
+.ruta__cercania { flex-basis: 100%; font-size: 0.78rem; color: var(--color-texto-tenue); }
+@media (prefers-reduced-motion: reduce) {
+  .rutas-entrada__cabeza::before { transition: none; }
+}
+
+/* Rutas que cerraron hace poco: el portal cerrado en rojo y lo que quedó
+   después, apagado. */
+.rutas-cerradas { border-color: rgba(201, 79, 79, 0.45); background: rgba(201, 79, 79, 0.05); margin-bottom: 10px; }
+.rutas-cerradas[open] { border-color: rgba(201, 79, 79, 0.7); }
+.rutas-cerradas .rutas-entrada__cabeza strong { color: #e58a8a; }
+.ruta--cerrada { border-left-color: var(--color-error); }
+.ruta__insignia-cerrada { color: #e58a8a; border-color: rgba(201, 79, 79, 0.5); background: rgba(201, 79, 79, 0.12); }
+.ruta__tramo--cerrado { color: #e58a8a; font-weight: 600; }
+.ruta__tramo--cerrado::before { content: '✕'; color: var(--color-error); }
+.ruta__tramo--desconectado { color: var(--color-texto-tenue); font-style: italic; }
+.ruta__tramo--desconectado::before { color: var(--color-texto-tenue); }
+.ruta__zona--desconectada { opacity: 0.5; }
+
+/* ============================================================================
+   Editar una ruta guardada (panel de registro en modo edición)
+   ============================================================================ */
+.registro__edicion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  border: 1px solid rgba(232, 201, 92, 0.45);
+  border-radius: var(--radio);
+  background: rgba(232, 201, 92, 0.08);
+  font-size: 0.86rem;
+}
+.registro__edicion p { margin: 0; flex: 1 1 280px; }
+.registro__edicion strong { color: var(--color-oro-claro); }
+/* En edición no hacen falta los pasos para sacar capturas. */
+.registro--edicion .registro__pasos { display: none; }
+
+.registro__mover { display: none; grid-area: mover; justify-self: end; gap: 4px; }
+.registro--edicion .registro__mover { display: inline-flex; }
+.registro--edicion .registro__fila {
+  grid-template-areas:
+    'vista campos quitar'
+    'vista estado mover';
+}
+@media (max-width: 560px) {
+  .registro--edicion .registro__fila {
+    grid-template-areas:
+      'vista quitar'
+      'campos campos'
+      'estado mover';
+  }
+}
+.ruta__editar { padding: 3px 10px; font-size: 0.78rem; }
+
+/* ============================================================================
+   Hideouts en caminos de Avalon de hideouts
+   ============================================================================ */
+.ruta__gremios { display: block; font-size: 0.76rem; color: var(--color-oro-claro); margin-top: 2px; }
+.ruta__anotar {
+  padding: 0;
+  font: inherit;
+  color: var(--color-texto-suave);
+  text-decoration: underline;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.ruta__anotar:hover { color: var(--color-oro-claro); }
+.hideouts-camino__lista { list-style: none; margin: 0 0 10px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.hideouts-camino__gremio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  padding: 6px 10px;
+  border: 1px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  background: rgba(255, 255, 255, 0.03);
+}
+.hideouts-camino__meta { font-size: 0.76rem; color: var(--color-texto-tenue); }
+.hideouts-camino__gremio .conexion__borrar { margin-left: auto; }
+.hideouts-camino__formulario { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.hideouts-camino__formulario input { flex: 1 1 180px; min-width: 0; }
+.hideouts-camino__mensaje { flex-basis: 100%; margin: 0; font-size: 0.8rem; color: var(--color-error); }
+.hideouts-camino__mensaje:empty { display: none; }
+.tarjeta-mapa__gremios-camino { margin: 0; padding: 0 14px 12px; font-size: 0.86rem; color: var(--color-texto-suave); }
+.tarjeta-mapa__gremios-camino mark { background: rgba(232, 201, 92, 0.25); color: var(--color-oro-claro); border-radius: 3px; padding: 0 2px; }
+
+/* Sincronización con el Excel de Google Drive (panel de administración) */
+.admin-sincronizacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 10px 14px;
+  margin-bottom: 18px;
+  border: 1px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  background: rgba(255, 255, 255, 0.03);
+}
+.admin-sincronizacion__estado { margin: 0; flex: 1 1 280px; font-size: 0.86rem; color: var(--color-texto-suave); }
+.admin-sincronizacion__estado--error { color: #e58a8a; }
+.admin-sincronizacion__acciones { display: flex; gap: 8px; flex-wrap: wrap; }

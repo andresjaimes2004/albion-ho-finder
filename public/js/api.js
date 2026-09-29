@@ -85,11 +85,18 @@ export const api = {
   tracking: () => peticion('/api/tracking'),
   detalleTracking: (nombre, senal) =>
     peticion(`/api/tracking/${encodeURIComponent(nombre)}`, { senal }),
-  zonas: () => peticion('/api/tracking/zonas'),
+  // ?v= cambia cuando cambia el formato: la lista se guarda 24 h en caché.
+  zonas: () => peticion('/api/tracking/zonas?v=2'),
   reportarConexiones: (conexiones, rutas = []) =>
     peticion('/api/tracking/reportes', { metodo: 'POST', datos: { conexiones, rutas } }),
   borrarReporte: (id) => peticion(`/api/tracking/reportes/${id}`, { metodo: 'DELETE' }),
   borrarRuta: (id) => peticion(`/api/tracking/rutas/${id}`, { metodo: 'DELETE' }),
+  hideoutsCamino: (camino) => peticion(`/api/tracking/hideouts?camino=${encodeURIComponent(camino)}`),
+  anotarHideoutCamino: (camino, gremio) =>
+    peticion('/api/tracking/hideouts', { metodo: 'POST', datos: { camino, gremio } }),
+  borrarHideoutCamino: (id) => peticion(`/api/tracking/hideouts/${id}`, { metodo: 'DELETE' }),
+  editarRuta: (id, conexiones) =>
+    peticion(`/api/tracking/rutas/${id}`, { metodo: 'PUT', datos: { conexiones } }),
   rutasDeMapas: (nombres, senal) =>
     peticion(`/api/tracking/rutas?mapas=${encodeURIComponent(nombres.join(','))}`, { senal }),
 
@@ -107,6 +114,8 @@ export const api = {
 
   admin: {
     resumen: () => peticion('/api/admin/resumen'),
+    estadoSincronizacion: () => peticion('/api/admin/sincronizacion'),
+    sincronizar: (forzar = false) => peticion('/api/admin/sincronizacion', { metodo: 'POST', datos: { forzar } }),
     buscarGremios: (q) => peticion(`/api/admin/gremios?q=${encodeURIComponent(q || '')}`),
     renombrarGremio: (id, nombre) =>
       peticion(`/api/admin/gremios/${id}/nombre`, { metodo: 'PUT', datos: { nombre } }),

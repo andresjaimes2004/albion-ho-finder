@@ -1,8 +1,8 @@
 'use strict';
 
 import api from './api.js';
-import { crear, crearReloj, crearTarjetaRuta } from './rutas.js';
-import { t, tn } from './i18n.js';
+import { crear, crearReloj, crearTarjetaRuta, textoCercania } from './rutas.js';
+import { t, tn, regional } from './i18n.js';
 
 /**
  * tracking.js
@@ -38,8 +38,9 @@ function normalizar(texto) {
 
 
 export class PanelCaminos {
-  constructor({ abrirMapa, alActualizar = null }) {
+  constructor({ abrirMapa, alActualizar = null, alEditarRuta = null }) {
     this.abrirMapa = abrirMapa;
+    this.alEditarRuta = alEditarRuta;
     // Avisa de cada resumen nuevo (el panel de registro usa sus conexiones).
     this.alActualizar = alActualizar;
 
@@ -99,6 +100,8 @@ export class PanelCaminos {
 
   establecerUsuario(usuario) {
     this.usuario = usuario;
+    // Los botones de cada ruta (borrar...) dependen de quién mira.
+    if (this.datos) this._renderizarRutas();
     if (this.mapaAbierto) this.abrirDetalle(this.mapaAbierto, { silencioso: true });
   }
 
@@ -364,6 +367,7 @@ export class PanelCaminos {
       partes.push(ver);
     }
 
+    if (datos.hideouts) partes.push(this._crearBloqueHideouts(mapa.nombre, datos.hideouts));
     if (rutas.length) partes.push(this._crearBloqueRutas(rutas, { resaltar: mapa.nombre }));
 
     const cuerpo = crear('div', 'caminos-detalle__cuerpo');
@@ -373,6 +377,84 @@ export class PanelCaminos {
 
     this.detalle.hidden = false;
     this.detalle.replaceChildren(...partes);
+  }
+
+  /**
+   * Camino de Avalon de hideouts: los gremios que tienen hideout allí,
+   * anotados por los usuarios, y el formulario para anotar más.
+   */
+  _crearBloqueHideouts(camino, hideouts) {
+    const bloque = crear('div', 'caminos-detalle__bloque hideouts-camino');
+    bloque.append(crear('h4', null, t('Gremios con hideout en este camino')));
+
+    if (!hideouts.length) {
+      bloque.append(
+        crear('p', 'caminos-detalle__vacio', t('Nadie ha anotado gremios en este camino todavía. Si llegaste aquí, anota los hideouts que veas.'))
+      );
+    } else {
+      const lista = crear('ul', 'hideouts-camino__lista');
+      for (const h of hideouts) {
+        const item = crear('li', 'hideouts-camino__gremio');
+        item.append(crear('strong', null, h.gremio));
+        const fecha = new Date(`${String(h.confirmadoEn).replace(' ', 'T')}Z`);
+        const partes = [];
+        if (h.usuario) partes.push(t('anotado por {usuario}', { usuario: h.usuario }));
+        if (!Number.isNaN(fecha.getTime())) partes.push(t('visto el {fecha}', { fecha: fecha.toLocaleDateString(regional) }));
+        item.append(crear('span', 'hideouts-camino__meta', partes.join(' · ')));
+        const puedeBorrar = this.usuario && (this.usuario.id === h.usuarioId || this.usuario.rol === 'ADMIN');
+        if (puedeBorrar) {
+          const borrar = crear('button', 'conexion__borrar', '✕');
+          borrar.type = 'button';
+          borrar.title = t('Borrar esta anotación');
+          borrar.setAttribute('aria-label', t('Borrar esta anotación'));
+          borrar.addEventListener('click', async () => {
+            borrar.disabled = true;
+            try {
+              await api.borrarHideoutCamino(h.id);
+              await this.refrescar();
+            } catch (error) {
+              borrar.disabled = false;
+              borrar.title = error.message || t('No se pudo borrar.');
+            }
+          });
+          item.append(borrar);
+        }
+        lista.append(item);
+      }
+      bloque.append(lista);
+    }
+
+    if (!this.usuario) {
+      bloque.append(crear('p', 'caminos-detalle__vacio', t('Inicia sesión para anotar gremios.')));
+      return bloque;
+    }
+    const formulario = crear('form', 'hideouts-camino__formulario');
+    const entrada = crear('input');
+    entrada.type = 'text';
+    entrada.maxLength = 40;
+    entrada.minLength = 2;
+    entrada.required = true;
+    entrada.autocomplete = 'off';
+    entrada.placeholder = t('Nombre del gremio');
+    entrada.setAttribute('aria-label', t('Nombre del gremio'));
+    const anotar = crear('button', 'boton boton--pequeno', t('Anotar'));
+    anotar.type = 'submit';
+    const mensaje = crear('p', 'hideouts-camino__mensaje');
+    mensaje.setAttribute('aria-live', 'polite');
+    formulario.append(entrada, anotar, mensaje);
+    formulario.addEventListener('submit', async (evento) => {
+      evento.preventDefault();
+      anotar.disabled = true;
+      try {
+        await api.anotarHideoutCamino(camino, entrada.value);
+        await this.refrescar();
+      } catch (error) {
+        mensaje.textContent = error.message || t('No se pudo guardar.');
+        anotar.disabled = false;
+      }
+    });
+    bloque.append(formulario);
+    return bloque;
   }
 
   _crearBloqueConexiones(conexiones) {
@@ -498,35 +580,178 @@ export class PanelCaminos {
 
   // ----------------------------------------------------------------- rutas --
 
-  /** Lista general "Rutas del gremio" (todas las vigentes). */
+  /**
+   * Lista general "Rutas del gremio", organizada para leerla rápido:
+   *
+   *  1. Un filtro por portal de ciudad (Lymhurst, Martlock...): cada ruta
+   *     cuenta para el portal más cercano a uno de sus extremos.
+   *  2. Dentro, las rutas se agrupan por mapa de entrada (el extremo más
+   *     cercano al portal) en bloques plegables, de la entrada más cercana
+   *     a la más lejana. El resumen de cada bloque ya dice a dónde llevan
+   *     sus rutas; se despliega solo el que interesa.
+   */
   _renderizarRutas() {
     const contenedor = document.getElementById('caminos-rutas');
     const rutas = (this.datos && this.datos.rutas) || [];
-    contenedor.hidden = !rutas.length;
-    if (!rutas.length) {
+    const cerradas = (this.datos && this.datos.rutasCerradas) || [];
+    contenedor.hidden = !rutas.length && !cerradas.length;
+    if (contenedor.hidden) {
       contenedor.replaceChildren();
       return;
     }
-    contenedor.replaceChildren(this._crearBloqueRutas(rutas, { titulo: t('Rutas del gremio') }));
+
+    const OTRAS = '';
+    const porPortal = new Map();
+    for (const ruta of rutas) {
+      const portal = ruta.cercania ? ruta.cercania.portal : OTRAS;
+      if (!porPortal.has(portal)) porPortal.set(portal, []);
+      porPortal.get(portal).push(ruta);
+    }
+    const orden = [...(this.datos.portales || []), OTRAS].filter((p) => porPortal.has(p));
+
+    if (this._portalElegido === undefined) {
+      this._portalElegido = null;
+      try {
+        this._portalElegido = localStorage.getItem('rutas-portal');
+      } catch (error) {
+        // Sin almacenamiento (modo privado estricto): se muestran todas.
+      }
+    }
+    const elegido = this._portalElegido !== null && porPortal.has(this._portalElegido) ? this._portalElegido : null;
+
+    const bloque = crear('div', 'caminos-detalle__bloque bloque-rutas');
+    bloque.append(crear('h4', null, `${t('Rutas del gremio')} (${rutas.length})`));
+
+    // Filtro por portal.
+    const filtro = crear('div', 'rutas-portales');
+    filtro.setAttribute('role', 'group');
+    filtro.setAttribute('aria-label', t('Filtrar rutas por portal de ciudad'));
+    const chip = (valor, texto, cantidad) => {
+      const boton = crear('button', 'rutas-portales__chip');
+      boton.type = 'button';
+      boton.setAttribute('aria-pressed', String(valor === elegido));
+      boton.append(texto, ' ', crear('span', 'rutas-portales__cantidad', String(cantidad)));
+      boton.addEventListener('click', () => {
+        this._portalElegido = valor;
+        try {
+          if (valor === null) localStorage.removeItem('rutas-portal');
+          else localStorage.setItem('rutas-portal', valor);
+        } catch (error) {
+          // Sin almacenamiento: el filtro vale hasta la próxima recarga.
+        }
+        this._renderizarRutas();
+      });
+      return boton;
+    };
+    if (rutas.length) {
+      filtro.append(chip(null, t('Todas'), rutas.length));
+      for (const portal of orden) {
+        filtro.append(chip(portal, portal === OTRAS ? t('Otras') : portal.replace(/ Portal$/, ''), porPortal.get(portal).length));
+      }
+      bloque.append(filtro);
+    }
+
+    if (cerradas.length) bloque.append(this._crearCerradas(cerradas));
+
+    const portalesVisibles = elegido === null ? orden : [elegido];
+    for (const portal of portalesVisibles) {
+      if (elegido === null) {
+        bloque.append(crear('h5', 'rutas-portal__titulo', portal === OTRAS ? t('Lejos de los portales de ciudad') : portal));
+      }
+      bloque.append(this._crearEntradas(porPortal.get(portal)));
+    }
+    contenedor.replaceChildren(bloque);
+  }
+
+  /**
+   * Rutas que cerraron hace menos de 30 minutos: se ven enteras (con el
+   * portal cerrado y lo que quedó desconectado) para saber a dónde
+   * llevaban y corregirlas antes de que se borren.
+   */
+  _crearCerradas(cerradas) {
+    const detalles = crear('details', 'rutas-entrada rutas-cerradas');
+    detalles.open = Boolean(this._cerradasAbiertas);
+    detalles.addEventListener('toggle', () => {
+      this._cerradasAbiertas = detalles.open;
+    });
+    const resumen = crear('summary', 'rutas-entrada__resumen');
+    const cabeza = crear('span', 'rutas-entrada__cabeza');
+    cabeza.append(
+      crear('strong', null, t('Cerradas hace poco')),
+      crear('span', 'rutas-entrada__cercania', t('Se ven 30 minutos después de cerrar un portal, para corregirlas.')),
+      crear('span', 'rutas-entrada__cantidad', tn(cerradas.length, '{n} ruta', '{n} rutas'))
+    );
+    resumen.append(cabeza);
+    detalles.append(resumen);
+
+    const tarjetas = crear('div', 'lista-rutas');
+    for (const ruta of cerradas) tarjetas.append(this._tarjetaRuta(ruta));
+    detalles.append(tarjetas);
+    return detalles;
+  }
+
+  /** Rutas de un portal agrupadas por su mapa de entrada, en bloques plegables. */
+  _crearEntradas(rutas) {
+    const porEntrada = new Map();
+    for (const ruta of rutas) {
+      const desde = ruta.zonas[0].nombre;
+      if (!porEntrada.has(desde)) porEntrada.set(desde, []);
+      porEntrada.get(desde).push(ruta);
+    }
+
+    // Los bloques abiertos siguen abiertos cuando la lista se refresca.
+    if (!this._entradasAbiertas) this._entradasAbiertas = new Set();
+    const lista = crear('div', 'rutas-entradas');
+    for (const [desde, grupo] of porEntrada) {
+      const detalles = crear('details', 'rutas-entrada');
+      detalles.open = this._entradasAbiertas.has(desde);
+      detalles.addEventListener('toggle', () => {
+        if (detalles.open) this._entradasAbiertas.add(desde);
+        else this._entradasAbiertas.delete(desde);
+      });
+      const resumen = crear('summary', 'rutas-entrada__resumen');
+      const cabeza = crear('span', 'rutas-entrada__cabeza');
+      cabeza.append(crear('strong', null, desde));
+      const cercania = grupo[0].cercania;
+      if (cercania) cabeza.append(crear('span', 'rutas-entrada__cercania', textoCercania(cercania)));
+      cabeza.append(crear('span', 'rutas-entrada__cantidad', tn(grupo.length, '{n} ruta', '{n} rutas')));
+
+      // A dónde lleva cada ruta y cuánto le queda, sin desplegar.
+      const destinos = crear('span', 'rutas-entrada__destinos');
+      for (const ruta of grupo) {
+        const destino = crear('span', 'rutas-entrada__destino');
+        destino.append(`→ ${ruta.zonas[ruta.zonas.length - 1].nombre} `, crearReloj(ruta.cierraEn, { prefijo: '' }));
+        destinos.append(destino);
+      }
+      resumen.append(cabeza, destinos);
+      detalles.append(resumen);
+
+      const tarjetas = crear('div', 'lista-rutas');
+      for (const ruta of grupo) tarjetas.append(this._tarjetaRuta(ruta));
+      detalles.append(tarjetas);
+      lista.append(detalles);
+    }
+    return lista;
+  }
+
+  _tarjetaRuta(ruta, resaltar = null) {
+    return crearTarjetaRuta(ruta, {
+      usuario: this.usuario,
+      resaltar,
+      alElegirZona: (nombre) => this.abrirDetalle(nombre),
+      alBorrar: async (r) => {
+        await api.borrarRuta(r.id);
+        await this.refrescar();
+      },
+      alEditar: this.alEditarRuta,
+    });
   }
 
   _crearBloqueRutas(rutas, { titulo = t('Rutas que pasan por aquí'), resaltar = null } = {}) {
     const bloque = crear('div', 'caminos-detalle__bloque bloque-rutas');
     bloque.append(crear('h4', null, `${titulo} (${rutas.length})`));
     const lista = crear('div', 'lista-rutas');
-    for (const ruta of rutas) {
-      lista.append(
-        crearTarjetaRuta(ruta, {
-          usuario: this.usuario,
-          resaltar,
-          alElegirZona: (nombre) => this.abrirDetalle(nombre),
-          alBorrar: async (r) => {
-            await api.borrarRuta(r.id);
-            await this.refrescar();
-          },
-        })
-      );
-    }
+    for (const ruta of rutas) lista.append(this._tarjetaRuta(ruta, resaltar));
     bloque.append(lista);
     return bloque;
   }

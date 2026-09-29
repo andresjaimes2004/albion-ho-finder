@@ -74,6 +74,13 @@ const EN = {
   'Mapa de clusters de la Zona Negra': 'Black Zone cluster map',
   'Arrastra para moverte; acerca con la rueda, pellizcando, con doble toque o con los botones + y −. Al acercar aparecen los nombres de los mapas. Los mapas resaltados son los de tu búsqueda.':
     'Drag to move; zoom with the wheel, by pinching, by double-tapping or with the + and − buttons. Map names appear as you zoom in. Highlighted maps are the ones from your search.',
+  'Editando la ruta': 'Editing the route',
+  'Pega capturas nuevas, quita las conexiones que sobran, cambia el orden con ↑ ↓ o corrige los tiempos. Las capturas que tenías pendientes vuelven al terminar.':
+    'Paste new screenshots, remove the connections you do not need, reorder them with ↑ ↓ or fix the times. Your pending screenshots come back when you finish.',
+  'Cancelar edición': 'Cancel editing',
+  'Excel de Google Drive': 'Google Drive spreadsheet',
+  'Sincronizar ahora': 'Sync now',
+  'Aplicar de todos modos': 'Apply anyway',
   'Zoom del mapa': 'Map zoom',
   'Acercar': 'Zoom in',
   'Alejar': 'Zoom out',

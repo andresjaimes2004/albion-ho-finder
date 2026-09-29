@@ -1,10 +1,11 @@
 'use strict';
 
 const BuscadorService = require('../services/BuscadorService');
+const HideoutsCaminoService = require('../services/HideoutsCaminoService');
 const BusquedaRepository = require('../repositories/BusquedaRepository');
 const { manejar } = require('./utilidades');
 
-const servicio = new BuscadorService();
+const servicio = new BuscadorService({ hideoutsCamino: new HideoutsCaminoService() });
 const busquedas = new BusquedaRepository();
 
 /**

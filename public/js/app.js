@@ -66,6 +66,8 @@ class BuscadorUI {
       abrirMapa: (nombre) => this.ventanaMapa.abrir(nombre),
       // Las conexiones guardadas permiten continuar rutas desde el registro.
       alActualizar: (datos) => this.panelRegistro.establecerGuardadas(datos.conexiones),
+      // "Editar" en una ruta la abre en el panel de registro.
+      alEditarRuta: (ruta) => this.panelRegistro.editarRuta(ruta),
     });
 
     this.panelRegistro = new PanelRegistro({
@@ -312,7 +314,7 @@ class BuscadorUI {
       this._actualizarBadgeTemporada(datos.temporada);
 
       const porNombre = datos.mapas || [];
-      if (datos.totalMapas === 0 && !porNombre.length) {
+      if (datos.totalMapas === 0 && !porNombre.length && !(datos.caminos || []).length) {
         this._mostrarEstado('sinResultados');
         this.mapaMundial.destacar([]);
         return;
@@ -371,6 +373,47 @@ class BuscadorUI {
         this.listaMapas.appendChild(this._crearTarjetaMapa(grupo));
       }
     }
+
+    const caminos = datos.caminos || [];
+    if (caminos.length) {
+      this.listaMapas.appendChild(
+        this._crearTituloSeccion(t('Hideouts en caminos de Avalon'), tn(caminos.length, '{n} camino', '{n} caminos'))
+      );
+      for (const camino of caminos) this.listaMapas.appendChild(this._crearTarjetaCaminoHideout(camino));
+    }
+  }
+
+  /**
+   * Camino de Avalon de hideouts encontrado por gremio o por nombre, con
+   * los gremios que anotaron los usuarios. Abre su ficha en "Caminos de
+   * Avalon", donde se ven sus rutas y se anotan más gremios.
+   */
+  _crearTarjetaCaminoHideout(camino) {
+    const tarjeta = crear('article', 'tarjeta-mapa tarjeta-mapa--camino');
+    const encabezado = crear('button', 'tarjeta-mapa__encabezado');
+    encabezado.type = 'button';
+    encabezado.setAttribute('aria-label', t('Ver el camino {camino}', { camino: camino.camino }));
+    encabezado.append(crear('h3', 'tarjeta-mapa__nombre', camino.camino));
+    const meta = [camino.tier ? `T${camino.tier}` : null, camino.profundo ? t('Hideout profundo') : t('Hideout')].filter(Boolean);
+    encabezado.append(crear('span', 'tarjeta-mapa__meta', meta.join(' · ')));
+    encabezado.addEventListener('click', () => {
+      this._irA('caminos', { alTerminar: () => this.panelCaminos.abrirDetalle(camino.camino) });
+    });
+    tarjeta.append(encabezado);
+
+    const gremios = crear('p', 'tarjeta-mapa__gremios-camino');
+    if (camino.gremios.length) {
+      const buscado = (this.ultimoTermino || '').toLowerCase();
+      camino.gremios.forEach((g, i) => {
+        if (i) gremios.append(', ');
+        const nombre = crear(buscado && g.gremio.toLowerCase().includes(buscado) ? 'mark' : 'span', null, g.gremio);
+        gremios.append(nombre);
+      });
+    } else {
+      gremios.textContent = t('Sin gremios anotados todavía.');
+    }
+    tarjeta.append(gremios);
+    return tarjeta;
   }
 
   _crearTituloSeccion(titulo, detalle) {

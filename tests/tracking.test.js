@@ -390,3 +390,151 @@ test('una ruta nueva puede continuar desde conexiones ya guardadas (sin volver a
   assert.throws(() => s.registrar(autor.id, RUTA, [[{ id: 999999 }, 0]]), /ya cerró o se borró/);
   assert.throws(() => s.registrar(autor.id, RUTA, [[{ id: guardadaId }, { id: guardadaId }]]), /repite un tramo/);
 });
+
+// ------------------------------------------------ rutas que se cierran --
+
+const { clasificarRutas, VENTANA_CERRADAS_MS } = require('../src/services/estadoRutas');
+
+test('clasifica las rutas: abiertas, cerradas hace poco (30 min) y expiradas', () => {
+  const MIN = 60_000;
+  const cierres = new Map([[1, 100 * MIN], [2, 10 * MIN], [3, 200 * MIN], [4, 300 * MIN], [5, 50 * MIN]]);
+  const ahora = 20 * MIN;
+  const rutas = [
+    { id: 'abierta', conexionIds: [1, 3] },
+    { id: 'rota', conexionIds: [1, 2, 3, 4] }, // cerró el tramo 2 (índice 1) hace 10 min
+    { id: 'sin-tramo', conexionIds: [1, 99] },
+  ];
+  const r = clasificarRutas(rutas, cierres, ahora);
+  assert.deepEqual(r.activas.map((x) => x.id), ['abierta']);
+  assert.equal(r.cerradas.length, 1);
+  assert.equal(r.cerradas[0].indiceCierre, 1);
+  assert.equal(r.cerradas[0].cerradaEn, 10 * MIN);
+  // 3 y 4 venían después del portal cerrado; 3 sigue en una ruta abierta.
+  assert.deepEqual([...r.desconectadas], [4]);
+
+  const tarde = clasificarRutas(rutas, cierres, 10 * MIN + VENTANA_CERRADAS_MS);
+  assert.equal(tarde.cerradas.length, 0);
+  assert.deepEqual(tarde.expiradas.map((e) => [e.ruta.id, e.siguientes]), [['rota', [3, 4]]]);
+});
+
+test('al cerrar un portal la ruta se ve 30 min como cerrada y los tramos siguientes dejan de contar', async () => {
+  limpiarReportes();
+  // Deepwood Copse → Ouyos (120 min) → Cases (45 min) → Martlock (300 min).
+  servicioReportes().registrar(autor.id, RUTA, [[0, 1, 2]]);
+
+  // 50 min después cerró Ouyos–Cases.
+  const { servicio } = crearServicio({ ahora: () => AHORA + 50 * 60_000 });
+  const resumen = await servicio.resumen();
+  assert.equal(resumen.rutas.length, 0);
+  assert.equal(resumen.rutasCerradas.length, 1);
+  const cerrada = resumen.rutasCerradas[0];
+  assert.deepEqual(cerrada.tramos.map((t) => t.estado), ['abierto', 'cerrado', 'desconectado']);
+  assert.equal(cerrada.borraEn, AHORA + 45 * 60_000 + VENTANA_CERRADAS_MS);
+  assert.deepEqual(
+    resumen.conexiones.map((c) => `${c.origen.nombre}-${c.destino.nombre}`),
+    ['Ouyos-Aoeuam-Deepwood Copse'],
+    'Cases–Martlock queda desconectada aunque su portal siga abierto'
+  );
+
+  // El mantenimiento no borra nada dentro de la ventana...
+  servicio.mantenimiento();
+  assert.equal((await servicio.resumen()).rutasCerradas.length, 1);
+
+  // ...y pasada la ventana borra la ruta y el tramo siguiente, no el anterior.
+  const { servicio: despues } = crearServicio({ ahora: () => AHORA + 80 * 60_000 });
+  const borrado = despues.mantenimiento();
+  assert.equal(borrado.rutas, 1);
+  const quedan = new ConexionReportadaRepository().listarDesde('').map((c) => `${c.origen}-${c.destino}`);
+  assert.deepEqual(quedan, ['Ouyos-Aoeuam-Deepwood Copse']);
+  const final = await despues.resumen();
+  assert.equal(final.rutasCerradas.length, 0);
+  assert.equal(final.conexiones.length, 1);
+});
+
+test('un tramo desconectado sigue visible si otra ruta abierta lo usa', async () => {
+  limpiarReportes();
+  const conexiones = [
+    { origen: 'Deepwood Copse', destino: 'Ouyos-Aoeuam', minutos: 120 },
+    { origen: 'Ouyos-Aoeuam', destino: 'Cases-Ugumlos', minutos: 20 }, // cierra pronto
+    { origen: 'Cases-Ugumlos', destino: 'Martlock', minutos: 300 },
+    { origen: 'Cases-Ugumlos', destino: 'Lymhurst', minutos: 300 },
+  ];
+  // Rutas: Deepwood → Ouyos → Cases → Martlock y Lymhurst → Cases → Martlock.
+  servicioReportes().registrar(autor.id, conexiones, [[0, 1, 2], [3, 2]]);
+  const { servicio } = crearServicio({ ahora: () => AHORA + 30 * 60_000 });
+  const resumen = await servicio.resumen();
+  assert.equal(resumen.rutas.length, 1);
+  assert.equal(resumen.rutasCerradas.length, 1);
+  assert.equal(resumen.conexiones.length, 3, 'Cases–Martlock sigue: la usa la ruta abierta');
+
+  const { servicio: despues } = crearServicio({ ahora: () => AHORA + 60 * 60_000 });
+  despues.mantenimiento();
+  assert.equal((await despues.resumen()).rutas.length, 1, 'la otra ruta sigue intacta');
+  assert.equal(new ConexionReportadaRepository().listarDesde('').length, 3);
+});
+
+// ------------------------------------------------------ editar rutas --
+
+test('editar una ruta: reordenar, cambiar tiempos, quitar y agregar conexiones', async () => {
+  limpiarReportes();
+  const s = servicioReportes();
+  // Deepwood Copse → Ouyos → Cases → Martlock.
+  const ruta = s.registrar(autor.id, RUTA, [[0, 1, 2]]).rutas[0];
+  const [idDeepwood, idOuyosCases, idCasesMartlock] = ruta.conexionIds;
+
+  // Se equivocaron en el final: era Lymhurst, no Martlock. Además, el
+  // primer portal tiene más tiempo del registrado.
+  const editada = s.editarRuta(admin, ruta.id, [
+    { origen: 'Deepwood Copse', destino: 'Ouyos-Aoeuam', minutos: 200 },
+    { origen: 'Cases-Ugumlos', destino: 'Ouyos-Aoeuam', minutos: 45 }, // al revés: se orienta sola
+    { origen: 'Cases-Ugumlos', destino: 'Lymhurst', minutos: 90 },
+  ]);
+  assert.equal(editada.id, ruta.id, 'es la misma ruta');
+  assert.deepEqual(editada.zonas, ['Deepwood Copse', 'Ouyos-Aoeuam', 'Cases-Ugumlos', 'Lymhurst']);
+  assert.equal(editada.usuario, 'explorador', 'conserva su autor aunque la edite otro');
+  assert.equal(editada.conexionIds[0], idDeepwood, 'la conexión que ya existía se reutiliza');
+  assert.equal(editada.conexionIds[1], idOuyosCases);
+
+  const repo = new ConexionReportadaRepository();
+  assert.equal(repo.obtener(idCasesMartlock), undefined, 'la conexión que dejó de usar se borró');
+  assert.equal(repo.obtener(idDeepwood).cierraEn, new Date(AHORA + 200 * 60_000).toISOString(), 'tiempo corregido');
+
+  const { servicio } = crearServicio();
+  const { rutas } = await servicio.resumen();
+  assert.equal(rutas.length, 1);
+  assert.deepEqual(rutas[0].zonas.map((z) => z.nombre), ['Deepwood Copse', 'Ouyos-Aoeuam', 'Cases-Ugumlos', 'Lymhurst']);
+});
+
+test('editar una ruta valida permisos, el encadenado y los recorridos repetidos', () => {
+  limpiarReportes();
+  const s = servicioReportes();
+  const ruta = s.registrar(autor.id, RUTA, [[0, 1, 2]]).rutas[0];
+  const otraRuta = s.registrar(autor.id, RUTA.slice(0, 2), [[0, 1]]).rutas[0];
+
+  assert.throws(() => s.editarRuta(otro, ruta.id, RUTA), (e) => e.estado === 403);
+  assert.throws(() => s.editarRuta(autor, 999999, RUTA), (e) => e.estado === 404);
+  assert.throws(() => s.editarRuta(autor, ruta.id, [RUTA[0]]), /al menos dos conexiones/);
+  assert.throws(() => s.editarRuta(autor, ruta.id, [RUTA[0], RUTA[2]]), /la conexión 2 .* no continúa desde/);
+  assert.throws(() => s.editarRuta(autor, ruta.id, RUTA.slice(0, 2)), (e) => e.estado === 409, 'igual a otra ruta');
+
+  // Un fallo no deja nada a medias.
+  const repo = new ConexionReportadaRepository();
+  assert.equal(repo.listarDesde('').length, 3);
+  assert.equal(new (require('../src/repositories/RutaReportadaRepository'))().obtener(otraRuta.id).zonas.length, 3);
+});
+
+test('una ruta cerrada hace poco se puede reparar reemplazando el portal que cerró', async () => {
+  limpiarReportes();
+  const ruta = servicioReportes().registrar(autor.id, RUTA, [[0, 1, 2]]).rutas[0];
+  // 50 min después cerró Ouyos–Cases (45 min). Se encontró otro portal hacia Cases.
+  const tarde = servicioReportes(() => AHORA + 50 * 60_000);
+  tarde.editarRuta(autor, ruta.id, [
+    { origen: 'Deepwood Copse', destino: 'Ouyos-Aoeuam', minutos: 60 },
+    { origen: 'Ouyos-Aoeuam', destino: 'Cases-Ugumlos', minutos: 120 },
+    { origen: 'Cases-Ugumlos', destino: 'Martlock', minutos: 240 },
+  ]);
+  const { servicio } = crearServicio({ ahora: () => AHORA + 50 * 60_000 });
+  const resumen = await servicio.resumen();
+  assert.equal(resumen.rutas.length, 1, 'vuelve a estar abierta');
+  assert.equal(resumen.rutasCerradas.length, 0);
+});

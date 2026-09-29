@@ -42,10 +42,14 @@ router.get('/gremios/:id/logo', admin.servirLogo);
 router.get('/tracking', tracking.resumen);
 router.get('/tracking/zonas', tracking.zonas);
 router.get('/tracking/rutas', tracking.rutasDeMapas);
+router.get('/tracking/hideouts', tracking.listarHideoutsCamino);
 router.get('/tracking/:nombre', tracking.detalle);
 router.post('/tracking/reportes', exigirAutenticacion, tracking.registrar);
 router.delete('/tracking/reportes/:id', exigirAutenticacion, tracking.eliminar);
+router.put('/tracking/rutas/:id', exigirAutenticacion, tracking.editarRuta);
 router.delete('/tracking/rutas/:id', exigirAutenticacion, tracking.eliminarRuta);
+router.post('/tracking/hideouts', exigirAutenticacion, tracking.agregarHideoutCamino);
+router.delete('/tracking/hideouts/:id', exigirAutenticacion, tracking.eliminarHideoutCamino);
 
 router.get('/salud', (req, res) => {
   try {
@@ -106,6 +110,9 @@ rutasAdmin.put('/usuarios/:id/estado', admin.cambiarEstadoUsuario);
 rutasAdmin.put('/usuarios/:id/rol', admin.cambiarRolUsuario);
 
 rutasAdmin.get('/auditoria', admin.auditoria);
+
+rutasAdmin.get('/sincronizacion', admin.estadoSincronizacion);
+rutasAdmin.post('/sincronizacion', admin.sincronizarAhora);
 
 router.use('/admin', rutasAdmin);
 

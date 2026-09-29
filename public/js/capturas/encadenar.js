@@ -29,6 +29,11 @@
  * queda el primero, así que las capturas nuevas van antes que las
  * conexiones ya guardadas que se pasan para continuar rutas.
  *
+ * Caminos de hideouts: `puedeTerminar(zona)` marca caminos de Avalon donde
+ * una ruta también puede acabar aunque no sean un extremo (los caminos de
+ * hideouts, a los que se va a ver qué gremios tienen hideout). Se sigue
+ * explorando a través de ellos por si continúan hacia otro extremo.
+ *
  * `aceptar(indices)` decide qué rutas se devuelven (por ejemplo, solo las
  * que usan alguna captura nueva); las rechazadas no gastan el tope.
  * Hay topes de rutas y de tramos por ruta para que muchas capturas con
@@ -47,13 +52,14 @@ const MAX_PASOS = 50_000;
  *   elemento por fila; null si la fila aún no es válida.
  * @param {(zona:string) => string|undefined} grupoDe  Grupo de la zona
  *   ('avalon', 'zonaNegra', 'ciudad'...).
- * @param {{maxRutas?: number, maxTramos?: number, aceptar?: (indices:number[]) => boolean}} [limites]
+ * @param {{maxRutas?: number, maxTramos?: number, aceptar?: (indices:number[]) => boolean,
+ *   puedeTerminar?: (zona:string) => boolean}} [limites]
  * @returns {{ rutas: Array<{indices:number[], zonas:string[]}>, sueltos: number[], truncado: boolean }}
  */
 export function agruparEnRutas(
   tramos,
   grupoDe = () => undefined,
-  { maxRutas = MAX_RUTAS, maxTramos = MAX_TRAMOS_POR_RUTA, aceptar = () => true } = {}
+  { maxRutas = MAX_RUTAS, maxTramos = MAX_TRAMOS_POR_RUTA, aceptar = () => true, puedeTerminar = () => false } = {}
 ) {
   // 1. Tramos válidos (sin repetir el mismo portal) y grafo de zonas.
   const vecinos = new Map();
@@ -99,16 +105,21 @@ export function agruparEnRutas(
         }
         if (visitadas.has(otra)) continue;
         const nuevosIndices = [...indices, i];
-        if (esExtremo(otra)) {
+        const registrar = () => {
           // Un solo portal entre dos extremos no es una ruta de Avalon.
-          if (nuevosIndices.length < 2) continue;
+          if (nuevosIndices.length < 2) return;
           const clave = [...nuevosIndices].sort((a, b) => a - b).join(',');
           if (!encontradas.has(clave) && aceptar(nuevosIndices)) {
             encontradas.add(clave);
             rutas.push({ indices: nuevosIndices, zonas: [...zonas, otra] });
           }
+        };
+        if (esExtremo(otra)) {
+          registrar();
           continue;
         }
+        // Camino de hideouts: la ruta puede terminar aquí y también seguir.
+        if (puedeTerminar(otra)) registrar();
         if (nuevosIndices.length >= maxTramos) continue;
         visitadas.add(otra);
         explorar(otra, nuevosIndices, [...zonas, otra]);

@@ -8,6 +8,84 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v12.7 — Sincronización con el Excel de Google Drive
+
+- El servidor revisa cada hora (configurable) el Excel que el equipo edita en
+  Google Drive y **aplica solo las diferencias** a la temporada activa:
+  hideouts nuevos, destruidos, de otro gremio o de otro tipo. Las posiciones
+  y notas se conservan mientras el gremio del slot no cambie. Si el archivo
+  no cambió desde la última revisión, no se descarga.
+- Acceso **privado**: el archivo se comparte solo con una cuenta de servicio
+  de Google (lectura); la clave vive únicamente en la VM.
+- Protección: si el Excel borraría o cambiaría más del 30 % de los hideouts
+  no se aplica nada (un administrador puede forzarlo desde el panel).
+- Panel de administración: estado de la última revisión y "Sincronizar ahora".
+- Lector de .xlsx propio (`src/excel/leerXlsx.js`); se quita el paquete
+  `xlsx` de npm, que tiene fallos de seguridad sin corregir. Comprobado contra
+  un lector de referencia con Excel reales: 0 diferencias en 783 celdas.
+
+### v12.6 — Hideouts en caminos de Avalon
+
+- **Rutas que terminan en un camino de hideouts.** Los caminos de tipo
+  `TUNNEL_HIDEOUT` y `TUNNEL_HIDEOUT_DEEP` (100 en los dumps del juego)
+  pueden ser el final de una ruta (Zona Negra → camino → … → camino de
+  hideouts), y también seguir más allá si continúan. Antes esas rutas no se
+  formaban nunca.
+- **Gremios con hideout en ese camino**: en la ficha del camino (y desde la
+  tarjeta de la ruta, "¿De quién son los hideouts? Anótalo") cualquier usuario
+  con sesión anota los gremios que ve. Anotar otra vez el mismo gremio solo
+  renueva la fecha. Hasta 30 gremios por camino. Solo quien lo anotó o un
+  administrador lo borra. Tabla `hideouts_camino`.
+- **Buscador**: al buscar un gremio o el nombre de un camino aparece el bloque
+  "Hideouts en caminos de Avalon"; la tarjeta abre la ficha del camino.
+- API: `GET /api/tracking/hideouts?camino=`, `POST /api/tracking/hideouts`
+  (`{ camino, gremio }`) y `DELETE /api/tracking/hideouts/:id`.
+
+### v12.5 — Editar rutas guardadas
+
+- Botón **Editar** en cada ruta (su autor o un administrador), también en las
+  "Cerradas hace poco". Abre el panel de registro en modo edición con cada
+  tramo como una fila: se pueden **pegar capturas nuevas, quitar conexiones,
+  cambiar el orden con ↑ ↓ y corregir los tiempos**. La vista previa dice si
+  la ruta se encadena o qué conexión no continúa.
+- Un portal que ya cerró aparece marcado para reemplazarlo: así se repara una
+  ruta cerrada sin borrarla y volver a crearla.
+- Las capturas que tenías pendientes se apartan durante la edición y vuelven
+  al terminar o cancelar.
+- API: `PUT /api/tracking/rutas/:id` con `{ conexiones: [...] }` en el orden
+  de la ruta. Las conexiones que ya existían entre las mismas zonas se
+  reutilizan; las que la ruta deja de usar se borran si ninguna otra las usa.
+  La ruta conserva su autor.
+
+### v12.4 — Rutas que se cierran sin dejar conexiones sueltas
+
+- Cuando cierra un portal de una ruta, lo que viene **después** (leyendo la
+  ruta desde su entrada, el lado del portal de ciudad) ya no se alcanza:
+  esos tramos dejan de contar como conexiones abiertas al instante, salvo
+  que otra ruta abierta los use (`src/services/estadoRutas.js`).
+- La ruta pasa a **"Cerradas hace poco"** durante 30 minutos: se ve entera,
+  con el portal cerrado en rojo y lo desconectado apagado, para saber a
+  dónde llevaba y corregirla.
+- Pasados los 30 minutos, una **tarea automática** (cada minuto,
+  `src/tareas.js`) borra la ruta y esos tramos siguientes, y purga las
+  conexiones ya cerradas. La misma tarea limpia cada hora las sesiones
+  caducadas y los intentos de inicio de sesión viejos (antes esa limpieza
+  existía pero nunca se ejecutaba).
+
+### v12.3 — Rutas organizadas por portal de ciudad
+
+- **Filtro por portal** en "Rutas del gremio": Bridgewatch, Fort Sterling,
+  Lymhurst, Martlock, Thetford (y "Otras"). Cada ruta cuenta para el portal
+  más cercano a uno de sus extremos, medido en saltos por la Zona Negra con
+  las salidas oficiales de cada mapa (`src/services/portales.js`). Una ciudad
+  real cuenta como su propio portal. El filtro elegido se recuerda.
+- **Agrupadas por mapa de entrada**, de la más cercana a la más lejana, en
+  bloques plegables. El resumen de cada bloque ya dice a dónde lleva cada
+  ruta y cuánto le queda; se despliega solo el que interesa.
+- Cada ruta se muestra empezando por el extremo más cercano al portal y
+  lleva la línea "Entrada: mapa, a N mapas de X Portal" (también en la vista
+  de hideouts y en la ficha de cada mapa).
+
 ### v12.2 — Rutas que continúan entre envíos y lector sin atascos
 
 - **Una captura nueva continúa una ruta ya guardada.** Antes, las rutas solo
@@ -436,8 +514,8 @@ hosting de Node.js sin pasos extra:
 ## Requisitos
 
 - Node.js **22.5 o superior** (usa el módulo nativo `node:sqlite`).
-- Sin dependencias de npm para ejecutar (`xlsx` es opcional, solo para
-  importar un Excel nuevo).
+- Sin dependencias de npm (ni siquiera para leer Excel: el lector de .xlsx
+  es propio).
 
 ## Actualizar la geografía de los mapas
 
@@ -493,8 +571,7 @@ un ZIP o guarda el resultado en una carpeta.
 npm start            # http://localhost:3000 — siembra la BD automáticamente
 ```
 
-No hace falta `npm install`: la aplicación no tiene dependencias en tiempo
-de ejecución (solo el script opcional de importar Excel necesita `xlsx`).
+No hace falta `npm install`: la aplicación no tiene dependencias.
 
 ### Cuenta de administrador
 
@@ -628,6 +705,66 @@ Administración (rol `ADMIN` + token CSRF):
   protección contra *path traversal* en los archivos estáticos, cabeceras
   `X-Frame-Options`, `Referrer-Policy` y HSTS en producción, y bitácora de
   auditoría de cada cambio administrativo.
+
+## Sincronización con el Excel de Google Drive
+
+El Excel de hideouts (hoja **"Mapas BZ"**: columna A = mapa, B..K = HO 1..HO 10,
+con "(HQ)" o "(P)" al final del gremio cuando corresponde) puede vivir en Google
+Drive. El servidor lo revisa cada `EXCEL_SYNC_MINUTOS` minutos y aplica los
+cambios. Sirve un `.xlsx` subido a Drive o una hoja de cálculo de Google.
+
+**Reglas**
+
+- El Excel manda: si alguien cambia un hideout desde el panel y el Excel dice
+  otra cosa, la siguiente sincronización deja lo del Excel.
+- Solo cambia lo que es distinto. Si en un slot sigue el mismo gremio, su
+  posición en el mapa y su nota se conservan; si entra otro gremio, se borran
+  (eran del anterior).
+- Los mapas que el Excel escribe mal se ignoran y se avisan; los mapas que
+  faltan en el Excel no se vacían.
+- Si se borrarían o cambiarían más del 30 % de los hideouts, no se aplica
+  nada. Si es correcto (por ejemplo, un reinicio de temporada), un
+  administrador pulsa "Aplicar de todos modos" en el panel.
+- Una temporada nueva se sigue creando con `npm run db:import`.
+
+**Configuración (una sola vez, en la consola de Google Cloud del mismo
+proyecto que la VM)**
+
+1. *APIs y servicios → Biblioteca*: busca **Google Drive API** y actívala.
+2. *IAM y administración → Cuentas de servicio → Crear cuenta de servicio*:
+   nombre `albion-excel-lector`. No le des ningún rol del proyecto.
+3. Abre la cuenta → *Claves → Agregar clave → Crear clave nueva → JSON*. Se
+   descarga un archivo `.json`: es una contraseña, **no lo subas a GitHub ni
+   lo compartas**.
+4. Súbelo a la VM (en la ventana SSH del navegador: engranaje → *Subir
+   archivo*) y déjalo en la carpeta del proyecto con permisos solo para ti:
+   ```bash
+   mv ~/*.json ~/albion-ho-finder/credenciales-drive.json
+   chmod 600 ~/albion-ho-finder/credenciales-drive.json
+   ```
+   (`credenciales*.json` está en `.gitignore`.)
+5. En Google Drive, **comparte el Excel** con el correo de la cuenta de
+   servicio (algo como `albion-excel-lector@<proyecto>.iam.gserviceaccount.com`)
+   como **Lector**. No hace falta ningún enlace público.
+6. Copia el **id del archivo** de su URL: lo que va entre `/d/` y `/edit`
+   (`https://docs.google.com/spreadsheets/d/ESTE_ES_EL_ID/edit`) o entre
+   `/d/` y `/view` en `drive.google.com/file/d/.../view`.
+7. Añade al `.env` de la VM:
+   ```
+   EXCEL_DRIVE_ID=ESTE_ES_EL_ID
+   GOOGLE_CREDENCIALES=/home/TU_USUARIO/albion-ho-finder/credenciales-drive.json
+   EXCEL_SYNC_MINUTOS=60
+   ```
+8. Reinicia y mira el registro: la primera revisión ocurre a los 30 s.
+   ```bash
+   sudo systemctl restart albion
+   journalctl -u albion -n 30 --no-pager
+   ```
+   En el panel de administración aparece el estado y el botón
+   "Sincronizar ahora". Cada sincronización con cambios queda en la bitácora.
+
+Si la clave se filtra, bórrala en la consola (*Claves*) y crea otra: el permiso
+es solo de lectura y solo sobre los archivos compartidos con esa cuenta.
 
 ## Actualizar los datos en una nueva temporada
 

@@ -9,64 +9,21 @@
  * Uso: npm run db:import -- ./ruta/Nuevo_Buscador_S35.xlsx S35
  */
 
+const fs = require('fs');
 const path = require('path');
 
 const MapaRepository = require('../src/repositories/MapaRepository');
 const GremioRepository = require('../src/repositories/GremioRepository');
 const HideoutRepository = require('../src/repositories/HideoutRepository');
 const TemporadaRepository = require('../src/repositories/TemporadaRepository');
-
-const HOJA_DATOS = 'Mapas BZ';
-const REGEX_TIPO = /\((HQ|P)\)\s*$/;
+const { leerHideoutsXlsx } = require('../src/excel/hojaHideouts');
 
 /**
- * `xlsx` es la única dependencia externa que queda y solo hace falta para
- * este script de importación puntual, no para servir la web. Se carga de
- * forma perezosa: si no está instalada, el resto de la aplicación sigue
- * funcionando y aquí se explica cómo instalarla.
+ * El Excel se lee con el lector propio (src/excel/leerXlsx.js): el paquete
+ * `xlsx` de npm tiene fallos de seguridad sin corregir y ya no se usa.
  */
-function cargarXLSX() {
-  try {
-    // eslint-disable-next-line global-require
-    return require('xlsx');
-  } catch (error) {
-    throw new Error(
-      'Para importar un Excel hace falta el paquete "xlsx". Instálalo con: npm install xlsx'
-    );
-  }
-}
-
 function extraerFilas(rutaArchivo) {
-  const XLSX = cargarXLSX();
-  const libro = XLSX.readFile(rutaArchivo);
-  const hoja = libro.Sheets[HOJA_DATOS];
-  if (!hoja) {
-    throw new Error(`El archivo no contiene una hoja llamada "${HOJA_DATOS}".`);
-  }
-
-  const filas = cargarXLSX().utils.sheet_to_json(hoja, { header: 1, defval: null });
-  const [, ...datos] = filas; // se descarta el encabezado
-
-  return datos
-    .filter((fila) => fila[0])
-    .map((fila) => {
-      const mapa = String(fila[0]).trim();
-      const hideouts = [];
-
-      for (let col = 1; col <= 10; col += 1) {
-        const valor = fila[col];
-        if (!valor) continue;
-
-        const texto = String(valor).trim();
-        const match = texto.match(REGEX_TIPO);
-        const tipo = match ? match[1] : 'ESTANDAR';
-        const gremio = match ? texto.slice(0, match.index).trim() : texto;
-
-        hideouts.push({ slot: col, gremio, tipo });
-      }
-
-      return { mapa, hideouts };
-    });
+  return leerHideoutsXlsx(fs.readFileSync(rutaArchivo));
 }
 
 function importarExcel(rutaArchivo, codigoTemporada) {

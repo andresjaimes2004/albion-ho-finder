@@ -76,8 +76,12 @@ export class PanelRegistro {
     // Conexiones ya guardadas y abiertas: { id, origen, destino, cierraEn }.
     this.guardadas = [];
     this.guardadasEnRutas = [];
+    // Modo edición de una ruta ya guardada: { ruta, previas, preferencias }.
+    this.edicion = null;
 
     this.alternar = document.getElementById('registro-alternar');
+    this.avisoEdicion = document.getElementById('registro-edicion');
+    this.rutaEdicion = document.getElementById('registro-edicion-ruta');
     this.cuerpo = document.getElementById('registro-cuerpo');
     this.sinSesion = document.getElementById('registro-sin-sesion');
     this.conSesion = document.getElementById('registro-con-sesion');
@@ -101,6 +105,7 @@ export class PanelRegistro {
     const ahora = this._claveUsuario();
     if (ahora !== antes) {
       // Otro usuario (o sin sesión): sus capturas pendientes no se mezclan.
+      if (this.edicion) this._salirDeEdicion({ restaurar: false });
       this._limpiarLista();
       if (ahora !== null) this._restaurar(ahora);
     }
@@ -125,6 +130,81 @@ export class PanelRegistro {
     this.filas = [];
     this.preferencias.clear();
     this.lista.replaceChildren();
+    this._actualizarAcciones();
+  }
+
+  // ------------------------------------------------------------ edición --
+
+  /**
+   * Abre una ruta guardada para corregirla: cada tramo pasa a ser una fila
+   * (sin captura) que se puede quitar, mover o corregir, y se pueden pegar
+   * capturas nuevas. Las capturas pendientes del panel se apartan y
+   * vuelven al terminar. En edición las filas no van al borrador.
+   */
+  async editarRuta(ruta) {
+    if (!this.usuario) return;
+    if (this.edicion) this._salirDeEdicion();
+    try {
+      await this._cargarZonas();
+    } catch (error) {
+      // Sin zonas se edita igual; se validarán al escribir.
+    }
+
+    this.edicion = { ruta, previas: this.filas, preferencias: new Map(this.preferencias) };
+    for (const fila of this.filas) fila.item.remove();
+    this.filas = [];
+    this.preferencias.clear();
+
+    const ahora = Date.now();
+    ruta.tramos.forEach((tramo, k) => {
+      const fila = this._crearFila(ahora);
+      const restantes = Math.max(0, Math.floor((tramo.cierraEn - ahora) / 60_000));
+      fila.restaurar({
+        valores: {
+          origen: ruta.zonas[k].nombre,
+          destino: ruta.zonas[k + 1].nombre,
+          horas: restantes ? String(Math.floor(restantes / 60)) : '',
+          minutos: restantes ? String(restantes % 60) : '',
+        },
+      });
+      // Un portal que ya cerró hay que reemplazarlo (o quitarlo).
+      if (!restantes) fila.poner('error', t('Este portal ya cerró: reemplázalo por el nuevo o quítalo.'));
+    });
+
+    this.rutaEdicion.textContent = `${ruta.zonas[0].nombre} → ${ruta.zonas[ruta.zonas.length - 1].nombre}`;
+    this.avisoEdicion.hidden = false;
+    this.cuerpo.closest('.registro').classList.add('registro--edicion');
+    this.estado.textContent = '';
+    if (!this.abierto) this._abrir();
+    this._actualizarAcciones();
+    this.avisoEdicion.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  /** Termina la edición y devuelve al panel las capturas que había antes. */
+  _salirDeEdicion({ restaurar = true } = {}) {
+    const edicion = this.edicion;
+    if (!edicion) return;
+    this.edicion = null;
+    this.avisoEdicion.hidden = true;
+    this.cuerpo.closest('.registro').classList.remove('registro--edicion');
+    this.lista.replaceChildren();
+    this.filas = [];
+    this.preferencias.clear();
+    if (restaurar) {
+      this.filas = edicion.previas;
+      this.preferencias = edicion.preferencias;
+      this.lista.append(...this.filas.map((f) => f.item));
+    }
+    this._actualizarAcciones();
+  }
+
+  /** Mueve una fila una posición arriba (-1) o abajo (+1). Solo en edición. */
+  _moverFila(fila, paso) {
+    const desde = this.filas.indexOf(fila);
+    const hasta = desde + paso;
+    if (desde < 0 || hasta < 0 || hasta >= this.filas.length) return;
+    [this.filas[desde], this.filas[hasta]] = [this.filas[hasta], this.filas[desde]];
+    this.lista.replaceChildren(...this.filas.map((f) => f.item));
     this._actualizarAcciones();
   }
 
@@ -220,8 +300,13 @@ export class PanelRegistro {
     document.getElementById('registro-vaciar').addEventListener('click', () => {
       this._limpiarLista();
       this.estado.textContent = '';
+      // En edición solo se vacía la ruta que se edita; el borrador no se toca.
       const usuario = this._claveUsuario();
-      if (usuario !== null) borrador.vaciar(usuario);
+      if (usuario !== null && !this.edicion) borrador.vaciar(usuario);
+    });
+    document.getElementById('registro-edicion-cancelar').addEventListener('click', () => {
+      this._salirDeEdicion();
+      this.estado.textContent = t('Edición cancelada: la ruta no cambió.');
     });
   }
 
@@ -288,8 +373,9 @@ export class PanelRegistro {
       const orden = Date.now() + n;
       const fila = this._crearFila(capturadaEn || archivo.lastModified || Date.now(), nuevoId(), orden);
       // Se guarda la imagen antes de leerla: si la página se recarga a
-      // mitad de la cola, al volver se retoma la lectura.
-      if (usuario !== null) {
+      // mitad de la cola, al volver se retoma la lectura. (En edición no:
+      // esas capturas son de la ruta que se edita.)
+      if (usuario !== null && !this.edicion) {
         borrador.guardar({ id: fila.id, usuario, orden, capturadaEn: fila.capturadaEn, archivo, leida: false });
       }
       this.cola = this.cola.then(() => this._leer(fila, archivo));
@@ -405,6 +491,18 @@ export class PanelRegistro {
 
     campos.append(campo(t('Origen'), origen), campo(t('Destino'), destino), campo(t('Cierra en'), tiempo));
     item.append(vista, campos, quitar, estado, etiquetaRuta);
+
+    // En edición el orden de las filas es el de la ruta: se puede cambiar.
+    const mover = crear('span', 'registro__mover');
+    for (const [simbolo, paso, etiqueta] of [['↑', -1, t('Subir')], ['↓', 1, t('Bajar')]]) {
+      const boton = crear('button', 'boton boton--icono', simbolo);
+      boton.type = 'button';
+      boton.title = etiqueta;
+      boton.setAttribute('aria-label', etiqueta);
+      boton.addEventListener('click', () => this._moverFila(fila, paso));
+      mover.append(boton);
+    }
+    item.append(mover);
     this.lista.append(item);
 
     const fila = {
@@ -546,6 +644,10 @@ export class PanelRegistro {
    * solo se proponen las rutas que usan alguna captura nueva.
    */
   _actualizarRutas() {
+    if (this.edicion) {
+      this._actualizarRutaEditada();
+      return;
+    }
     const nuevas = this.filas.length;
     const tramos = this.filas.map((f) => (f.estadoActual !== 'leyendo' ? f.datos() : null));
     const limite = Date.now() + MARGEN_GUARDADAS_MS;
@@ -558,6 +660,11 @@ export class PanelRegistro {
     };
     const { rutas, truncado } = agruparEnRutas(tramos, grupoDe, {
       aceptar: (indices) => indices.some((i) => i < nuevas),
+      // Una ruta puede terminar en un camino de hideouts.
+      puedeTerminar: (zona) => {
+        const z = this.porNombre && this.porNombre.get(zona.toLowerCase());
+        return Boolean(z && z.hideout);
+      },
     });
 
     this.rutasDetectadas = rutas.map((ruta) => {
@@ -588,6 +695,49 @@ export class PanelRegistro {
     }
     this.contenedorRutas.hidden = !avisos.length;
     this.contenedorRutas.replaceChildren(...avisos);
+  }
+
+  /**
+   * En edición la ruta son las filas en su orden (no se buscan
+   * combinaciones): cada conexión tiene que continuar desde la anterior.
+   * Devuelve las zonas de la ruta o null, y muestra el recorrido o el
+   * problema.
+   */
+  _actualizarRutaEditada() {
+    const aviso = (texto, clase = 'registro__ruta-tope') => {
+      this.contenedorRutas.hidden = false;
+      this.contenedorRutas.replaceChildren(crear('p', clase, texto));
+      return null;
+    };
+    this.rutasDetectadas = [];
+    for (const fila of this.filas) fila.marcarRuta(null);
+    if (this.filas.some((f) => f.estadoActual === 'leyendo')) return aviso(t('Leyendo capturas…'), 'registro__ruta-zonas');
+    if (this.filas.length < 2) return aviso(t('La ruta necesita al menos dos conexiones.'));
+    const tramos = this.filas.map((f) => f.datos());
+    const incompleta = tramos.findIndex((tramo) => !tramo);
+    if (incompleta >= 0) return aviso(t('Completa o quita la conexión {n} para guardar.', { n: incompleta + 1 }));
+
+    // Orienta la primera hacia la zona que comparte con la segunda.
+    const [a, b] = tramos;
+    const zonas = [b.origen, b.destino].includes(a.destino) ? [a.origen, a.destino] : [a.destino, a.origen];
+    for (let k = 1; k < tramos.length; k++) {
+      const final = zonas[zonas.length - 1];
+      if (tramos[k].origen === final) zonas.push(tramos[k].destino);
+      else if (tramos[k].destino === final) zonas.push(tramos[k].origen);
+      else return aviso(t('La conexión {n} no continúa desde {zona}: corrígela o cambia el orden.', { n: k + 1, zona: final }));
+    }
+    if (new Set(zonas).size !== zonas.length) return aviso(t('La ruta pasa dos veces por la misma zona.'));
+
+    this.filas.forEach((fila, k) => fila.marcarRuta(t('Tramo {tramo} de {total}', { tramo: k + 1, total: this.filas.length })));
+    const caja = crear('div', 'registro__ruta');
+    const titulo = crear('p', 'registro__ruta-titulo');
+    const cierre = Math.min(...this.filas.map((f) => f.cierraEn()));
+    titulo.append(crear('strong', null, t('Ruta editada')), t(' · {n} tramos', { n: tramos.length }), ' · ', crearReloj(cierre, { clase: 'reloj registro__ruta-reloj' }));
+    iniciarRelojes();
+    caja.append(titulo, crear('p', 'registro__ruta-zonas', zonas.join(' → ')));
+    this.contenedorRutas.hidden = false;
+    this.contenedorRutas.replaceChildren(caja);
+    return zonas;
   }
 
   /** Momento de cierre del tramo i: una fila del panel o una conexión guardada. */
@@ -635,6 +785,14 @@ export class PanelRegistro {
   }
 
   _actualizarAcciones() {
+    if (this.edicion) {
+      // Se guarda la ruta entera, y solo si se encadena bien.
+      const valida = Boolean(this._actualizarRutaEditada());
+      this.acciones.hidden = false;
+      this.guardar.disabled = !valida;
+      this.guardar.textContent = t('Guardar cambios de la ruta');
+      return;
+    }
     this._actualizarRutas();
     const listas = this.filas.filter((f) => f.estadoActual !== 'leyendo' && f.valida()).length;
     const leyendo = this.filas.some((f) => f.estadoActual === 'leyendo');
@@ -645,7 +803,27 @@ export class PanelRegistro {
 
   // ----------------------------------------------------------- guardado --
 
+  /** Guarda la ruta que se está editando (todas sus filas, en orden). */
+  async _guardarEdicion() {
+    const { ruta } = this.edicion;
+    this.guardar.disabled = true;
+    this.estado.textContent = t('Guardando…');
+    try {
+      await api.editarRuta(ruta.id, this.filas.map((f) => f.datos()));
+      this._salirDeEdicion();
+      this.estado.textContent = t('Ruta actualizada. ¡Gracias!');
+      if (this.alGuardar) this.alGuardar();
+    } catch (error) {
+      this.estado.textContent = error.message || t('No se pudo guardar.');
+      this._actualizarAcciones();
+    }
+  }
+
   async _guardar() {
+    if (this.edicion) {
+      await this._guardarEdicion();
+      return;
+    }
     const listas = this.filas.filter((f) => f.valida());
     if (!listas.length) return;
 

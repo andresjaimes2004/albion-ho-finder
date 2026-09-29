@@ -47,6 +47,19 @@ class RutaReportadaRepository extends BaseRepository {
     return this.obtener(id);
   }
 
+  /** Cambia el recorrido de una ruta (edición): zonas y tramos, sin tocar su autor. */
+  actualizarRecorrido(id, { zonas, conexionIds }) {
+    this.db.prepare('DELETE FROM rutas_tramos WHERE ruta_id = $id').run({ $id: id });
+    const tramo = this.db.prepare(
+      'INSERT INTO rutas_tramos (ruta_id, orden, conexion_id) VALUES ($ruta, $orden, $conexion)'
+    );
+    conexionIds.forEach((conexionId, orden) => tramo.run({ $ruta: id, $orden: orden, $conexion: conexionId }));
+    this.db
+      .prepare('UPDATE rutas_reportadas SET zonas = $zonas, total_tramos = $total WHERE id = $id')
+      .run({ $id: id, $zonas: JSON.stringify(zonas), $total: conexionIds.length });
+    return this.obtener(id);
+  }
+
   obtener(id) {
     const fila = this.db
       .prepare(
@@ -93,6 +106,13 @@ class RutaReportadaRepository extends BaseRepository {
       )
       .all({ $id: id })
       .map((f) => f.id);
+  }
+
+  /** ¿Alguna ruta usa esta conexión? */
+  usaConexion(conexionId) {
+    return Boolean(
+      this.db.prepare('SELECT 1 FROM rutas_tramos WHERE conexion_id = $id LIMIT 1').get({ $id: conexionId })
+    );
   }
 
   eliminar(id) {

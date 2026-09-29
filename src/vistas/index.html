@@ -309,6 +309,15 @@
 
       <div id="admin-resumen" class="admin-resumen"></div>
 
+      <h3>{{Excel de Google Drive}}</h3>
+      <div class="admin-sincronizacion">
+        <p id="admin-sinc-estado" class="admin-sincronizacion__estado" aria-live="polite"></p>
+        <div class="admin-sincronizacion__acciones">
+          <button id="admin-sinc-ahora" type="button" class="boton boton--pequeno">{{Sincronizar ahora}}</button>
+          <button id="admin-sinc-forzar" type="button" class="boton boton--pequeno boton--peligro" hidden>{{Aplicar de todos modos}}</button>
+        </div>
+      </div>
+
       <h3>{{Gremios}}</h3>
       <input id="admin-buscar-gremio" type="search" placeholder="{{Buscar gremio para editar...}}" maxlength="60" />
       <ul id="admin-gremios" class="admin-lista"></ul>
@@ -381,6 +390,13 @@
           </p>
 
           <div id="registro-con-sesion">
+            <div id="registro-edicion" class="registro__edicion" hidden>
+              <p>
+                <strong>{{Editando la ruta}}</strong> <span id="registro-edicion-ruta"></span><br />
+                {{Pega capturas nuevas, quita las conexiones que sobran, cambia el orden con ↑ ↓ o corrige los tiempos. Las capturas que tenías pendientes vuelven al terminar.}}
+              </p>
+              <button id="registro-edicion-cancelar" type="button" class="boton boton--pequeno boton--sutil">{{Cancelar edición}}</button>
+            </div>
             <ol class="registro__pasos">
               <li>{{En el juego, abre el mapa del camino y <strong>pasa el cursor por encima de un portal</strong>.}}</li>
               <li>{{Saca la captura con <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> (pantalla completa o solo esa zona, incluyendo el recuadro del portal).}}</li>
