@@ -8,6 +8,23 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v12.6 — Hideouts en caminos de Avalon
+
+- **Rutas que terminan en un camino de hideouts.** Los caminos de tipo
+  `TUNNEL_HIDEOUT` y `TUNNEL_HIDEOUT_DEEP` (100 en los dumps del juego)
+  pueden ser el final de una ruta (Zona Negra → camino → … → camino de
+  hideouts), y también seguir más allá si continúan. Antes esas rutas no se
+  formaban nunca.
+- **Gremios con hideout en ese camino**: en la ficha del camino (y desde la
+  tarjeta de la ruta, "¿De quién son los hideouts? Anótalo") cualquier usuario
+  con sesión anota los gremios que ve. Anotar otra vez el mismo gremio solo
+  renueva la fecha. Hasta 30 gremios por camino. Solo quien lo anotó o un
+  administrador lo borra. Tabla `hideouts_camino`.
+- **Buscador**: al buscar un gremio o el nombre de un camino aparece el bloque
+  "Hideouts en caminos de Avalon"; la tarjeta abre la ficha del camino.
+- API: `GET /api/tracking/hideouts?camino=`, `POST /api/tracking/hideouts`
+  (`{ camino, gremio }`) y `DELETE /api/tracking/hideouts/:id`.
+
 ### v12.5 — Editar rutas guardadas
 
 - Botón **Editar** en cada ruta (su autor o un administrador), también en las

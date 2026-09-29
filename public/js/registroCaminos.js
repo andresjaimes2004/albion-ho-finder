@@ -660,6 +660,11 @@ export class PanelRegistro {
     };
     const { rutas, truncado } = agruparEnRutas(tramos, grupoDe, {
       aceptar: (indices) => indices.some((i) => i < nuevas),
+      // Una ruta puede terminar en un camino de hideouts.
+      puedeTerminar: (zona) => {
+        const z = this.porNombre && this.porNombre.get(zona.toLowerCase());
+        return Boolean(z && z.hideout);
+      },
     });
 
     this.rutasDetectadas = rutas.map((ruta) => {

@@ -2,7 +2,7 @@
 
 import api from './api.js';
 import { crear, crearReloj, crearTarjetaRuta, textoCercania } from './rutas.js';
-import { t, tn } from './i18n.js';
+import { t, tn, regional } from './i18n.js';
 
 /**
  * tracking.js
@@ -367,6 +367,7 @@ export class PanelCaminos {
       partes.push(ver);
     }
 
+    if (datos.hideouts) partes.push(this._crearBloqueHideouts(mapa.nombre, datos.hideouts));
     if (rutas.length) partes.push(this._crearBloqueRutas(rutas, { resaltar: mapa.nombre }));
 
     const cuerpo = crear('div', 'caminos-detalle__cuerpo');
@@ -376,6 +377,84 @@ export class PanelCaminos {
 
     this.detalle.hidden = false;
     this.detalle.replaceChildren(...partes);
+  }
+
+  /**
+   * Camino de Avalon de hideouts: los gremios que tienen hideout allí,
+   * anotados por los usuarios, y el formulario para anotar más.
+   */
+  _crearBloqueHideouts(camino, hideouts) {
+    const bloque = crear('div', 'caminos-detalle__bloque hideouts-camino');
+    bloque.append(crear('h4', null, t('Gremios con hideout en este camino')));
+
+    if (!hideouts.length) {
+      bloque.append(
+        crear('p', 'caminos-detalle__vacio', t('Nadie ha anotado gremios en este camino todavía. Si llegaste aquí, anota los hideouts que veas.'))
+      );
+    } else {
+      const lista = crear('ul', 'hideouts-camino__lista');
+      for (const h of hideouts) {
+        const item = crear('li', 'hideouts-camino__gremio');
+        item.append(crear('strong', null, h.gremio));
+        const fecha = new Date(`${String(h.confirmadoEn).replace(' ', 'T')}Z`);
+        const partes = [];
+        if (h.usuario) partes.push(t('anotado por {usuario}', { usuario: h.usuario }));
+        if (!Number.isNaN(fecha.getTime())) partes.push(t('visto el {fecha}', { fecha: fecha.toLocaleDateString(regional) }));
+        item.append(crear('span', 'hideouts-camino__meta', partes.join(' · ')));
+        const puedeBorrar = this.usuario && (this.usuario.id === h.usuarioId || this.usuario.rol === 'ADMIN');
+        if (puedeBorrar) {
+          const borrar = crear('button', 'conexion__borrar', '✕');
+          borrar.type = 'button';
+          borrar.title = t('Borrar esta anotación');
+          borrar.setAttribute('aria-label', t('Borrar esta anotación'));
+          borrar.addEventListener('click', async () => {
+            borrar.disabled = true;
+            try {
+              await api.borrarHideoutCamino(h.id);
+              await this.refrescar();
+            } catch (error) {
+              borrar.disabled = false;
+              borrar.title = error.message || t('No se pudo borrar.');
+            }
+          });
+          item.append(borrar);
+        }
+        lista.append(item);
+      }
+      bloque.append(lista);
+    }
+
+    if (!this.usuario) {
+      bloque.append(crear('p', 'caminos-detalle__vacio', t('Inicia sesión para anotar gremios.')));
+      return bloque;
+    }
+    const formulario = crear('form', 'hideouts-camino__formulario');
+    const entrada = crear('input');
+    entrada.type = 'text';
+    entrada.maxLength = 40;
+    entrada.minLength = 2;
+    entrada.required = true;
+    entrada.autocomplete = 'off';
+    entrada.placeholder = t('Nombre del gremio');
+    entrada.setAttribute('aria-label', t('Nombre del gremio'));
+    const anotar = crear('button', 'boton boton--pequeno', t('Anotar'));
+    anotar.type = 'submit';
+    const mensaje = crear('p', 'hideouts-camino__mensaje');
+    mensaje.setAttribute('aria-live', 'polite');
+    formulario.append(entrada, anotar, mensaje);
+    formulario.addEventListener('submit', async (evento) => {
+      evento.preventDefault();
+      anotar.disabled = true;
+      try {
+        await api.anotarHideoutCamino(camino, entrada.value);
+        await this.refrescar();
+      } catch (error) {
+        mensaje.textContent = error.message || t('No se pudo guardar.');
+        anotar.disabled = false;
+      }
+    });
+    bloque.append(formulario);
+    return bloque;
   }
 
   _crearBloqueConexiones(conexiones) {

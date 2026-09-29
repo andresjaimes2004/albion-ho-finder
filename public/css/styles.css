@@ -3315,3 +3315,37 @@ html:has(dialog[open]) { overflow: hidden; }
   }
 }
 .ruta__editar { padding: 3px 10px; font-size: 0.78rem; }
+
+/* ============================================================================
+   Hideouts en caminos de Avalon de hideouts
+   ============================================================================ */
+.ruta__gremios { display: block; font-size: 0.76rem; color: var(--color-oro-claro); margin-top: 2px; }
+.ruta__anotar {
+  padding: 0;
+  font: inherit;
+  color: var(--color-texto-suave);
+  text-decoration: underline;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.ruta__anotar:hover { color: var(--color-oro-claro); }
+.hideouts-camino__lista { list-style: none; margin: 0 0 10px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.hideouts-camino__gremio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  padding: 6px 10px;
+  border: 1px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  background: rgba(255, 255, 255, 0.03);
+}
+.hideouts-camino__meta { font-size: 0.76rem; color: var(--color-texto-tenue); }
+.hideouts-camino__gremio .conexion__borrar { margin-left: auto; }
+.hideouts-camino__formulario { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.hideouts-camino__formulario input { flex: 1 1 180px; min-width: 0; }
+.hideouts-camino__mensaje { flex-basis: 100%; margin: 0; font-size: 0.8rem; color: var(--color-error); }
+.hideouts-camino__mensaje:empty { display: none; }
+.tarjeta-mapa__gremios-camino { margin: 0; padding: 0 14px 12px; font-size: 0.86rem; color: var(--color-texto-suave); }
+.tarjeta-mapa__gremios-camino mark { background: rgba(232, 201, 92, 0.25); color: var(--color-oro-claro); border-radius: 3px; padding: 0 2px; }

@@ -210,3 +210,26 @@ CREATE TABLE IF NOT EXISTS rutas_tramos (
 );
 
 CREATE INDEX IF NOT EXISTS idx_rutas_tramos_conexion ON rutas_tramos (conexion_id);
+
+-- ============================================================================
+-- v12.6: gremios con hideout en caminos de Avalon de hideouts
+-- ============================================================================
+
+-- Los caminos de Avalon de tipo hideout (TUNNEL_HIDEOUT y TUNNEL_HIDEOUT_DEEP
+-- en los dumps del juego) admiten hideouts de gremios, pero ningún dato
+-- oficial ni el Excel dicen de quién son: los registran los usuarios al
+-- llegar allí por una ruta. `camino` es el nombre oficial del camino.
+-- Registrar otra vez el mismo gremio en el mismo camino solo renueva
+-- `confirmado_en`.
+CREATE TABLE IF NOT EXISTS hideouts_camino (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    camino              TEXT    NOT NULL,
+    gremio              TEXT    NOT NULL,
+    gremio_normalizado  TEXT    NOT NULL,
+    usuario_id          INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+    creado_en           TEXT    NOT NULL DEFAULT (datetime('now')),
+    confirmado_en       TEXT    NOT NULL DEFAULT (datetime('now')),
+    UNIQUE (camino, gremio_normalizado)
+);
+
+CREATE INDEX IF NOT EXISTS idx_hideouts_camino_gremio ON hideouts_camino (gremio_normalizado);
