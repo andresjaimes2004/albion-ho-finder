@@ -265,6 +265,11 @@ export const EN = {
   '{n} caminos': '{n} roads',
   'Ver el camino {camino}': 'View the road {camino}',
   'Sin gremios anotados todavía.': 'No guilds added yet.',
+  // --- Editar rutas: vaciar ---
+  'La ruta ya no tiene conexiones: al guardar se borrará entera.': 'The route has no connections left: saving will delete it entirely.',
+  'Borrar la ruta': 'Delete the route',
+  '¿Borrar la ruta {ruta} entera?': 'Delete the whole route {ruta}?',
+  'Ruta borrada.': 'Route deleted.',
   // --- Editar rutas ---
   'Editar': 'Edit',
   'Editar esta ruta': 'Edit this route',

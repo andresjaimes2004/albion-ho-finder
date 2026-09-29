@@ -3366,3 +3366,4 @@ html:has(dialog[open]) { overflow: hidden; }
 .admin-sincronizacion__estado { margin: 0; flex: 1 1 280px; font-size: 0.86rem; color: var(--color-texto-suave); }
 .admin-sincronizacion__estado--error { color: #e58a8a; }
 .admin-sincronizacion__acciones { display: flex; gap: 8px; flex-wrap: wrap; }
+.registro__edicion-acciones { display: flex; flex-wrap: wrap; gap: 8px; }

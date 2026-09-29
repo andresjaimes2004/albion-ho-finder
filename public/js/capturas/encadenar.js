@@ -149,3 +149,41 @@ export function claveRuta(zonas) {
   const vuelta = [...zonas].reverse().join('>');
   return ida < vuelta ? ida : vuelta;
 }
+
+/**
+ * Ordena los tramos de UNA ruta (edición): los encadena en una sola línea
+ * que usa todos, sin repetir zonas. Sirve para que una captura pegada al
+ * final se coloque sola en su sitio (al principio, al final o tapando un
+ * hueco) y quede orientada.
+ *
+ * @param {Array<{origen:string, destino:string}>} tramos
+ * @param {string|null} inicioPreferido  Extremo por el que empezar si la
+ *   cadena puede leerse desde él (la entrada de la ruta).
+ * @returns {{orden: number[], invertir: boolean[]} | null}  null si los
+ *   tramos no forman una sola línea (se bifurcan, hay huecos o repiten).
+ */
+export function ordenarCadena(tramos, inicioPreferido = null) {
+  if (!tramos.length) return { orden: [], invertir: [] };
+  const grado = new Map();
+  for (const { origen, destino } of tramos) {
+    grado.set(origen, (grado.get(origen) || 0) + 1);
+    grado.set(destino, (grado.get(destino) || 0) + 1);
+  }
+  if ([...grado.values()].some((g) => g > 2)) return null;
+  const extremos = [...grado.keys()].filter((z) => grado.get(z) === 1);
+  if (extremos.length !== 2) return null;
+
+  let actual = extremos.includes(inicioPreferido) ? inicioPreferido : extremos[0];
+  const usados = new Set();
+  const orden = [];
+  const invertir = [];
+  while (orden.length < tramos.length) {
+    const i = tramos.findIndex((t, k) => !usados.has(k) && (t.origen === actual || t.destino === actual));
+    if (i < 0) return null;
+    usados.add(i);
+    orden.push(i);
+    invertir.push(tramos[i].destino === actual);
+    actual = tramos[i].destino === actual ? tramos[i].origen : tramos[i].destino;
+  }
+  return { orden, invertir };
+}

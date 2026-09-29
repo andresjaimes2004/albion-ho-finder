@@ -400,3 +400,25 @@ test('una ruta puede terminar en un camino de hideouts y seguir más allá', asy
     []
   );
 });
+
+test('ordena los tramos de una ruta editada: la captura nueva se coloca sola', async () => {
+  const { ordenarCadena } = await cargar('encadenar.js');
+  // Ruta A → R1 → R2 → B a la que le faltaba el tramo del medio (R1–R2):
+  // la captura se pega al final de la lista y al revés.
+  const tramos = [
+    { origen: 'A', destino: 'R1' },
+    { origen: 'R2', destino: 'B' },
+    { origen: 'R2', destino: 'R1' }, // pegado al final y al revés
+  ];
+  const r = ordenarCadena(tramos, 'A');
+  assert.deepEqual(r.orden, [0, 2, 1]);
+  assert.deepEqual(r.invertir, [false, true, false], 'R2–R1 se lee como R1 → R2');
+
+  // Empieza por el extremo preferido aunque los tramos vengan del otro lado.
+  assert.deepEqual(ordenarCadena([{ origen: 'B', destino: 'R1' }, { origen: 'R1', destino: 'A' }], 'A').orden, [1, 0]);
+
+  // Bifurcación, hueco o un solo tramo repetido: no se puede ordenar.
+  assert.equal(ordenarCadena([{ origen: 'A', destino: 'R1' }, { origen: 'R1', destino: 'B' }, { origen: 'R1', destino: 'C' }]), null);
+  assert.equal(ordenarCadena([{ origen: 'A', destino: 'R1' }, { origen: 'R2', destino: 'B' }]), null);
+  assert.deepEqual(ordenarCadena([]), { orden: [], invertir: [] });
+});

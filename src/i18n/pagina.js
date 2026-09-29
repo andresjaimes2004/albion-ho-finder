@@ -75,8 +75,9 @@ const EN = {
   'Arrastra para moverte; acerca con la rueda, pellizcando, con doble toque o con los botones + y −. Al acercar aparecen los nombres de los mapas. Los mapas resaltados son los de tu búsqueda.':
     'Drag to move; zoom with the wheel, by pinching, by double-tapping or with the + and − buttons. Map names appear as you zoom in. Highlighted maps are the ones from your search.',
   'Editando la ruta': 'Editing the route',
-  'Pega capturas nuevas, quita las conexiones que sobran, cambia el orden con ↑ ↓ o corrige los tiempos. Las capturas que tenías pendientes vuelven al terminar.':
-    'Paste new screenshots, remove the connections you do not need, reorder them with ↑ ↓ or fix the times. Your pending screenshots come back when you finish.',
+  'Pega capturas nuevas (se colocan solas en su sitio), quita las conexiones que sobran, cambia el orden con ↑ ↓ o corrige los tiempos. Sin ninguna conexión, guardar borra la ruta. Las capturas que tenías pendientes vuelven al terminar.':
+    'Paste new screenshots (they fall into place on their own), remove the connections you do not need, reorder them with ↑ ↓ or fix the times. With no connections left, saving deletes the route. Your pending screenshots come back when you finish.',
+  'Invertir sentido': 'Reverse direction',
   'Cancelar edición': 'Cancel editing',
   'Excel de Google Drive': 'Google Drive spreadsheet',
   'Sincronizar ahora': 'Sync now',
