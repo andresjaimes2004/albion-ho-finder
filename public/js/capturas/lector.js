@@ -34,6 +34,9 @@ export const MARGEN_SEGURO = 0.025;
 
 const PSM_AUTOMATICO = '3';
 const PSM_UNA_LINEA = '7';
+const PSM_LINEA_CRUDA = '13';
+// Por debajo, el destino leído se da por dudoso y se reintenta (ver abajo).
+const DESTINO_SEGURO = 0.9;
 
 export async function leerImagen(imagen, indice, { reconocer }) {
   const carril = detectarCarril(imagen);
@@ -76,7 +79,20 @@ export async function leerImagen(imagen, indice, { reconocer }) {
   }
 
   const origen = mejorZonaEnLineas(textoTitulo, indice);
-  const destino = mejorZonaEnLineas(textoDestino, indice);
+  let destino = mejorZonaEnLineas(textoDestino, indice);
+  let textoDestinoFinal = textoDestino;
+  // Con un icono claro del mapa detrás del recuadro, el modo "una línea"
+  // de Tesseract a veces no devuelve nada aunque el nombre se lea bien. Se
+  // reintenta en modo "línea sin procesar" solo si no se reconoció ninguna
+  // zona con seguridad, y se queda la mejor de las dos lecturas.
+  if (regiones.destino && (!destino || destino.confianza < DESTINO_SEGURO)) {
+    const segundo = await leer(regiones.destino, { invertir: true, psm: PSM_LINEA_CRUDA });
+    const alternativa = mejorZonaEnLineas(segundo, indice);
+    if (alternativa && (!destino || alternativa.confianza > destino.confianza)) {
+      destino = alternativa;
+      textoDestinoFinal = segundo;
+    }
+  }
   return {
     origen: origen ? origen.zona.nombre : null,
     destino: destino ? destino.zona.nombre : null,
@@ -86,7 +102,7 @@ export async function leerImagen(imagen, indice, { reconocer }) {
       destino: destino ? destino.confianza : 0,
       minutos: confianzaMinutos,
     },
-    leido: { titulo: textoTitulo || '', destino: textoDestino || '', tiempo: textoTiempo || '' },
+    leido: { titulo: textoTitulo || '', destino: textoDestinoFinal || '', tiempo: textoTiempo || '' },
     recuadro: regiones.recuadro || null,
     aviso: carril ? null : 'No se ve el recuadro de un portal: pasa el cursor por encima del portal antes de sacar la captura.',
   };

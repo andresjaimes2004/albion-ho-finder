@@ -1,0 +1,532 @@
+{
+ "2026-09-26 110206": {
+  "origen": "Farshore Bay",
+  "destino": "Xetos-Obursum",
+  "minutos": 674
+ },
+ "2026-09-26 110221": {
+  "origen": "Xetos-Obursum",
+  "destino": "Frostseep Ravine",
+  "minutos": 931
+ },
+ "2026-09-26 110618": {
+  "origen": "Hasitos-Umayaum",
+  "destino": "Farshore Lagoon",
+  "minutos": 213
+ },
+ "2026-09-26 110642": {
+  "origen": "Xetos-Obursum",
+  "destino": "Hasitos-Umayaum",
+  "minutos": 771
+ },
+ "2026-09-27 214523": {
+  "origen": "Frostpeak Vista",
+  "destino": "Oiros-Alaiam",
+  "minutos": 1083
+ },
+ "2026-09-27 214553": {
+  "origen": "Oiros-Alaiam",
+  "destino": "Secent-Al-Viesum",
+  "minutos": 468
+ },
+ "2026-09-27 214602": {
+  "origen": "Oiros-Alaiam",
+  "destino": "Timbertop Dale",
+  "minutos": 196
+ },
+ "2026-09-27 214613": {
+  "origen": "Oiros-Alaiam",
+  "destino": "Tynos-Uxavrom",
+  "minutos": 1023
+ },
+ "2026-09-27 214758": {
+  "origen": "Tynos-Uxavrom",
+  "destino": "Giantweald Edge",
+  "minutos": 161
+ },
+ "2026-09-27 214811": {
+  "origen": "Tynos-Uxavrom",
+  "destino": "Ooros-Ecunsum",
+  "minutos": 314
+ },
+ "2026-09-27 214818": {
+  "origen": "Tynos-Uxavrom",
+  "destino": "Thirstwater Waste",
+  "minutos": 586
+ },
+ "2026-09-27 214954": {
+  "origen": "Whitebank Shore",
+  "destino": "Curitos-Ayayaum",
+  "minutos": 579
+ },
+ "2026-09-27 215007": {
+  "origen": "Curitos-Ayayaum",
+  "destino": "Quaent-Tersis",
+  "minutos": 1068
+ },
+ "2026-09-27 215014": {
+  "origen": "Curitos-Ayayaum",
+  "destino": "Secent-Al-Nutum",
+  "minutos": 774
+ },
+ "2026-09-27 215021": {
+  "origen": "Curitos-Ayayaum",
+  "destino": "Drownfield Quag",
+  "minutos": 1244
+ },
+ "2026-09-27 215130": {
+  "origen": "Pebos-Avosrom",
+  "destino": "Qiient-In-Odetum",
+  "minutos": 350
+ },
+ "2026-09-27 215140": {
+  "origen": "Pebos-Avosrom",
+  "destino": "Bleachskull Desert",
+  "minutos": 195
+ },
+ "2026-09-27 215146": {
+  "origen": "Pebos-Avosrom",
+  "destino": "Everwinter Incline",
+  "minutos": 517
+ },
+ "2026-09-27 215159": {
+  "origen": "Whitebank Shore",
+  "destino": "Pebos-Avosrom",
+  "minutos": 449
+ },
+ "2026-09-27 215352": {
+  "origen": "Whitebank Stream",
+  "destino": "Huyes-Ogozlum",
+  "minutos": 720
+ },
+ "2026-09-27 215406": {
+  "origen": "Huyes-Ogozlum",
+  "destino": "Deepwood Dell",
+  "minutos": 139
+ },
+ "2026-09-27 215413": {
+  "origen": "Huyes-Ogozlum",
+  "destino": "Setent-Vietis",
+  "minutos": 42
+ },
+ "2026-09-27 215802": {
+  "origen": "Sunfang Wasteland",
+  "destino": "Oynites-Oloblum",
+  "minutos": 985
+ },
+ "2026-09-27 215843": {
+  "origen": "Stonemouth Bay",
+  "destino": "Hasos-Agoitum",
+  "minutos": 848
+ },
+ "2026-09-27 215908": {
+  "origen": "Southgrove Escarp",
+  "destino": "Xoritos-Osayam",
+  "minutos": 621
+ },
+ "2026-09-27 215939": {
+  "origen": "Frostspring Volcano",
+  "destino": "Couos-Ayayaum",
+  "minutos": 627
+ },
+ "2026-09-27 220012": {
+  "origen": "Longfen Arms",
+  "destino": "Oebitos-Oyozam",
+  "minutos": 399
+ },
+ "2026-09-27 220115": {
+  "origen": "Stonemouth Southbluff",
+  "destino": "Poues-Unatam",
+  "minutos": 145
+ },
+ "2026-09-27 220225": {
+  "origen": "Dryvein End",
+  "destino": "Firos-Aiavam",
+  "minutos": 292
+ },
+ "2026-09-27 220343": {
+  "origen": "Sunstrand Quicksands",
+  "destino": "Tynos-Igurlum",
+  "minutos": 166
+ },
+ "2026-09-27 220425": {
+  "origen": "Dryvein Oasis",
+  "destino": "Xebitos-Oyogam",
+  "minutos": 1029
+ },
+ "2026-09-28 161707": {
+  "origen": "Sandrift Coast",
+  "destino": "Oetos-Ofailos",
+  "minutos": 343
+ },
+ "2026-09-28 161751": {
+  "origen": "Oetos-Ofailos",
+  "destino": "Windgrass Fields",
+  "minutos": 318
+ },
+ "2026-09-28 161810": {
+  "origen": "Oetos-Ofailos",
+  "destino": "Feros-Oyuctum",
+  "minutos": 467
+ },
+ "2026-09-28 161825": {
+  "origen": "Oetos-Ofailos",
+  "destino": "Sandrift Fringe",
+  "minutos": 750
+ },
+ "2026-09-28 161957": {
+  "origen": "Feros-Oyuctum",
+  "destino": "Qiitun-Al-Duosum",
+  "minutos": 745
+ },
+ "2026-09-28 162012": {
+  "origen": "Feros-Oyuctum",
+  "destino": "Setos-Avamsum",
+  "minutos": 148
+ },
+ "2026-09-28 162150": {
+  "origen": "Setos-Avamsum",
+  "destino": "Highstone Grassland",
+  "minutos": 700
+ },
+ "2026-09-28 162213": {
+  "origen": "Setos-Avamsum",
+  "destino": "Windgrass Coast",
+  "minutos": 1135
+ },
+ "2026-09-28 162230": {
+  "origen": "Setos-Avamsum",
+  "destino": "Xasos-Aoemaum",
+  "minutos": 488
+ },
+ "2026-09-28 204234": {
+  "origen": "Sandrift Coast",
+  "destino": "Oetos-Ofailos",
+  "minutos": 77
+ },
+ "2026-09-28 204311": {
+  "origen": "Oetos-Ofailos",
+  "destino": "Windgrass Fields",
+  "minutos": 53
+ },
+ "2026-09-28 204328": {
+  "origen": "Oetos-Ofailos",
+  "destino": "Feros-Oyuctum",
+  "minutos": 201
+ },
+ "2026-09-28 204341": {
+  "origen": "Oetos-Ofailos",
+  "destino": "Sandrift Fringe",
+  "minutos": 485
+ },
+ "2026-09-28 204514": {
+  "origen": "Feros-Oyuctum",
+  "destino": "Tynos-Eyexrom",
+  "minutos": 1117
+ },
+ "2026-09-28 204527": {
+  "origen": "Feros-Oyuctum",
+  "destino": "Qiitun-Al-Duosum",
+  "minutos": 479
+ },
+ "2026-09-28 204927": {
+  "origen": "Sandrift Fringe",
+  "destino": "Oetos-Ofailos",
+  "minutos": 479
+ },
+ "2026-09-28 205231": {
+  "origen": "Heros-Atoyam",
+  "destino": "Deathwisp Sink",
+  "minutos": 302
+ },
+ "2026-09-28 205242": {
+  "origen": "Sandrift Fringe",
+  "destino": "Heros-Atoyam",
+  "minutos": 307
+ },
+ "2026-09-28 211728": {
+  "origen": "Sandrift Steppe",
+  "destino": "Coros-Aiayrom",
+  "minutos": 88
+ },
+ "2026-09-28 211805": {
+  "origen": "Coros-Aiayrom",
+  "destino": "Ponitos-Aiayrom",
+  "minutos": 476
+ },
+ "2026-09-28 211817": {
+  "origen": "Coros-Aiayrom",
+  "destino": "Widemoor Hills",
+  "minutos": 505
+ },
+ "2026-09-28 211831": {
+  "origen": "Coros-Aiayrom",
+  "destino": "Suyites-Uzurtum",
+  "minutos": 233
+ },
+ "2026-09-28 211841": {
+  "origen": "Coros-Aiayrom",
+  "destino": "Xoritos-Exostum",
+  "minutos": 99
+ },
+ "2026-09-28 211942": {
+  "origen": "Xoritos-Exostum",
+  "destino": "Sandrift Shore",
+  "minutos": 875
+ },
+ "2026-09-28 211954": {
+  "origen": "Xoritos-Exostum",
+  "destino": "Gravemound Slope",
+  "minutos": 74
+ },
+ "2026-09-28 212008": {
+  "origen": "Xoritos-Exostum",
+  "destino": "Huyitos-Agoitum",
+  "minutos": 428
+ },
+ "2026-09-29 134510": {
+  "origen": "Sandrift Coast",
+  "destino": "Synitos-Availos",
+  "minutos": 468
+ },
+ "2026-09-29 134533": {
+  "origen": "Synitos-Availos",
+  "destino": "Xetos-Obursum",
+  "minutos": 390
+ },
+ "2026-09-29 134556": {
+  "origen": "Synitos-Availos",
+  "destino": "Skullmarsh Lower",
+  "minutos": 241
+ },
+ "2026-09-29 134613": {
+  "origen": "Synitos-Availos",
+  "destino": "Whitewall Ridge",
+  "minutos": 750
+ },
+ "2026-09-29 134741": {
+  "origen": "Xetos-Obursum",
+  "destino": "Everwinter Expanse",
+  "minutos": 221
+ },
+ "2026-09-29 134753": {
+  "origen": "Xetos-Obursum",
+  "destino": "Tynos-Eyexrom",
+  "minutos": 1333
+ },
+ "2026-09-29 134804": {
+  "origen": "Xetos-Obursum",
+  "destino": "Timberslope Dell",
+  "minutos": 26
+ },
+ "2026-09-29 134918": {
+  "origen": "Tynos-Eyexrom",
+  "destino": "Glacierbreak Summit",
+  "minutos": 375
+ },
+ "2026-09-29 134932": {
+  "origen": "Tynos-Eyexrom",
+  "destino": "Timbertop Escarp",
+  "minutos": 385
+ },
+ "2026-09-29 135231": {
+  "origen": "Sandrift Fringe",
+  "destino": "Soritos-Avamsum",
+  "minutos": 224
+ },
+ "2026-09-29 135300": {
+  "origen": "Soritos-Avamsum",
+  "destino": "Highstone Plateau",
+  "minutos": 270
+ },
+ "2026-09-29 135318": {
+  "origen": "Soritos-Avamsum",
+  "destino": "Qiient-Odesas",
+  "minutos": 1263
+ },
+ "2026-09-29 135332": {
+  "origen": "Soritos-Avamsum",
+  "destino": "Quaent-Al-Viesom",
+  "minutos": 621
+ },
+ "2026-09-29 135353": {
+  "origen": "Soritos-Avamsum",
+  "destino": "Quaent-Al-Odesum",
+  "minutos": 660
+ },
+ "2026-09-29 144933": {
+  "origen": "Widemoor Shore",
+  "destino": "Souos-Availos",
+  "minutos": 725
+ },
+ "2026-09-29 145016": {
+  "origen": "Souos-Availos",
+  "destino": "Turitos-Atatlos",
+  "minutos": 544
+ },
+ "2026-09-29 145026": {
+  "origen": "Souos-Availos",
+  "destino": "Ponitos-Aiayrom",
+  "minutos": 376
+ },
+ "2026-09-29 145042": {
+  "origen": "Souos-Availos",
+  "destino": "Hasos-Osuorom",
+  "minutos": 990
+ },
+ "2026-09-29 145052": {
+  "origen": "Souos-Availos",
+  "destino": "Westweald Shore",
+  "minutos": 582
+ },
+ "2026-09-29 145148": {
+  "origen": "Turitos-Atatlos",
+  "destino": "Cilos-Otatrom",
+  "minutos": 1169
+ },
+ "2026-09-29 145202": {
+  "origen": "Turitos-Atatlos",
+  "destino": "Suyites-Avuotum",
+  "minutos": 878
+ },
+ "2026-09-29 145305": {
+  "origen": "Suyites-Avuotum",
+  "destino": "Greenhollow Vale",
+  "minutos": 822
+ },
+ "2026-09-29 145323": {
+  "origen": "Suyites-Avuotum",
+  "destino": "Fynos-Alodrom",
+  "minutos": 477
+ },
+ "2026-09-29 145911": {
+  "origen": "Suyites-Avuotum",
+  "destino": "Wetgrave Bog",
+  "minutos": 1045
+ },
+ "2026-09-29 150359": {
+  "origen": "Ponitos-Aiayrom",
+  "destino": "Furitos-Aiavam",
+  "minutos": 816
+ },
+ "2026-09-29 150418": {
+  "origen": "Ponitos-Aiayrom",
+  "destino": "Furitos-Aiavam",
+  "minutos": 815
+ },
+ "2026-09-29 150459": {
+  "origen": "Furitos-Aiavam",
+  "destino": "Parchsand Drought",
+  "minutos": 476
+ },
+ "2026-09-29 150516": {
+  "origen": "Furitos-Aiavam",
+  "destino": "Flammog Valley",
+  "minutos": 724
+ },
+ "2026-09-29 151325": {
+  "origen": "Hasos-Osuorom",
+  "destino": "Battlebrae Lake",
+  "minutos": 274
+ },
+ "2026-09-29 151338": {
+  "origen": "Hasos-Osuorom",
+  "destino": "Willowshade Lake",
+  "minutos": 641
+ },
+ "2026-09-29 151352": {
+  "origen": "Hasos-Osuorom",
+  "destino": "Secent-Sa-Odesis",
+  "minutos": 906
+ },
+ "2026-09-29 161817": {
+  "origen": "Frostpeak Vista",
+  "destino": "Oiros-Alaiam",
+  "minutos": 1231
+ },
+ "2026-09-29 161947": {
+  "origen": "Oiros-Alaiam",
+  "destino": "Drytop Riverbed",
+  "minutos": 207
+ },
+ "2026-09-29 161959": {
+  "origen": "Oiros-Alaiam",
+  "destino": "Everwinter Shores",
+  "minutos": 927
+ },
+ "2026-09-29 162013": {
+  "origen": "Oiros-Alaiam",
+  "destino": "Soues-Uzurtum",
+  "minutos": 666
+ },
+ "2026-09-29 162259": {
+  "origen": "Soues-Uzurtum",
+  "destino": "Xasos-Aoemaum",
+  "minutos": 504
+ },
+ "2026-09-29 162327": {
+  "origen": "Xasos-Aoemaum",
+  "destino": "Munten Rise",
+  "minutos": 423
+ },
+ "2026-09-29 162338": {
+  "origen": "Xasos-Aoemaum",
+  "destino": "Siros-Ofurlos",
+  "minutos": 591
+ },
+ "2026-09-29 162415": {
+  "origen": "Xasos-Aoemaum",
+  "destino": "Iceburn Cliffs",
+  "minutos": 844
+ },
+ "2026-09-29 162631": {
+  "origen": "Soues-Uzurtum",
+  "destino": "Settun-Odetum",
+  "minutos": 741
+ },
+ "2026-09-29 163500": {
+  "origen": "Frostpeak Ascent",
+  "destino": "Heritos-Inayaum",
+  "minutos": 301
+ },
+ "2026-09-29 163512": {
+  "origen": "Frostpeak Ascent",
+  "destino": "Heritos-Inayaum",
+  "minutos": 301
+ },
+ "2026-09-29 163535": {
+  "origen": "Heritos-Inayaum",
+  "destino": "Swiftsands Basin",
+  "minutos": 756
+ },
+ "2026-09-29 163653": {
+  "origen": "Heritos-Inayaum",
+  "destino": "Qiient-Si-Tertum",
+  "minutos": 975
+ },
+ "2026-09-29 164037": {
+  "origen": "Heritos-Inayaum",
+  "destino": "Pieos-Ofairom",
+  "minutos": 859
+ },
+ "2026-09-29 164112": {
+  "origen": "Pieos-Ofairom",
+  "destino": "Longfen Marsh",
+  "minutos": 403
+ },
+ "2026-09-29 164133": {
+  "origen": "Pieos-Ofairom",
+  "destino": "Frostspring Volcano",
+  "minutos": 389
+ },
+ "2026-09-29 164222": {
+  "origen": "Pieos-Ofairom",
+  "destino": "Qiient-Si-Odesum",
+  "minutos": 1109
+ },
+ "2026-09-29 164540": {
+  "origen": "Heritos-Inayaum",
+  "destino": "Qiient-Et-Qinsum",
+  "minutos": 60
+ }
+}
