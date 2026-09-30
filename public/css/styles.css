@@ -3384,7 +3384,5 @@ html:has(dialog[open]) { overflow: hidden; }
   background: rgba(201, 79, 79, 0.04);
 }
 .rutas-admin__titulo { font-size: 0.8rem; color: var(--color-texto-tenue); }
-.rutas-admin__zona { display: flex; flex-wrap: wrap; gap: 6px; flex: 1 1 280px; }
-.rutas-admin__zona input { flex: 1 1 160px; min-width: 0; }
 .rutas-admin__mensaje { flex-basis: 100%; font-size: 0.8rem; color: var(--color-texto-suave); }
 .rutas-admin__mensaje:empty { display: none; }

@@ -311,6 +311,9 @@ export class PanelCaminos {
     try {
       const datos = await api.detalleTracking(nombre, this.controladorDetalle.signal);
       this._renderizarDetalle(datos);
+      // Con el nombre oficial del mapa abierto, la barra de administración
+      // ofrece "Borrar las de <mapa>".
+      if (!silencioso) this._actualizarBarraAdmin(datos.mapa && datos.mapa.nombre);
     } catch (error) {
       if (error.name === 'AbortError') return;
       if (!silencioso) {
@@ -327,6 +330,13 @@ export class PanelCaminos {
     this.mapaAbierto = null;
     this.detalle.hidden = true;
     this.detalle.replaceChildren();
+    this._actualizarBarraAdmin(null);
+  }
+
+  /** Vuelve a pintar las rutas (y su barra) si lo mira un administrador. */
+  _actualizarBarraAdmin(mapa) {
+    if (mapa) this.mapaAbierto = mapa;
+    if (this.datos && this.usuario && this.usuario.rol === 'ADMIN') this._renderizarRutas();
   }
 
   _crearCabeceraDetalle(nombre, insignias = []) {
@@ -711,7 +721,8 @@ export class PanelCaminos {
       try {
         const r = await api.borrarRutas(alcance, valor);
         // Se muestra en la barra que se pinta al refrescar.
-        this._mensajeAdmin = t('Borradas: {rutas} rutas y {conexiones} conexiones.', r);
+        // Se ve unos segundos aunque la barra se vuelva a pintar.
+        this._mensajeAdmin = { texto: t('Borradas: {rutas} rutas y {conexiones} conexiones.', r), hasta: Date.now() + 10_000 };
         await this.refrescar();
       } catch (error) {
         mensaje.textContent = error.message || t('No se pudo borrar.');
@@ -740,27 +751,21 @@ export class PanelCaminos {
       );
     }
 
-    // Por zona: todas las rutas que pasan por un mapa o camino.
-    const formulario = crear('form', 'rutas-admin__zona');
-    const zona = crear('input');
-    zona.type = 'text';
-    zona.maxLength = 80;
-    zona.required = true;
-    zona.setAttribute('list', 'caminos-sugerencias');
-    zona.placeholder = t('Mapa o camino (ej. Sandrift Coast)');
-    zona.setAttribute('aria-label', t('Mapa o camino cuyas rutas se borran'));
-    const botonZona = crear('button', 'boton boton--pequeno boton--peligro', t('Borrar las de este mapa'));
-    botonZona.type = 'submit';
-    formulario.append(zona, botonZona);
-    formulario.addEventListener('submit', (evento) => {
-      evento.preventDefault();
-      const valor = zona.value.trim();
-      if (valor) borrar('zona', valor, t('¿Borrar todas las rutas que pasan por {zona}?', { zona: valor }), botonZona);
-    });
-    caja.append(formulario, mensaje);
-    if (this._mensajeAdmin) {
-      mensaje.textContent = this._mensajeAdmin;
-      this._mensajeAdmin = null;
+    // Por zona: las rutas que pasan por el mapa o camino abierto en la ficha
+    // (el que se busca arriba). Sin ficha abierta, el botón no aparece.
+    if (this.mapaAbierto) {
+      caja.append(
+        accion(
+          t('Borrar las de {mapa}', { mapa: this.mapaAbierto }),
+          'zona',
+          this.mapaAbierto,
+          t('¿Borrar todas las rutas que pasan por {zona}?', { zona: this.mapaAbierto })
+        )
+      );
+    }
+    caja.append(mensaje);
+    if (this._mensajeAdmin && this._mensajeAdmin.hasta > Date.now()) {
+      mensaje.textContent = this._mensajeAdmin.texto;
     }
     return caja;
   }

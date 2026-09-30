@@ -283,9 +283,7 @@ export const EN = {
   '¿Borrar todas las rutas abiertas?': 'Delete all open routes?',
   'Borrar las de {portal}': 'Delete {portal} ones',
   '¿Borrar todas las rutas cercanas a {portal}?': 'Delete all routes near {portal}?',
-  'Mapa o camino (ej. Sandrift Coast)': 'Map or road (e.g. Sandrift Coast)',
-  'Mapa o camino cuyas rutas se borran': 'Map or road whose routes will be deleted',
-  'Borrar las de este mapa': "Delete this map's routes",
+  'Borrar las de {mapa}': 'Delete routes through {mapa}',
   '¿Borrar todas las rutas que pasan por {zona}?': 'Delete all routes that go through {zona}?',
   // --- Sin rutas (admin) ---
   'No hay rutas registradas ahora.': 'There are no routes registered right now.',
