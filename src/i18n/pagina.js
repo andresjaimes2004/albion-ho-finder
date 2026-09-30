@@ -78,6 +78,7 @@ const EN = {
   'Pega capturas nuevas (se colocan solas en su sitio), quita las conexiones que sobran, cambia el orden con ↑ ↓ o corrige los tiempos. Sin ninguna conexión, guardar borra la ruta. Las capturas que tenías pendientes vuelven al terminar.':
     'Paste new screenshots (they fall into place on their own), remove the connections you do not need, reorder them with ↑ ↓ or fix the times. With no connections left, saving deletes the route. Your pending screenshots come back when you finish.',
   'Invertir sentido': 'Reverse direction',
+  'Proponer también las rutas entre destinos (todas las combinaciones)': 'Also propose routes between destinations (all combinations)',
   'Cancelar edición': 'Cancel editing',
   'Excel de Google Drive': 'Google Drive spreadsheet',
   'Sincronizar ahora': 'Sync now',

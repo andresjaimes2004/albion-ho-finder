@@ -3386,3 +3386,5 @@ html:has(dialog[open]) { overflow: hidden; }
 .rutas-admin__titulo { font-size: 0.8rem; color: var(--color-texto-tenue); }
 .rutas-admin__mensaje { flex-basis: 100%; font-size: 0.8rem; color: var(--color-texto-suave); }
 .rutas-admin__mensaje:empty { display: none; }
+.registro__combinaciones { display: flex; margin: 4px 0 10px; font-size: 0.82rem; color: var(--color-texto-suave); }
+.registro--edicion .registro__combinaciones { display: none; }

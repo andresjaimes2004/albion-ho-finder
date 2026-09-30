@@ -93,6 +93,22 @@ export class PanelRegistro {
     this.guardar = document.getElementById('registro-guardar');
     this.sugerencias = document.getElementById('registro-zonas');
     this.contenedorRutas = document.getElementById('registro-rutas');
+    // Por defecto, una ruta por destino desde la entrada de cada red; con
+    // la casilla, todas las combinaciones entre extremos (recordada).
+    this.combinaciones = document.getElementById('registro-combinaciones');
+    try {
+      this.combinaciones.checked = localStorage.getItem('registro-combinaciones') === '1';
+    } catch (error) {
+      // Sin almacenamiento: queda desmarcada.
+    }
+    this.combinaciones.addEventListener('change', () => {
+      try {
+        localStorage.setItem('registro-combinaciones', this.combinaciones.checked ? '1' : '0');
+      } catch (error) {
+        // Sin almacenamiento: vale hasta recargar.
+      }
+      this._actualizarAcciones();
+    });
 
     this._bindEventos();
     this._renderizarSesion();
@@ -714,6 +730,10 @@ export class PanelRegistro {
     };
     const { rutas, truncado } = agruparEnRutas(tramos, grupoDe, {
       aceptar: (indices) => indices.some((i) => i < nuevas),
+      desdeEntrada: !this.combinaciones.checked,
+      // Las conexiones ya guardadas se capturaron antes que las nuevas: su
+      // mapa de Zona Negra es la entrada de la red.
+      antiguedad: (i) => (i >= nuevas ? i - nuevas - tramos.length : i),
       // Una ruta puede terminar en un camino de hideouts.
       puedeTerminar: (zona) => {
         const z = this.porNombre && this.porNombre.get(zona.toLowerCase());
