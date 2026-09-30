@@ -8,6 +8,20 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v13.1 — Lector de capturas afinado y rutas desde la entrada
+
+- **Lector medido con 106 capturas reales** (antes 31), revisadas a ojo una
+  por una: origen, destino y tiempo correctos en las 106, y **ningún error
+  confiado** (antes: 3 tiempos equivocados que no se marcaban para revisar,
+  como "12 h 28 m" en vez de "2 h 28 m" o "6 h 10 m" en vez de "6 h 30 m").
+  En validación cruzada el tiempo da 105/106 y el fallo queda marcado.
+- **Rutas desde la entrada**: cada red de caminos da una ruta desde su mapa
+  de entrada hasta cada destino, en vez de todas las combinaciones entre
+  extremos (con las sesiones reales, 54 rutas en vez de 152). Una casilla en
+  el panel de registro permite volver a todas las combinaciones.
+- Banco de pruebas del lector en `herramientas/banco-lector/` para medir
+  cada cambio con capturas reales.
+
 ### v13 — Correcciones del gremio (segunda ronda)
 
 - **Editar rutas**: quitando todas las conexiones (a mano o con "Vaciar") el
