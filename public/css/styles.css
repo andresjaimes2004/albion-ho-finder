@@ -3344,7 +3344,7 @@ html:has(dialog[open]) { overflow: hidden; }
 .hideouts-camino__meta { font-size: 0.76rem; color: var(--color-texto-tenue); }
 .hideouts-camino__gremio .conexion__borrar { margin-left: auto; }
 .hideouts-camino__formulario { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.hideouts-camino__formulario input { flex: 1 1 180px; min-width: 0; }
+.hideouts-camino__caja { flex: 1 1 200px; min-width: 0; padding: 9px 14px; }
 .hideouts-camino__mensaje { flex-basis: 100%; margin: 0; font-size: 0.8rem; color: var(--color-error); }
 .hideouts-camino__mensaje:empty { display: none; }
 .tarjeta-mapa__gremios-camino { margin: 0; padding: 0 14px 12px; font-size: 0.86rem; color: var(--color-texto-suave); }
@@ -3366,3 +3366,25 @@ html:has(dialog[open]) { overflow: hidden; }
 .admin-sincronizacion__estado { margin: 0; flex: 1 1 280px; font-size: 0.86rem; color: var(--color-texto-suave); }
 .admin-sincronizacion__estado--error { color: #e58a8a; }
 .admin-sincronizacion__acciones { display: flex; gap: 8px; flex-wrap: wrap; }
+.registro__edicion-acciones { display: flex; flex-wrap: wrap; gap: 8px; }
+.rutas-portales__cerradas { font-size: 0.72rem; color: #e58a8a; }
+.rutas-cerradas__grupos { padding: 0 10px 10px; }
+.rutas-cerradas__grupos .rutas-portal__titulo { margin-top: 8px; font-size: 0.86rem; }
+
+/* Borrado masivo de rutas (solo administradores) */
+.rutas-admin {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  border: 1px dashed rgba(201, 79, 79, 0.45);
+  border-radius: var(--radio);
+  background: rgba(201, 79, 79, 0.04);
+}
+.rutas-admin__titulo { font-size: 0.8rem; color: var(--color-texto-tenue); }
+.rutas-admin__zona { display: flex; flex-wrap: wrap; gap: 6px; flex: 1 1 280px; }
+.rutas-admin__zona input { flex: 1 1 160px; min-width: 0; }
+.rutas-admin__mensaje { flex-basis: 100%; font-size: 0.8rem; color: var(--color-texto-suave); }
+.rutas-admin__mensaje:empty { display: none; }

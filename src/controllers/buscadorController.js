@@ -27,6 +27,12 @@ const buscarGremio = manejar((req, res) => {
   return res.status(200).json(resultado);
 });
 
+/** GET /api/buscar/sugerencias — nombres para autocompletar el buscador. */
+const sugerencias = manejar((req, res) => {
+  res.set('Cache-Control', 'public, max-age=300');
+  res.json(servicio.sugerencias());
+});
+
 /** GET /api/historial — últimas búsquedas del usuario autenticado. */
 const historial = manejar((req, res) => {
   res.json({ ok: true, historial: busquedas.listar(req.sesion.usuario.id) });
@@ -38,4 +44,4 @@ const limpiarHistorial = manejar((req, res) => {
   res.json({ ok: true, historial: [] });
 });
 
-module.exports = { buscarGremio, historial, limpiarHistorial };
+module.exports = { buscarGremio, sugerencias, historial, limpiarHistorial };

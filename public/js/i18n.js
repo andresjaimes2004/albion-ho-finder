@@ -265,6 +265,30 @@ export const EN = {
   '{n} caminos': '{n} roads',
   'Ver el camino {camino}': 'View the road {camino}',
   'Sin gremios anotados todavía.': 'No guilds added yet.',
+  // --- Editar rutas: vaciar ---
+  'La ruta ya no tiene conexiones: al guardar se borrará entera.': 'The route has no connections left: saving will delete it entirely.',
+  'Borrar la ruta': 'Delete the route',
+  '¿Borrar la ruta {ruta} entera?': 'Delete the whole route {ruta}?',
+  'Ruta borrada.': 'Route deleted.',
+  // --- Cerradas por portal ---
+  '{n} cerrada hace poco': '{n} recently closed',
+  '{n} cerradas hace poco': '{n} recently closed',
+  'No hay rutas abiertas cerca de este portal.': 'There are no open routes near this portal.',
+  // --- Borrado masivo de rutas (admin) ---
+  'Administrar rutas:': 'Manage routes:',
+  'Borradas: {rutas} rutas y {conexiones} conexiones.': 'Deleted: {rutas} routes and {conexiones} connections.',
+  'Borrar todas': 'Delete all',
+  '¿Borrar TODAS las rutas y conexiones (abiertas, cerradas y sueltas)?': 'Delete ALL routes and connections (open, closed and loose)?',
+  'Borrar las abiertas': 'Delete open ones',
+  '¿Borrar todas las rutas abiertas?': 'Delete all open routes?',
+  'Borrar las de {portal}': 'Delete {portal} ones',
+  '¿Borrar todas las rutas cercanas a {portal}?': 'Delete all routes near {portal}?',
+  'Mapa o camino (ej. Sandrift Coast)': 'Map or road (e.g. Sandrift Coast)',
+  'Mapa o camino cuyas rutas se borran': 'Map or road whose routes will be deleted',
+  'Borrar las de este mapa': "Delete this map's routes",
+  '¿Borrar todas las rutas que pasan por {zona}?': 'Delete all routes that go through {zona}?',
+  // --- Sin rutas (admin) ---
+  'No hay rutas registradas ahora.': 'There are no routes registered right now.',
   // --- Editar rutas ---
   'Editar': 'Edit',
   'Editar esta ruta': 'Edit this route',

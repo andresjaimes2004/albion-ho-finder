@@ -153,8 +153,37 @@ class BuscadorUI {
     });
   }
 
+  /**
+   * Sugerencias del buscador (gremios y mapas), como en Caminos de Avalon.
+   * Se cargan una vez, al empezar a usar el buscador. Un gremio escrito con
+   * espacios ("R E Q U I E M") lleva también su forma junta como etiqueta,
+   * así aparece al teclear "requiem".
+   */
+  _cargarSugerencias() {
+    if (this._sugerenciasCargadas) return;
+    this._sugerenciasCargadas = true;
+    api
+      .sugerencias()
+      .then(({ gremios = [], mapas = [] }) => {
+        const lista = document.getElementById('gremio-sugerencias');
+        const opcion = (valor) => {
+          const el = document.createElement('option');
+          el.value = valor;
+          const junto = valor.toLowerCase().replace(/[\s._-]+/g, '');
+          if (junto !== valor.toLowerCase()) el.label = junto;
+          return el;
+        };
+        lista.replaceChildren(...[...gremios, ...mapas].map(opcion));
+      })
+      .catch(() => {
+        this._sugerenciasCargadas = false;
+      });
+  }
+
   _bindEventos() {
+    this.input.addEventListener('focus', () => this._cargarSugerencias());
     this.input.addEventListener('input', () => {
+      this._cargarSugerencias();
       clearTimeout(this.temporizadorDebounce);
       const texto = this.input.value.trim();
 

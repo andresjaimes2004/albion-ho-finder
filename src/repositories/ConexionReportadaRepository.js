@@ -85,6 +85,26 @@ class ConexionReportadaRepository extends BaseRepository {
       .all({ $limite: limiteIso });
   }
 
+  /**
+   * Borra las conexiones que no forman parte de ninguna ruta y se
+   * registraron (o actualizaron) antes de `limiteSqlite` ("AAAA-MM-DD
+   * HH:MM:SS" en UTC, el formato de creado_en).
+   */
+  purgarSueltasAntesDe(limiteSqlite) {
+    return this.db
+      .prepare(
+        `DELETE FROM conexiones_reportadas
+         WHERE creado_en < $limite
+           AND NOT EXISTS (SELECT 1 FROM rutas_tramos t WHERE t.conexion_id = conexiones_reportadas.id)`
+      )
+      .run({ $limite: limiteSqlite }).changes;
+  }
+
+  /** Borra todas las conexiones (solo para "borrar todas las rutas"). */
+  eliminarTodas() {
+    return this.db.prepare('DELETE FROM conexiones_reportadas').run().changes;
+  }
+
   eliminar(id) {
     return this.db.prepare('DELETE FROM conexiones_reportadas WHERE id = $id').run({ $id: id }).changes > 0;
   }

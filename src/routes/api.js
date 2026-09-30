@@ -35,6 +35,7 @@ router.use(limitarGeneral);
 // ---------------------------------------------------------------- público ---
 
 router.get('/buscar', buscador.buscarGremio);
+router.get('/buscar/sugerencias', buscador.sugerencias);
 router.get('/mapas', mapas.mundo);
 router.get('/mapas/:nombre', mapas.detalle);
 router.get('/mapas/:nombre/imagen', mapas.imagen);
@@ -48,6 +49,7 @@ router.post('/tracking/reportes', exigirAutenticacion, tracking.registrar);
 router.delete('/tracking/reportes/:id', exigirAutenticacion, tracking.eliminar);
 router.put('/tracking/rutas/:id', exigirAutenticacion, tracking.editarRuta);
 router.delete('/tracking/rutas/:id', exigirAutenticacion, tracking.eliminarRuta);
+router.delete('/tracking/rutas', exigirAdmin, tracking.borrarRutasEnBloque);
 router.post('/tracking/hideouts', exigirAutenticacion, tracking.agregarHideoutCamino);
 router.delete('/tracking/hideouts/:id', exigirAutenticacion, tracking.eliminarHideoutCamino);
 

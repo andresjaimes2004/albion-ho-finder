@@ -224,10 +224,12 @@
         <input
           id="input-gremio"
           type="text"
+          list="gremio-sugerencias"
           placeholder="{{Ej: Gankers Letales o Timbertop Escarp}}"
           autocomplete="off"
           maxlength="60"
         />
+        <datalist id="gremio-sugerencias"></datalist>
       </div>
       <p class="panel-busqueda__ayuda">
         {{Escribe el nombre de un gremio o de un mapa, completo o solo una parte. Toca cualquier mapa del resultado para abrirlo en detalle.}}
@@ -318,9 +320,6 @@
         </div>
       </div>
 
-      <h3>{{Gremios}}</h3>
-      <input id="admin-buscar-gremio" type="search" placeholder="{{Buscar gremio para editar...}}" maxlength="60" />
-      <ul id="admin-gremios" class="admin-lista"></ul>
 
       <h3>{{Usuarios}}</h3>
       <ul id="admin-usuarios" class="admin-lista"></ul>
@@ -393,9 +392,12 @@
             <div id="registro-edicion" class="registro__edicion" hidden>
               <p>
                 <strong>{{Editando la ruta}}</strong> <span id="registro-edicion-ruta"></span><br />
-                {{Pega capturas nuevas, quita las conexiones que sobran, cambia el orden con ↑ ↓ o corrige los tiempos. Las capturas que tenías pendientes vuelven al terminar.}}
+                {{Pega capturas nuevas (se colocan solas en su sitio), quita las conexiones que sobran, cambia el orden con ↑ ↓ o corrige los tiempos. Sin ninguna conexión, guardar borra la ruta. Las capturas que tenías pendientes vuelven al terminar.}}
               </p>
-              <button id="registro-edicion-cancelar" type="button" class="boton boton--pequeno boton--sutil">{{Cancelar edición}}</button>
+              <div class="registro__edicion-acciones">
+                <button id="registro-edicion-invertir" type="button" class="boton boton--pequeno boton--sutil">{{Invertir sentido}}</button>
+                <button id="registro-edicion-cancelar" type="button" class="boton boton--pequeno boton--sutil">{{Cancelar edición}}</button>
+              </div>
             </div>
             <ol class="registro__pasos">
               <li>{{En el juego, abre el mapa del camino y <strong>pasa el cursor por encima de un portal</strong>.}}</li>

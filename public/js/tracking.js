@@ -429,7 +429,9 @@ export class PanelCaminos {
       return bloque;
     }
     const formulario = crear('form', 'hideouts-camino__formulario');
-    const entrada = crear('input');
+    // Mismo estilo que el buscador de caminos: caja con borde y entrada lisa.
+    const caja = crear('div', 'panel-busqueda__caja hideouts-camino__caja');
+    const entrada = crear('input', 'entrada-busqueda');
     entrada.type = 'text';
     entrada.maxLength = 40;
     entrada.minLength = 2;
@@ -441,7 +443,8 @@ export class PanelCaminos {
     anotar.type = 'submit';
     const mensaje = crear('p', 'hideouts-camino__mensaje');
     mensaje.setAttribute('aria-live', 'polite');
-    formulario.append(entrada, anotar, mensaje);
+    caja.append(entrada);
+    formulario.append(caja, anotar, mensaje);
     formulario.addEventListener('submit', async (evento) => {
       evento.preventDefault();
       anotar.disabled = true;
@@ -594,20 +597,30 @@ export class PanelCaminos {
     const contenedor = document.getElementById('caminos-rutas');
     const rutas = (this.datos && this.datos.rutas) || [];
     const cerradas = (this.datos && this.datos.rutasCerradas) || [];
-    contenedor.hidden = !rutas.length && !cerradas.length;
+    const esAdmin = Boolean(this.usuario && this.usuario.rol === 'ADMIN');
+    // Un administrador ve siempre el bloque, con su barra de borrado (y el
+    // resultado de la última acción) aunque ya no quede ninguna ruta.
+    contenedor.hidden = !rutas.length && !cerradas.length && !esAdmin;
     if (contenedor.hidden) {
       contenedor.replaceChildren();
       return;
     }
 
+    // Las abiertas y las cerradas hace poco se agrupan igual, por el portal
+    // de ciudad más cercano: el mismo filtro vale para las dos.
     const OTRAS = '';
-    const porPortal = new Map();
-    for (const ruta of rutas) {
-      const portal = ruta.cercania ? ruta.cercania.portal : OTRAS;
-      if (!porPortal.has(portal)) porPortal.set(portal, []);
-      porPortal.get(portal).push(ruta);
-    }
-    const orden = [...(this.datos.portales || []), OTRAS].filter((p) => porPortal.has(p));
+    const agrupar = (lista) => {
+      const mapa = new Map();
+      for (const ruta of lista) {
+        const portal = ruta.cercania ? ruta.cercania.portal : OTRAS;
+        if (!mapa.has(portal)) mapa.set(portal, []);
+        mapa.get(portal).push(ruta);
+      }
+      return mapa;
+    };
+    const porPortal = agrupar(rutas);
+    const cerradasPorPortal = agrupar(cerradas);
+    const orden = [...(this.datos.portales || []), OTRAS].filter((p) => porPortal.has(p) || cerradasPorPortal.has(p));
 
     if (this._portalElegido === undefined) {
       this._portalElegido = null;
@@ -617,7 +630,7 @@ export class PanelCaminos {
         // Sin almacenamiento (modo privado estricto): se muestran todas.
       }
     }
-    const elegido = this._portalElegido !== null && porPortal.has(this._portalElegido) ? this._portalElegido : null;
+    const elegido = this._portalElegido !== null && orden.includes(this._portalElegido) ? this._portalElegido : null;
 
     const bloque = crear('div', 'caminos-detalle__bloque bloque-rutas');
     bloque.append(crear('h4', null, `${t('Rutas del gremio')} (${rutas.length})`));
@@ -626,11 +639,16 @@ export class PanelCaminos {
     const filtro = crear('div', 'rutas-portales');
     filtro.setAttribute('role', 'group');
     filtro.setAttribute('aria-label', t('Filtrar rutas por portal de ciudad'));
-    const chip = (valor, texto, cantidad) => {
+    const chip = (valor, texto, cantidad, cantidadCerradas) => {
       const boton = crear('button', 'rutas-portales__chip');
       boton.type = 'button';
       boton.setAttribute('aria-pressed', String(valor === elegido));
       boton.append(texto, ' ', crear('span', 'rutas-portales__cantidad', String(cantidad)));
+      if (cantidadCerradas) {
+        const extra = crear('span', 'rutas-portales__cerradas', `+${cantidadCerradas}`);
+        extra.title = tn(cantidadCerradas, '{n} cerrada hace poco', '{n} cerradas hace poco');
+        boton.append(' ', extra);
+      }
       boton.addEventListener('click', () => {
         this._portalElegido = valor;
         try {
@@ -643,32 +661,121 @@ export class PanelCaminos {
       });
       return boton;
     };
-    if (rutas.length) {
-      filtro.append(chip(null, t('Todas'), rutas.length));
-      for (const portal of orden) {
-        filtro.append(chip(portal, portal === OTRAS ? t('Otras') : portal.replace(/ Portal$/, ''), porPortal.get(portal).length));
-      }
-      bloque.append(filtro);
+    const cuantas = (mapa, portal) => (mapa.get(portal) || []).length;
+    filtro.append(chip(null, t('Todas'), rutas.length, cerradas.length));
+    for (const portal of orden) {
+      filtro.append(
+        chip(
+          portal,
+          portal === OTRAS ? t('Otras') : portal.replace(/ Portal$/, ''),
+          cuantas(porPortal, portal),
+          cuantas(cerradasPorPortal, portal)
+        )
+      );
     }
-
-    if (cerradas.length) bloque.append(this._crearCerradas(cerradas));
+    bloque.append(filtro);
+    if (esAdmin) bloque.append(this._crearHerramientasAdmin(elegido));
+    if (!rutas.length && !cerradas.length) bloque.append(crear('p', 'caminos-detalle__vacio', t('No hay rutas registradas ahora.')));
 
     const portalesVisibles = elegido === null ? orden : [elegido];
+    const tituloPortal = (portal) => (portal === OTRAS ? t('Lejos de los portales de ciudad') : portal);
+    const cerradasVisibles = portalesVisibles.filter((p) => cerradasPorPortal.has(p));
+    if (cerradasVisibles.length) {
+      bloque.append(this._crearCerradas(cerradasVisibles.map((p) => [elegido === null ? tituloPortal(p) : null, cerradasPorPortal.get(p)])));
+    }
+
     for (const portal of portalesVisibles) {
-      if (elegido === null) {
-        bloque.append(crear('h5', 'rutas-portal__titulo', portal === OTRAS ? t('Lejos de los portales de ciudad') : portal));
-      }
+      if (!porPortal.has(portal)) continue;
+      if (elegido === null) bloque.append(crear('h5', 'rutas-portal__titulo', tituloPortal(portal)));
       bloque.append(this._crearEntradas(porPortal.get(portal)));
+    }
+    if (elegido !== null && !porPortal.has(elegido)) {
+      bloque.append(crear('p', 'caminos-detalle__vacio', t('No hay rutas abiertas cerca de este portal.')));
     }
     contenedor.replaceChildren(bloque);
   }
 
   /**
+   * Borrado masivo de rutas, solo para administradores (el servidor lo
+   * vuelve a comprobar). Cada acción pide confirmación.
+   */
+  _crearHerramientasAdmin(portalElegido) {
+    const caja = crear('div', 'rutas-admin');
+    caja.append(crear('span', 'rutas-admin__titulo', t('Administrar rutas:')));
+    const mensaje = crear('span', 'rutas-admin__mensaje');
+    mensaje.setAttribute('aria-live', 'polite');
+
+    const borrar = async (alcance, valor, pregunta, boton) => {
+      if (!window.confirm(pregunta)) return;
+      boton.disabled = true;
+      try {
+        const r = await api.borrarRutas(alcance, valor);
+        // Se muestra en la barra que se pinta al refrescar.
+        this._mensajeAdmin = t('Borradas: {rutas} rutas y {conexiones} conexiones.', r);
+        await this.refrescar();
+      } catch (error) {
+        mensaje.textContent = error.message || t('No se pudo borrar.');
+        boton.disabled = false;
+      }
+    };
+    const accion = (texto, alcance, valor, pregunta) => {
+      const boton = crear('button', 'boton boton--pequeno boton--peligro', texto);
+      boton.type = 'button';
+      boton.addEventListener('click', () => borrar(alcance, valor, pregunta, boton));
+      return boton;
+    };
+
+    caja.append(
+      accion(t('Borrar todas'), 'todas', '', t('¿Borrar TODAS las rutas y conexiones (abiertas, cerradas y sueltas)?')),
+      accion(t('Borrar las abiertas'), 'activas', '', t('¿Borrar todas las rutas abiertas?'))
+    );
+    if (portalElegido) {
+      caja.append(
+        accion(
+          t('Borrar las de {portal}', { portal: portalElegido.replace(/ Portal$/, '') }),
+          'portal',
+          portalElegido,
+          t('¿Borrar todas las rutas cercanas a {portal}?', { portal: portalElegido })
+        )
+      );
+    }
+
+    // Por zona: todas las rutas que pasan por un mapa o camino.
+    const formulario = crear('form', 'rutas-admin__zona');
+    const zona = crear('input');
+    zona.type = 'text';
+    zona.maxLength = 80;
+    zona.required = true;
+    zona.setAttribute('list', 'caminos-sugerencias');
+    zona.placeholder = t('Mapa o camino (ej. Sandrift Coast)');
+    zona.setAttribute('aria-label', t('Mapa o camino cuyas rutas se borran'));
+    const botonZona = crear('button', 'boton boton--pequeno boton--peligro', t('Borrar las de este mapa'));
+    botonZona.type = 'submit';
+    formulario.append(zona, botonZona);
+    formulario.addEventListener('submit', (evento) => {
+      evento.preventDefault();
+      const valor = zona.value.trim();
+      if (valor) borrar('zona', valor, t('¿Borrar todas las rutas que pasan por {zona}?', { zona: valor }), botonZona);
+    });
+    caja.append(formulario, mensaje);
+    if (this._mensajeAdmin) {
+      mensaje.textContent = this._mensajeAdmin;
+      this._mensajeAdmin = null;
+    }
+    return caja;
+  }
+
+  /**
    * Rutas que cerraron hace menos de 30 minutos: se ven enteras (con el
    * portal cerrado y lo que quedó desconectado) para saber a dónde
-   * llevaban y corregirlas antes de que se borren.
+   * llevaban y corregirlas antes de que se borren. Van agrupadas por el
+   * portal de ciudad más cercano (y filtradas con el mismo filtro que las
+   * abiertas), para ver rápido por dónde hay que salir.
+   *
+   * @param {Array<[string|null, object[]]>} grupos  [título del portal, rutas]
    */
-  _crearCerradas(cerradas) {
+  _crearCerradas(grupos) {
+    const cerradas = grupos.flatMap(([, rutas]) => rutas);
     const detalles = crear('details', 'rutas-entrada rutas-cerradas');
     detalles.open = Boolean(this._cerradasAbiertas);
     detalles.addEventListener('toggle', () => {
@@ -684,9 +791,14 @@ export class PanelCaminos {
     resumen.append(cabeza);
     detalles.append(resumen);
 
-    const tarjetas = crear('div', 'lista-rutas');
-    for (const ruta of cerradas) tarjetas.append(this._tarjetaRuta(ruta));
-    detalles.append(tarjetas);
+    const contenido = crear('div', 'rutas-cerradas__grupos');
+    for (const [titulo, rutas] of grupos) {
+      if (titulo) contenido.append(crear('h5', 'rutas-portal__titulo', titulo));
+      const tarjetas = crear('div', 'lista-rutas');
+      for (const ruta of rutas) tarjetas.append(this._tarjetaRuta(ruta));
+      contenido.append(tarjetas);
+    }
+    detalles.append(contenido);
     return detalles;
   }
 

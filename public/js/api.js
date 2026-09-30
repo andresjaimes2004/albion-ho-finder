@@ -79,6 +79,7 @@ export const api = {
   buscar: (texto, senal) =>
     peticion(`/api/buscar?q=${encodeURIComponent(texto)}`, { senal }),
 
+  sugerencias: () => peticion('/api/buscar/sugerencias'),
   mundo: () => peticion('/api/mapas'),
   detalleMapa: (nombre) => peticion(`/api/mapas/${encodeURIComponent(nombre)}`),
 
@@ -91,6 +92,9 @@ export const api = {
     peticion('/api/tracking/reportes', { metodo: 'POST', datos: { conexiones, rutas } }),
   borrarReporte: (id) => peticion(`/api/tracking/reportes/${id}`, { metodo: 'DELETE' }),
   borrarRuta: (id) => peticion(`/api/tracking/rutas/${id}`, { metodo: 'DELETE' }),
+  /** Solo administradores: alcance 'todas', 'activas', 'zona' o 'portal'. */
+  borrarRutas: (alcance, valor = '') =>
+    peticion(`/api/tracking/rutas?alcance=${encodeURIComponent(alcance)}${valor ? `&valor=${encodeURIComponent(valor)}` : ''}`, { metodo: 'DELETE' }),
   hideoutsCamino: (camino) => peticion(`/api/tracking/hideouts?camino=${encodeURIComponent(camino)}`),
   anotarHideoutCamino: (camino, gremio) =>
     peticion('/api/tracking/hideouts', { metodo: 'POST', datos: { camino, gremio } }),
