@@ -13,9 +13,15 @@ Avalon abiertas que registra la comunidad.
 - **Caminos de Avalon reorganizado**: la ficha del camino consultado y los
   resultados de la búsqueda aparecen justo debajo del buscador; después,
   "Registrar conexiones", "Espacios privados", "Rutas del gremio" y una
-  tarjeta desplegable "Caminos avalonianos" con todos los caminos (la lista
-  ya no queda suelta al final). Todas son tarjetas que se abren pulsando
-  cualquier parte de su cabecera, con su hover y su animación.
+  sección fija "Caminos avalonianos" que muestra los caminos de 10 en 10, con
+  flechas ‹ › para pasar de tanda (circulares: desde la última se vuelve a la
+  primera y al revés) y transición horizontal. Registro, espacios y rutas
+  son tarjetas que se abren pulsando cualquier parte de su cabecera.
+- Una sugerencia se elige al completar el clic (antes, al apretar el botón
+  del ratón). Mientras se escribe solo se filtra la lista, sin consultar
+  nada al servidor; la ficha de un camino se pide al elegirlo.
+- Mensajes centrados y legibles en cualquier pantalla (por ejemplo "Ningún
+  camino coincide con la búsqueda" ocupaba solo la primera columna).
 - **Arreglos**: la ✕ de la ficha de un camino ya no la vuelve a abrir; en
   Hideouts, "Ver mapa de la Zona Negra" se despliega justo debajo del botón.
 - **Confirmaciones en una ventana propia** (borrar el espacio, salir de él,
@@ -591,6 +597,8 @@ Toda transición nueva tiene que ser suave y mantener el estilo del sitio:
 - Nada de animaciones de más de 0,4 s (salvo la decoración de la portada) ni
   en listas que se redibujan a cada refresco (parpadean).
 - Siempre con su versión para `prefers-reduced-motion` (sin movimiento).
+- `tests/frontend.test.js` comprueba que cada id que usa el JavaScript existe
+  en la página y que no vuelven los diálogos ni las listas nativas.
 
 ## Arquitectura
 
@@ -719,6 +727,22 @@ npm start            # http://localhost:3000 — siembra la BD automáticamente
 ```
 
 No hace falta `npm install`: la aplicación no tiene dependencias.
+
+### Datos de ejemplo (solo en local)
+
+Para ver el sitio con contenido: dos cuentas de prueba (`demo_lider` y
+`demo_amigo`), rutas públicas, un espacio privado con su ruta, gremios en un
+camino de hideouts y un aviso pendiente.
+
+```bash
+node herramientas/demo/sembrarDemo.js           # crea (o recrea) la demo
+node herramientas/demo/sembrarDemo.js --borrar  # la quita sin tocar nada más
+```
+
+Las claves de las cuentas de prueba se generan al azar y quedan en
+`herramientas/demo/credenciales-demo.local.txt` (ignorado por git). No se
+ejecuta con `NODE_ENV=production`. Las rutas duran unas horas, como las
+reales: si caducan, se vuelve a ejecutar.
 
 ### Cuenta de administrador
 
