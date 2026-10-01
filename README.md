@@ -8,6 +8,26 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v13.5 — Caminos de Avalon reorganizado, confirmaciones y alertas propias
+
+- **Caminos de Avalon reorganizado**: la ficha del camino consultado y los
+  resultados de la búsqueda aparecen justo debajo del buscador; después,
+  "Registrar conexiones", "Espacios privados", "Rutas del gremio" y una
+  tarjeta desplegable "Caminos avalonianos" con todos los caminos (la lista
+  ya no queda suelta al final). Todas son tarjetas que se abren pulsando
+  cualquier parte de su cabecera, con su hover y su animación.
+- **Arreglos**: la ✕ de la ficha de un camino ya no la vuelve a abrir; en
+  Hideouts, "Ver mapa de la Zona Negra" se despliega justo debajo del botón.
+- **Confirmaciones en una ventana propia** (borrar el espacio, salir de él,
+  borrar rutas, eliminar un hideout, quitar una imagen, forzar el Excel),
+  con el color del apartado, en lugar de la del navegador.
+- **Alertas de los campos con el estilo del sitio** ("Completa este campo",
+  "Escribe al menos N caracteres"...), en el idioma de la página.
+- **Transiciones revisadas**: botones, apariciones (fichas, estados,
+  sugerencias, filas del registro), grupos de rutas que se despliegan y el
+  historial plegable, todo con la misma curva y duraciones. Ver "Guía de
+  estilo: transiciones".
+
 ### v13.4 — Espacios en vivo, sugerencias propias y pulido visual
 
 - **Espacios en vivo, sin recargar**: al agregarte a un espacio, quitarte,
@@ -553,6 +573,24 @@ administrador puede subirla por mapa.
   `public/assets/favicon.svg` (con `favicon-32.png` y
   `apple-touch-icon.png` como respaldo para navegadores sin soporte de
   favicon SVG).
+
+## Guía de estilo: transiciones
+
+Toda transición nueva tiene que ser suave y mantener el estilo del sitio:
+
+- Hover, foco y cambios de color: `--duracion-rapida` (0,18 s); aparecer y
+  desplegar: `--duracion` (0,28 s); siempre con la curva `--curva`
+  (variables en `public/css/styles.css`, bloque v13.5).
+- Lo que aparece entra con la animación `aparecer` (fundido y leve
+  desplazamiento). Lo que se despliega o pliega usa `mostrarSuave`,
+  `ocultarSuave` o `conectarDesplegable` (`public/js/animar.js`), nunca un
+  `hidden` a secas.
+- Ventanas flotantes con `.ventana`; confirmaciones con `confirmar()`
+  (`public/js/dialogos.js`). Nada de `window.confirm` ni `alert`; las
+  alertas de los campos las pone `validacionFormularios.js`.
+- Nada de animaciones de más de 0,4 s (salvo la decoración de la portada) ni
+  en listas que se redibujan a cada refresco (parpadean).
+- Siempre con su versión para `prefers-reduced-motion` (sin movimiento).
 
 ## Arquitectura
 
