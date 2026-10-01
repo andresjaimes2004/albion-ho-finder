@@ -3388,3 +3388,27 @@ html:has(dialog[open]) { overflow: hidden; }
 .rutas-admin__mensaje:empty { display: none; }
 .registro__combinaciones { display: flex; margin: 4px 0 10px; font-size: 0.82rem; color: var(--color-texto-suave); }
 .registro--edicion .registro__combinaciones { display: none; }
+
+/* ============================================================================
+   v13.2 — Gremios de caminos de hideouts (web + Excel)
+   ============================================================================ */
+
+/* Tarjeta de un camino de hideouts en la lista de Caminos de Avalon. */
+.tarjeta-camino__gremios {
+  font-size: 0.78rem;
+  color: var(--color-oro-claro);
+  overflow-wrap: anywhere;
+}
+.tarjeta-camino__gremios--vacio { color: var(--color-texto-tenue); font-style: italic; }
+
+/* Ficha del camino: aviso de que lo anotado se guarda. */
+.hideouts-camino__nota { margin: 6px 0 8px; font-size: 0.8rem; color: var(--color-texto-tenue); }
+
+/* Aviso de una ruta nueva que llega a un camino de hideouts. */
+.registro__ruta-hideouts {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-borde-suave);
+}
+.registro__ruta-hideouts-texto { margin: 0 0 6px; font-size: 0.82rem; color: var(--color-oro-claro); overflow-wrap: anywhere; }
+.registro__ruta-hideouts-caja { padding: 8px 12px; }

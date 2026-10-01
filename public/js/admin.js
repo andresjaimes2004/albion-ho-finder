@@ -1,7 +1,7 @@
 'use strict';
 
 import api from './api.js';
-import { t, regional } from './i18n.js';
+import { t, tn, regional } from './i18n.js';
 
 /**
  * admin.js
@@ -59,8 +59,18 @@ export class PanelAdmin {
     }
     const cuando = new Date(ultimo.en).toLocaleString(regional);
     const cuenta = estado.cuenta ? ` ${t('Cuenta con la que compartir el Excel: {cuenta}.', { cuenta: estado.cuenta })}` : '';
-    this.sincEstado.textContent = `${t('Última revisión: {cuando}.', { cuando })} ${ultimo.ok ? '' : t('Error:')} ${ultimo.mensaje}${cuenta}`;
-    this.sincEstado.classList.toggle('admin-sincronizacion__estado--error', !ultimo.ok);
+    // Gremios de caminos de hideouts anotados en la web que el Excel aún no tiene.
+    const caminos = estado.caminos || {};
+    const exportacion = caminos.ultimaExportacion;
+    let pendientes = '';
+    if (caminos.pendientes) {
+      pendientes = ` ${tn(caminos.pendientes, '{n} gremio de caminos pendiente de agregar al Excel.', '{n} gremios de caminos pendientes de agregar al Excel.')}`;
+      if (exportacion && (!exportacion.ok || exportacion.aviso) && !ultimo.mensaje.includes(exportacion.mensaje)) {
+        pendientes += ` ${exportacion.mensaje}`;
+      }
+    }
+    this.sincEstado.textContent = `${t('Última revisión: {cuando}.', { cuando })} ${ultimo.ok ? '' : t('Error:')} ${ultimo.mensaje}${pendientes}${cuenta}`;
+    this.sincEstado.classList.toggle('admin-sincronizacion__estado--error', !ultimo.ok || Boolean(exportacion && !exportacion.ok));
     this.sincForzar.hidden = !ultimo.requiereForzar;
   }
 
