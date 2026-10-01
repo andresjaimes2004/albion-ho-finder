@@ -3,7 +3,9 @@
 import api from './api.js';
 import { crear, crearFuente, crearReloj, crearTarjetaRuta, textoCercania } from './rutas.js';
 import { t, tn, regional } from './i18n.js';
+import { confirmar } from './dialogos.js';
 import { conectarSugerencias, agregarBotonBorrar } from './sugerencias.js';
+import { mostrarSuave, ocultarSuave, conectarDesplegable } from './animar.js';
 
 /**
  * tracking.js
@@ -60,7 +62,16 @@ export class PanelCaminos {
     this.input = document.getElementById('input-camino');
     // Sugerencias propias (caminos, mapas y gremios de caminos de hideouts)
     // y ✕ para borrar lo escrito.
-    this.sugerencias = conectarSugerencias(this.input, { opciones: () => this._opcionesSugeridas() });
+    // Elegir una sugerencia que es un camino o mapa abre su ficha (solo al
+    // elegirla: el evento "change" del campo también salta al perder el foco,
+    // por ejemplo al pulsar la ✕ de la ficha, y la volvía a abrir).
+    this.sugerencias = conectarSugerencias(this.input, {
+      opciones: () => this._opcionesSugeridas(),
+      alElegir: (valor) => {
+        const entrada = this._buscarEntrada(valor);
+        if (entrada) this.abrirDetalle(entrada.nombre);
+      },
+    });
     agregarBotonBorrar(this.input);
     this.filtroGrupo = document.getElementById('caminos-grupo');
     this.filtroTier = document.getElementById('caminos-tier');
@@ -72,6 +83,19 @@ export class PanelCaminos {
     this.lista = document.getElementById('caminos-lista');
     this.botonMas = document.getElementById('caminos-mas');
     this.detalle = document.getElementById('caminos-detalle');
+    // Resultados de la búsqueda (bajo el buscador) y tarjeta desplegable con
+    // todos los caminos (cuando no se busca nada).
+    this.resultados = document.getElementById('caminos-resultados');
+    this.todos = document.getElementById('caminos-todos');
+    this.todosCuerpo = document.getElementById('caminos-todos-cuerpo');
+    this.todosCantidad = document.getElementById('todos-cantidad');
+    this.rutasTarjeta = document.getElementById('caminos-rutas-tarjeta');
+    this.rutasCantidad = document.getElementById('rutas-cantidad');
+    conectarDesplegable(document.getElementById('todos-alternar'), this.todosCuerpo, { clave: 'caminos-todos-abierto' });
+    conectarDesplegable(document.getElementById('rutas-alternar'), document.getElementById('caminos-rutas'), {
+      clave: 'rutas-abiertas',
+      abierto: true,
+    });
 
     this.datos = null;
     this.visibles = POR_PAGINA;
@@ -88,11 +112,6 @@ export class PanelCaminos {
     this.input.addEventListener('input', () => {
       clearTimeout(espera);
       espera = setTimeout(() => this._reiniciarLista(), 200);
-    });
-    // Elegir una sugerencia exacta abre el detalle directamente.
-    this.input.addEventListener('change', () => {
-      const entrada = this._buscarEntrada(this.input.value);
-      if (entrada) this.abrirDetalle(entrada.nombre);
     });
     this.input.addEventListener('keydown', (evento) => {
       if (evento.key !== 'Enter') return;
@@ -271,10 +290,31 @@ export class PanelCaminos {
     this._renderizarLista();
   }
 
+  /** ¿Hay algo escrito o algún filtro puesto? */
+  _busquedaActiva() {
+    return Boolean(
+      normalizar(this.input.value) || this.filtroGrupo.value || this.filtroTier.value || this.filtroActivos.checked
+    );
+  }
+
   _renderizarLista() {
     if (!this.datos) return;
     const filtradas = this._entradasFiltradas();
     const conConexiones = filtradas.filter((e) => e.conexiones > 0).length;
+
+    // Con una búsqueda o un filtro, los resultados van justo bajo el
+    // buscador; sin nada, la lista vive en la tarjeta "Caminos avalonianos".
+    const activa = this._busquedaActiva();
+    const destino = activa ? this.resultados : this.todosCuerpo;
+    if (this.lista.parentElement !== destino) destino.append(this.resumen, this.lista, this.botonMas);
+    if (activa) {
+      mostrarSuave(this.resultados);
+      ocultarSuave(this.todos);
+    } else {
+      ocultarSuave(this.resultados);
+      mostrarSuave(this.todos);
+      this.todosCantidad.textContent = `(${filtradas.length})`;
+    }
 
     this.resumen.hidden = false;
     this.resumen.replaceChildren(
@@ -685,8 +725,10 @@ export class PanelCaminos {
 
     // Un administrador ve siempre el bloque, con su barra de borrado (y el
     // resultado de la última acción) aunque ya no quede ninguna ruta.
-    contenedor.hidden = !todasAbiertas.length && !todasCerradas.length && !esAdmin && !espacios.size;
-    if (contenedor.hidden) {
+    // La tarjeta "Rutas del gremio" (su cuerpo se pliega aparte).
+    this.rutasTarjeta.hidden = !todasAbiertas.length && !todasCerradas.length && !esAdmin && !espacios.size;
+    this.rutasCantidad.textContent = `(${todasAbiertas.length})`;
+    if (this.rutasTarjeta.hidden) {
       contenedor.replaceChildren();
       return;
     }
@@ -718,7 +760,6 @@ export class PanelCaminos {
     const elegido = this._portalElegido !== null && orden.includes(this._portalElegido) ? this._portalElegido : null;
 
     const bloque = crear('div', 'caminos-detalle__bloque bloque-rutas');
-    bloque.append(crear('h4', null, `${t('Rutas del gremio')} (${rutas.length})`));
 
     // Filtro por portal.
     const filtro = crear('div', 'rutas-portales');
@@ -803,7 +844,8 @@ export class PanelCaminos {
     mensaje.setAttribute('aria-live', 'polite');
 
     const borrar = async (alcance, valor, pregunta, boton) => {
-      if (!window.confirm(pregunta)) return;
+      const ok = await confirmar({ titulo: t('¿Borrar rutas?'), mensaje: pregunta, aceptar: t('Borrar'), peligro: true });
+      if (!ok) return;
       boton.disabled = true;
       try {
         const r = await api.borrarRutas(alcance, valor);

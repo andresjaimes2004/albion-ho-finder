@@ -2,6 +2,7 @@
 
 import api from './api.js';
 import { t, tn } from './i18n.js';
+import { conectarDesplegable } from './animar.js';
 
 /**
  * sesion.js
@@ -67,35 +68,18 @@ export class PanelSesion {
       }
     });
 
-    // "Tus últimas búsquedas" se pliega y despliega con su flecha (se recuerda).
-    this.historialAlternar = document.getElementById('historial-alternar');
-    let plegado = false;
-    try {
-      plegado = localStorage.getItem('historial-plegado') === '1';
-    } catch (error) {
-      // Sin almacenamiento: desplegado.
-    }
-    this._plegarHistorial(plegado);
-    this.historialAlternar.addEventListener('click', () => {
-      const plegar = this.historialAlternar.getAttribute('aria-expanded') === 'true';
-      this._plegarHistorial(plegar);
-      try {
-        localStorage.setItem('historial-plegado', plegar ? '1' : '0');
-      } catch (error) {
-        // Sin almacenamiento: vale hasta recargar.
-      }
+    // "Tus últimas búsquedas" se pliega y despliega con su flecha, con la
+    // misma animación suave que las demás secciones (se recuerda).
+    conectarDesplegable(document.getElementById('historial-alternar'), this.historialLista, {
+      clave: 'historial-abierto',
+      abierto: true,
+      alCambiar: (abierto) => this.historialPanel.classList.toggle('panel-historial--plegado', !abierto),
     });
 
     document.getElementById('historial-limpiar').addEventListener('click', async () => {
       await api.limpiarHistorial();
       this._pintarHistorial([]);
     });
-  }
-
-  _plegarHistorial(plegar) {
-    this.historialAlternar.setAttribute('aria-expanded', String(!plegar));
-    this.historialLista.hidden = plegar;
-    this.historialPanel.classList.toggle('panel-historial--plegado', plegar);
   }
 
   _pintarFormulario() {

@@ -3656,3 +3656,205 @@ input:placeholder-shown + .borrar-entrada { display: none; }
 @supports not selector(::-webkit-scrollbar) {
   * { scrollbar-width: thin; scrollbar-color: rgba(var(--acento-rgb), 0.45) rgba(12, 10, 16, 0.55); }
 }
+
+/* ============================================================================
+   v13.5 — Secciones desplegables, confirmaciones, alertas y transiciones
+   ============================================================================
+
+   ESTÁNDAR DE TRANSICIONES (para todo lo que se agregue al sitio):
+   - Todo cambio visible se anima con suavidad: colores, bordes, sombras y
+     movimientos con --duracion-rapida (hover, foco) o --duracion
+     (aparecer, desplegar); siempre con la curva --curva.
+   - Lo que aparece entra con un fundido corto y un leve desplazamiento
+     (animación "aparecer"); lo que se despliega o pliega usa
+     mostrarSuave / ocultarSuave / conectarDesplegable (public/js/animar.js),
+     que animan la altura sin saltos.
+   - Las ventanas flotantes usan .ventana (fundido + leve zoom).
+   - Nada de cambios bruscos de posición ni animaciones largas (> 0,4 s)
+     salvo decoración de la portada.
+   - Todo respeta prefers-reduced-motion (sin movimiento).
+   ============================================================================ */
+
+:root {
+  --duracion-rapida: 0.18s;
+  --duracion: 0.28s;
+  --curva: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Botones: color, fondo, borde y sombra cambian con suavidad. */
+.boton {
+  transition:
+    color var(--duracion-rapida) var(--curva),
+    background-color var(--duracion-rapida) var(--curva),
+    border-color var(--duracion-rapida) var(--curva),
+    box-shadow var(--duracion-rapida) var(--curva),
+    transform var(--duracion-rapida) var(--curva);
+}
+
+/* ---- Secciones desplegables de Caminos de Avalon (registro, espacios,
+        rutas del gremio, todos los caminos): toda la cabecera se pulsa. ---- */
+.desplegable { padding: 0; }
+.desplegable__encabezado { margin: 0; font: inherit; }
+.desplegable__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+  padding: 16px 20px;
+  border: none;
+  border-radius: var(--radio-lg);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.desplegable__textos { display: flex; flex-direction: column; min-width: 0; }
+.desplegable__cantidad { font-family: var(--fuente-texto); font-size: 0.85rem; color: var(--color-texto-tenue); font-weight: 600; }
+.desplegable__flecha {
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-borde);
+  border-radius: 50%;
+  background: var(--vidrio-fuerte);
+  transition: transform var(--duracion) var(--curva), border-color var(--duracion-rapida) var(--curva), background-color var(--duracion-rapida) var(--curva);
+}
+.desplegable__flecha::before {
+  content: '';
+  width: 14px;
+  height: 14px;
+  background-color: currentColor;
+  -webkit-mask: var(--icono-abajo) center / contain no-repeat;
+  mask: var(--icono-abajo) center / contain no-repeat;
+}
+.desplegable__cabecera[aria-expanded='true'] .desplegable__flecha { transform: rotate(180deg); }
+.desplegable > .registro__cuerpo { margin-top: 0; padding: 0 20px 18px; }
+.desplegable .registro__titulo { transition: color var(--duracion-rapida) var(--curva); }
+
+/* Hover: la tarjeta se eleva y toma el color del apartado, como las
+   tarjetas de resultados de Hideouts. */
+.desplegable {
+  transition:
+    transform var(--duracion) var(--curva),
+    border-color var(--duracion) var(--curva),
+    box-shadow var(--duracion) var(--curva),
+    background-color var(--duracion) var(--curva);
+}
+.desplegable:has(> .desplegable__encabezado .desplegable__cabecera:hover),
+.desplegable:has(> .desplegable__encabezado .desplegable__cabecera:focus-visible) {
+  transform: translateY(-3px);
+  border-color: rgba(var(--acento-rgb), 0.5);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.42), 0 0 18px rgba(var(--acento-rgb), 0.1);
+}
+.desplegable:has(> .desplegable__encabezado .desplegable__cabecera:active) { transform: translateY(-1px); }
+.desplegable__cabecera:hover .registro__titulo { color: rgb(var(--acento-rgb)); }
+.desplegable__cabecera:hover .desplegable__flecha { border-color: rgba(var(--acento-rgb), 0.6); background-color: rgba(var(--acento-rgb), 0.12); }
+.desplegable__cabecera:focus-visible { outline: 2px solid var(--color-oro-claro); outline-offset: -2px; }
+
+/* Resultados de la búsqueda de caminos, justo bajo el buscador. */
+.caminos-resultados { margin-bottom: 22px; }
+.caminos-resultados .caminos-mas { margin-top: 14px; }
+.caminos-rutas__cuerpo .bloque-rutas { margin: 0; padding: 0; border: none; background: none; }
+
+/* ---- Ventana de confirmación (dialogos.js) ---- */
+.dialogo .dialogo__contenido {
+  padding: 22px 24px 20px;
+  border-color: rgba(var(--acento-rgb), 0.35);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 26px rgba(var(--acento-rgb), 0.1);
+}
+.dialogo__titulo { margin: 0; font-family: var(--fuente-titulos); font-size: 1.15rem; color: rgb(var(--acento-rgb)); overflow-wrap: anywhere; }
+.dialogo--peligro .dialogo__titulo { color: #f0a59a; }
+.dialogo__mensaje { margin: 10px 0 0; font-size: 0.92rem; line-height: 1.5; color: var(--color-texto-suave); overflow-wrap: anywhere; }
+.dialogo__acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+@media (max-width: 480px) {
+  .dialogo__acciones > .boton { flex: 1 1 auto; }
+}
+
+/* ---- Alertas de los campos de formulario (validacionFormularios.js) ---- */
+.aviso-campo {
+  position: absolute;
+  z-index: 1100;
+  max-width: min(320px, calc(100vw - 32px));
+  padding: 9px 12px 9px 34px;
+  border: 1px solid rgba(214, 110, 110, 0.55);
+  border-radius: var(--radio);
+  background: rgba(28, 18, 22, 0.98);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
+  color: var(--color-texto);
+  font-size: 0.86rem;
+  line-height: 1.4;
+  pointer-events: none;
+  animation: aparecer var(--duracion) var(--curva);
+}
+.aviso-campo::before {
+  content: '!';
+  position: absolute;
+  left: 10px;
+  top: 9px;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(214, 110, 110, 0.9);
+  color: #1a0f12;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+.aviso-campo::after {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 18px;
+  width: 10px;
+  height: 10px;
+  background: inherit;
+  border-left: 1px solid rgba(214, 110, 110, 0.55);
+  border-top: 1px solid rgba(214, 110, 110, 0.55);
+  transform: rotate(45deg);
+}
+[aria-invalid='true'] { border-color: rgba(214, 110, 110, 0.7) !important; }
+.panel-busqueda__caja:has([aria-invalid='true']) { border-color: rgba(214, 110, 110, 0.7); }
+
+/* ---- Apariciones suaves ---- */
+.estado,
+.caminos-detalle,
+.sugerencias,
+.registro__fila,
+.espacio,
+.dialogo__contenido { animation: aparecer var(--duracion) var(--curva); }
+
+/* Grupos de rutas (<details>): se despliegan con suavidad donde se puede. */
+.rutas-entrada__cabeza::before { transition: transform var(--duracion) var(--curva); }
+@supports (interpolate-size: allow-keywords) {
+  .caminos-rutas__cuerpo,
+  .caminos-detalle,
+  #ventana-mapa { interpolate-size: allow-keywords; }
+  .rutas-entrada::details-content {
+    block-size: 0;
+    overflow: hidden;
+    transition: block-size var(--duracion) var(--curva), content-visibility var(--duracion) allow-discrete;
+  }
+  .rutas-entrada[open]::details-content { block-size: auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boton,
+  .desplegable,
+  .desplegable__flecha,
+  .desplegable .registro__titulo,
+  .rutas-entrada__cabeza::before { transition: none; }
+  .desplegable:has(> .desplegable__encabezado .desplegable__cabecera:hover) { transform: none; }
+  .estado,
+  .caminos-detalle,
+  .sugerencias,
+  .registro__fila,
+  .espacio,
+  .dialogo__contenido,
+  .aviso-campo { animation: none; }
+  .rutas-entrada::details-content { transition: none; }
+}

@@ -237,21 +237,6 @@
       </button>
     </section>
 
-    <div id="estado-vacio" class="estado estado--info estado--compacto" aria-live="polite">
-      <span class="estado__icono">🗺️</span>
-      <p>{{Escribe al menos 2 caracteres para empezar a buscar.}}</p>
-    </div>
-
-    <section id="historial" class="panel-historial" hidden>
-      <div class="panel-historial__cabecera">
-        <h2>
-          <button id="historial-alternar" type="button" class="panel-historial__alternar con-icono icono-abajo" aria-expanded="true" aria-controls="historial-lista">{{Tus últimas búsquedas}}</button>
-        </h2>
-        <button id="historial-limpiar" type="button" class="boton boton--pequeno boton--sutil con-icono icono-papelera">{{Limpiar}}</button>
-      </div>
-      <ul id="historial-lista" class="historial"></ul>
-    </section>
-
     <section id="mapa-mundial" class="mapa-mundial" hidden aria-label="{{Mapa interactivo de la Zona Negra}}">
       <div class="mapa-mundial__cabecera">
         <h2>{{Mapa de la Zona Negra}}</h2>
@@ -281,6 +266,22 @@
         {{Arrastra para moverte; acerca con la rueda, pellizcando, con doble toque o con los botones + y −. Al acercar aparecen los nombres de los mapas. Los mapas resaltados son los de tu búsqueda.}}
       </p>
       <p id="mapa-mundial__atribucion" class="mapa-mundial__pie mapa-mundial__atribucion"></p>
+    </section>
+
+
+    <div id="estado-vacio" class="estado estado--info estado--compacto" aria-live="polite">
+      <span class="estado__icono">🗺️</span>
+      <p>{{Escribe al menos 2 caracteres para empezar a buscar.}}</p>
+    </div>
+
+    <section id="historial" class="panel-historial" hidden>
+      <div class="panel-historial__cabecera">
+        <h2>
+          <button id="historial-alternar" type="button" class="panel-historial__alternar con-icono icono-abajo" aria-expanded="true" aria-controls="historial-lista">{{Tus últimas búsquedas}}</button>
+        </h2>
+        <button id="historial-limpiar" type="button" class="boton boton--pequeno boton--sutil con-icono icono-papelera">{{Limpiar}}</button>
+      </div>
+      <ul id="historial-lista" class="historial"></ul>
     </section>
 
     <section id="zona-resultados" class="zona-resultados" aria-live="polite">
@@ -373,14 +374,30 @@
         </p>
       </section>
 
-      <section class="registro" aria-labelledby="registro-titulo">
-        <div class="registro__cabecera">
-          <div>
-            <h2 id="registro-titulo" class="registro__titulo">{{Registrar conexiones desde capturas}}</h2>
-            <p class="registro__subtitulo">{{Suma al mapa las conexiones que ve tu gremio.}}</p>
-          </div>
-          <button id="registro-alternar" type="button" class="boton boton--pequeno con-icono icono-abajo" aria-expanded="false" aria-controls="registro-cuerpo">{{Abrir}}</button>
-        </div>
+      <!-- Lo de arriba: lo que se consulta (detalle y resultados de la búsqueda). -->
+      <div id="caminos-cargando" class="estado">
+        <span class="cargando" aria-hidden="true"></span>
+        <p>{{Cargando caminos de Avalon...}}</p>
+      </div>
+      <p id="caminos-error" class="estado estado--error" hidden></p>
+      <section id="caminos-detalle" class="caminos-detalle" hidden aria-live="polite"></section>
+
+      <section id="caminos-resultados" class="caminos-resultados" hidden aria-label="{{Resultados de la búsqueda}}">
+        <div id="caminos-resumen" class="resumen-resultados" hidden></div>
+        <div id="caminos-lista" class="caminos-lista"></div>
+        <button id="caminos-mas" type="button" class="boton boton--sutil caminos-mas con-icono icono-abajo" hidden>{{Mostrar más}}</button>
+      </section>
+
+      <section class="registro desplegable" aria-labelledby="registro-titulo">
+        <h2 class="desplegable__encabezado">
+          <button id="registro-alternar" type="button" class="desplegable__cabecera" aria-expanded="false" aria-controls="registro-cuerpo">
+            <span class="desplegable__textos">
+              <span id="registro-titulo" class="registro__titulo">{{Registrar conexiones desde capturas}}</span>
+              <span class="registro__subtitulo">{{Suma al mapa las conexiones que ve tu gremio.}}</span>
+            </span>
+            <span class="desplegable__flecha" aria-hidden="true"></span>
+          </button>
+        </h2>
 
         <div id="registro-cuerpo" class="registro__cuerpo" hidden>
           <p id="registro-sin-sesion" class="estado estado--info registro__aviso" hidden>
@@ -437,14 +454,16 @@
         </div>
       </section>
 
-      <section class="registro espacios" aria-labelledby="espacios-titulo">
-        <div class="registro__cabecera">
-          <div>
-            <h2 id="espacios-titulo" class="registro__titulo">{{Espacios privados}}</h2>
-            <p class="registro__subtitulo">{{Rutas solo para tu grupo: gankers, farmers o transportistas.}}</p>
-          </div>
-          <button id="espacios-alternar" type="button" class="boton boton--pequeno con-icono icono-abajo" aria-expanded="false" aria-controls="espacios-cuerpo">{{Abrir}}</button>
-        </div>
+      <section class="registro desplegable espacios" aria-labelledby="espacios-titulo">
+        <h2 class="desplegable__encabezado">
+          <button id="espacios-alternar" type="button" class="desplegable__cabecera" aria-expanded="false" aria-controls="espacios-cuerpo">
+            <span class="desplegable__textos">
+              <span id="espacios-titulo" class="registro__titulo">{{Espacios privados}}</span>
+              <span class="registro__subtitulo">{{Rutas solo para tu grupo: gankers, farmers o transportistas.}}</span>
+            </span>
+            <span class="desplegable__flecha" aria-hidden="true"></span>
+          </button>
+        </h2>
 
         <div id="espacios-cuerpo" class="registro__cuerpo" hidden>
           <p id="espacios-sin-sesion" class="estado estado--info registro__aviso">
@@ -468,17 +487,31 @@
         </div>
       </section>
 
-      <section id="caminos-detalle" class="caminos-detalle" hidden aria-live="polite"></section>
-      <section id="caminos-rutas" class="caminos-rutas" hidden aria-label="{{Rutas del gremio}}"></section>
+      <section id="caminos-rutas-tarjeta" class="registro desplegable" aria-labelledby="rutas-titulo" hidden>
+        <h2 class="desplegable__encabezado">
+          <button id="rutas-alternar" type="button" class="desplegable__cabecera" aria-expanded="true" aria-controls="caminos-rutas">
+            <span class="desplegable__textos">
+              <span id="rutas-titulo" class="registro__titulo">{{Rutas del gremio}} <span id="rutas-cantidad" class="desplegable__cantidad"></span></span>
+              <span class="registro__subtitulo">{{Rutas abiertas registradas por la comunidad, por portal de ciudad.}}</span>
+            </span>
+            <span class="desplegable__flecha" aria-hidden="true"></span>
+          </button>
+        </h2>
+        <div id="caminos-rutas" class="registro__cuerpo caminos-rutas__cuerpo"></div>
+      </section>
 
-      <div id="caminos-cargando" class="estado">
-        <span class="cargando" aria-hidden="true"></span>
-        <p>{{Cargando caminos de Avalon...}}</p>
-      </div>
-      <p id="caminos-error" class="estado estado--error" hidden></p>
-      <div id="caminos-resumen" class="resumen-resultados" hidden></div>
-      <div id="caminos-lista" class="caminos-lista"></div>
-      <button id="caminos-mas" type="button" class="boton boton--sutil caminos-mas con-icono icono-abajo" hidden>{{Mostrar más}}</button>
+      <section id="caminos-todos" class="registro desplegable" aria-labelledby="todos-titulo">
+        <h2 class="desplegable__encabezado">
+          <button id="todos-alternar" type="button" class="desplegable__cabecera" aria-expanded="false" aria-controls="caminos-todos-cuerpo">
+            <span class="desplegable__textos">
+              <span id="todos-titulo" class="registro__titulo">{{Caminos avalonianos}} <span id="todos-cantidad" class="desplegable__cantidad"></span></span>
+              <span class="registro__subtitulo">{{Todos los caminos del juego, con sus datos oficiales y conexiones abiertas.}}</span>
+            </span>
+            <span class="desplegable__flecha" aria-hidden="true"></span>
+          </button>
+        </h2>
+        <div id="caminos-todos-cuerpo" class="registro__cuerpo" hidden></div>
+      </section>
 
       <p class="caminos-atribucion">
         {{Catálogo de caminos: dumps oficiales del cliente de Albion Online (Sandbox Interactive).}}

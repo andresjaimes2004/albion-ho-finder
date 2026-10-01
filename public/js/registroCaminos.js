@@ -4,6 +4,7 @@ import api from './api.js';
 import { crearIndiceZonas, buscarZona, MAX_MINUTOS } from './capturas/lectura.js';
 import { agruparEnRutas, invertirRuta, claveRuta, ordenarCadena } from './capturas/encadenar.js';
 import { t, tn } from './i18n.js';
+import { confirmar } from './dialogos.js';
 import { mostrarSuave, ocultarSuave } from './animar.js';
 import * as borrador from './capturas/borrador.js';
 import { crearReloj, iniciarRelojes } from './rutas.js';
@@ -430,7 +431,6 @@ export class PanelRegistro {
   _abrir() {
     this.abierto = true;
     mostrarSuave(this.cuerpo);
-    this.alternar.textContent = t('Cerrar');
     this.alternar.setAttribute('aria-expanded', 'true');
     this._cargarZonas();
     if (this.usuario) {
@@ -442,7 +442,6 @@ export class PanelRegistro {
   _cerrar() {
     this.abierto = false;
     ocultarSuave(this.cuerpo);
-    this.alternar.textContent = t('Abrir');
     this.alternar.setAttribute('aria-expanded', 'false');
   }
 
@@ -1024,7 +1023,15 @@ export class PanelRegistro {
   async _guardarEdicion() {
     const { ruta } = this.edicion;
     const borrar = !this.filas.length;
-    if (borrar && !window.confirm(t('¿Borrar la ruta {ruta} entera?', { ruta: this.rutaEdicion.textContent }))) return;
+    if (borrar) {
+      const ok = await confirmar({
+        titulo: t('¿Borrar la ruta {ruta} entera?', { ruta: this.rutaEdicion.textContent }),
+        mensaje: t('Quitaste todas sus conexiones: al guardar, la ruta se borra.'),
+        aceptar: t('Borrar la ruta'),
+        peligro: true,
+      });
+      if (!ok) return;
+    }
     this.guardar.disabled = true;
     this.estado.textContent = t('Guardando…');
     try {

@@ -2,6 +2,7 @@
 
 import api from './api.js';
 import { t, tn, regional } from './i18n.js';
+import { confirmar } from './dialogos.js';
 
 /**
  * admin.js
@@ -34,9 +35,15 @@ export class PanelAdmin {
     this.sincAhora = document.getElementById('admin-sinc-ahora');
     this.sincForzar = document.getElementById('admin-sinc-forzar');
     this.sincAhora.addEventListener('click', () => this._sincronizar(false));
-    this.sincForzar.addEventListener('click', () => {
+    this.sincForzar.addEventListener('click', async () => {
       // Aplicar un Excel que borraría muchos hideouts: se confirma antes.
-      if (window.confirm(t('El Excel borraría o cambiaría muchos hideouts. ¿Seguro que es correcto?'))) this._sincronizar(true);
+      const ok = await confirmar({
+        titulo: t('¿Aplicar el Excel de todos modos?'),
+        mensaje: t('El Excel borraría o cambiaría muchos hideouts. ¿Seguro que es correcto?'),
+        aceptar: t('Aplicar de todos modos'),
+        peligro: true,
+      });
+      if (ok) this._sincronizar(true);
     });
   }
 

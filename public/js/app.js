@@ -9,6 +9,7 @@ import { PanelCaminos } from './tracking.js';
 import { PanelRegistro } from './registroCaminos.js';
 import { PanelEspacios } from './espacios.js';
 import { CentroAvisos } from './avisos.js';
+import { activarValidacion } from './validacionFormularios.js';
 import { crear, crearListaConexiones, crearTarjetaRuta, iniciarRelojes } from './rutas.js';
 import { t, tn } from './i18n.js';
 import { Portada } from './portada.js';
@@ -675,4 +676,8 @@ class BuscadorUI {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => new BuscadorUI());
+document.addEventListener('DOMContentLoaded', () => {
+  // Alertas de los campos con el estilo del sitio (no las del navegador).
+  activarValidacion();
+  new BuscadorUI();
+});

@@ -3,6 +3,7 @@
 import api from './api.js';
 import { crear } from './rutas.js';
 import { t, tn } from './i18n.js';
+import { confirmar } from './dialogos.js';
 import { mostrarSuave, ocultarSuave } from './animar.js';
 import { conectarSugerencias, agregarBotonBorrar } from './sugerencias.js';
 
@@ -89,14 +90,12 @@ export class PanelEspacios {
   _abrir() {
     this.abierto = true;
     mostrarSuave(this.cuerpo);
-    this.alternar.textContent = t('Cerrar');
     this.alternar.setAttribute('aria-expanded', 'true');
   }
 
   _cerrar() {
     this.abierto = false;
     ocultarSuave(this.cuerpo);
-    this.alternar.textContent = t('Abrir');
     this.alternar.setAttribute('aria-expanded', 'false');
   }
 
@@ -214,18 +213,27 @@ export class PanelEspacios {
     if (espacio.esCreador) {
       const borrar = crear('button', 'boton boton--pequeno boton--sutil boton--peligro', t('Borrar el espacio'));
       borrar.type = 'button';
-      borrar.addEventListener('click', () => {
-        const pregunta = t('¿Borrar el espacio {nombre}? Se borran también todas sus rutas y conexiones.', { nombre: espacio.nombre });
-        if (window.confirm(pregunta)) this._accion(() => api.espacios.borrar(espacio.id), mensaje);
+      borrar.addEventListener('click', async () => {
+        const ok = await confirmar({
+          titulo: t('¿Borrar el espacio {nombre}?', { nombre: espacio.nombre }),
+          mensaje: t('Se borran también todas sus rutas y conexiones, y sus miembros dejarán de verlas.'),
+          aceptar: t('Borrar el espacio'),
+          peligro: true,
+        });
+        if (ok) this._accion(() => api.espacios.borrar(espacio.id), mensaje);
       });
       acciones.append(borrar);
     } else {
       const salir = crear('button', 'boton boton--pequeno boton--sutil', t('Salir del espacio'));
       salir.type = 'button';
-      salir.addEventListener('click', () => {
-        if (window.confirm(t('¿Salir del espacio {nombre}? Dejarás de ver sus rutas.', { nombre: espacio.nombre }))) {
-          this._accion(() => api.espacios.quitarMiembro(espacio.id, this.usuario.id), mensaje);
-        }
+      salir.addEventListener('click', async () => {
+        const ok = await confirmar({
+          titulo: t('¿Salir del espacio {nombre}?', { nombre: espacio.nombre }),
+          mensaje: t('Dejarás de ver sus rutas. Para volver, quien lo creó tendrá que agregarte otra vez.'),
+          aceptar: t('Salir del espacio'),
+          peligro: true,
+        });
+        if (ok) this._accion(() => api.espacios.quitarMiembro(espacio.id, this.usuario.id), mensaje);
       });
       acciones.append(salir);
     }
