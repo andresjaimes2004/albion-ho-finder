@@ -6,6 +6,7 @@ import { t, tn, regional } from './i18n.js';
 import { confirmar } from './dialogos.js';
 import { conectarSugerencias, agregarBotonBorrar } from './sugerencias.js';
 import { mostrarSuave, ocultarSuave, conectarDesplegable } from './animar.js';
+import { tanda } from './paginacion.js';
 
 /**
  * tracking.js
@@ -26,6 +27,9 @@ import { mostrarSuave, ocultarSuave, conectarDesplegable } from './animar.js';
 
 const INTERVALO_REFRESCO_MS = 60_000;
 const POR_PAGINA = 60;
+// "Caminos avalonianos" (sin búsqueda): de 10 en 10, en tandas circulares.
+const POR_TANDA = 10;
+const CURVA = 'cubic-bezier(0.4, 0, 0.2, 1)';
 
 const RECURSOS = {
   ORE: t('Mineral'),
@@ -91,7 +95,12 @@ export class PanelCaminos {
     this.todosCantidad = document.getElementById('todos-cantidad');
     this.rutasTarjeta = document.getElementById('caminos-rutas-tarjeta');
     this.rutasCantidad = document.getElementById('rutas-cantidad');
-    conectarDesplegable(document.getElementById('todos-alternar'), this.todosCuerpo, { clave: 'caminos-todos-abierto' });
+    this.tandaTodos = 0;
+    this.posicionesTodos = [...this.todos.querySelectorAll('.paginador__posicion')];
+    this.botonesTandas = [...this.todos.querySelectorAll('.paginador__boton')];
+    for (const boton of this.botonesTandas) {
+      boton.addEventListener('click', () => this._cambiarTanda(Number(boton.dataset.paso)));
+    }
     conectarDesplegable(document.getElementById('rutas-alternar'), document.getElementById('caminos-rutas'), {
       clave: 'rutas-abiertas',
       abierto: true,
@@ -297,7 +306,19 @@ export class PanelCaminos {
     );
   }
 
-  _renderizarLista() {
+  /**
+   * Siguiente o anterior tanda de 10 caminos. Da la vuelta: desde la última
+   * se pasa a la primera y desde la primera a la última.
+   */
+  _cambiarTanda(paso) {
+    this.tandaTodos += paso;
+    this._renderizarLista({ direccion: paso });
+    // Si la sección queda por encima de la pantalla, se vuelve a su inicio.
+    const arriba = this.todos.getBoundingClientRect().top;
+    if (arriba < 0) this.todos.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  _renderizarLista({ direccion = 0 } = {}) {
     if (!this.datos) return;
     const filtradas = this._entradasFiltradas();
     const conConexiones = filtradas.filter((e) => e.conexiones > 0).length;
@@ -322,11 +343,40 @@ export class PanelCaminos {
       this._crearDato(conConexiones, t('con conexiones abiertas'))
     );
 
-    this.lista.replaceChildren(...filtradas.slice(0, this.visibles).map((e) => this._crearTarjeta(e)));
+    // Con búsqueda: los primeros resultados y "Mostrar más". Sin ella: la
+    // tanda de 10 que toca.
+    let visibles;
+    if (activa) {
+      visibles = filtradas.slice(0, this.visibles);
+      this.botonMas.hidden = filtradas.length <= this.visibles;
+    } else {
+      const { pagina, paginas, desde, hasta } = tanda(filtradas.length, this.tandaTodos, POR_TANDA);
+      this.tandaTodos = pagina;
+      visibles = filtradas.slice(desde, hasta);
+      this.botonMas.hidden = true;
+      const texto = filtradas.length
+        ? t('{desde}–{hasta} de {total}', { desde: desde + 1, hasta, total: filtradas.length })
+        : '';
+      for (const posicion of this.posicionesTodos) posicion.textContent = texto;
+      for (const boton of this.botonesTandas) boton.disabled = paginas <= 1;
+    }
+
+    this.lista.replaceChildren(...visibles.map((e) => this._crearTarjeta(e)));
     if (!filtradas.length) {
       this.lista.appendChild(crear('p', 'estado estado--advertencia', t('Ningún camino coincide con la búsqueda.')));
     }
-    this.botonMas.hidden = filtradas.length <= this.visibles;
+    // Al cambiar de tanda, la nueva entra deslizándose desde el lado al que se va.
+    if (direccion && typeof this.lista.animate === 'function' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      // Pulsando seguido, cada tanda sustituye a la animación anterior.
+      for (const previa of this.lista.getAnimations()) previa.cancel();
+      this.lista.animate(
+        [
+          { opacity: 0, transform: `translateX(${direccion > 0 ? 32 : -32}px)` },
+          { opacity: 1, transform: 'none' },
+        ],
+        { duration: 280, easing: CURVA }
+      );
+    }
   }
 
   _crearDato(numero, texto) {

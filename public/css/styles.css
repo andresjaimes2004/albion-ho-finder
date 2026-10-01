@@ -3858,3 +3858,78 @@ input:placeholder-shown + .borrar-entrada { display: none; }
   .aviso-campo { animation: none; }
   .rutas-entrada::details-content { transition: none; }
 }
+
+/* ---- "Caminos avalonianos": sección fija, de 10 en 10 ---- */
+.caminos-todos__cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+}
+.caminos-todos__cuerpo { overflow: hidden; }
+.paginador { display: inline-flex; align-items: center; gap: 10px; }
+.paginador--pie { display: flex; justify-content: center; margin-top: 16px; }
+.paginador__posicion {
+  min-width: 112px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--color-texto-suave);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.paginador__boton {
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid var(--color-borde);
+  border-radius: 50%;
+  background: var(--vidrio-fuerte);
+  color: var(--color-texto);
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    transform var(--duracion-rapida) var(--curva),
+    border-color var(--duracion-rapida) var(--curva),
+    background-color var(--duracion-rapida) var(--curva),
+    color var(--duracion-rapida) var(--curva);
+}
+.paginador__boton span { transform: translateY(-1px); }
+.paginador__boton:hover:not(:disabled) {
+  border-color: rgba(var(--acento-rgb), 0.6);
+  background-color: rgba(var(--acento-rgb), 0.14);
+  color: rgb(var(--acento-rgb));
+}
+.paginador__boton[data-paso='-1']:hover:not(:disabled) { transform: translateX(-2px); }
+.paginador__boton[data-paso='1']:hover:not(:disabled) { transform: translateX(2px); }
+.paginador__boton:active:not(:disabled) { transform: scale(0.94); }
+.paginador__boton:focus-visible { outline: 2px solid var(--color-oro-claro); outline-offset: 2px; }
+.paginador__boton:disabled { opacity: 0.4; cursor: default; }
+
+/* ---- Mensajes: centrados y legibles en cualquier pantalla ---- */
+/* En las rejillas de tarjetas, el mensaje ocupa toda la fila (si no, se
+   quedaba en la primera columna, a la izquierda). */
+.caminos-lista > .estado,
+.caminos-lista > p { grid-column: 1 / -1; }
+.estado { overflow-wrap: anywhere; }
+.estado p { max-width: 60ch; margin-inline: auto; }
+.caminos-detalle__vacio,
+.historial__vacio,
+.espacios__mensaje,
+.registro__estado,
+.hideouts-camino__mensaje { overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  .estado { padding: 32px 16px; }
+  .estado--compacto { padding: 2px 12px 14px; }
+  .caminos-todos__cabecera { justify-content: center; text-align: center; }
+  .caminos-todos__cabecera .paginador { width: 100%; justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .paginador__boton { transition: none; }
+  .paginador__boton:hover:not(:disabled),
+  .paginador__boton:active:not(:disabled) { transform: none; }
+}

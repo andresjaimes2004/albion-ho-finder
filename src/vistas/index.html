@@ -500,17 +500,24 @@
         <div id="caminos-rutas" class="registro__cuerpo caminos-rutas__cuerpo"></div>
       </section>
 
-      <section id="caminos-todos" class="registro desplegable" aria-labelledby="todos-titulo">
-        <h2 class="desplegable__encabezado">
-          <button id="todos-alternar" type="button" class="desplegable__cabecera" aria-expanded="false" aria-controls="caminos-todos-cuerpo">
-            <span class="desplegable__textos">
-              <span id="todos-titulo" class="registro__titulo">{{Caminos avalonianos}} <span id="todos-cantidad" class="desplegable__cantidad"></span></span>
-              <span class="registro__subtitulo">{{Todos los caminos del juego, con sus datos oficiales y conexiones abiertas.}}</span>
-            </span>
-            <span class="desplegable__flecha" aria-hidden="true"></span>
-          </button>
-        </h2>
-        <div id="caminos-todos-cuerpo" class="registro__cuerpo" hidden></div>
+      <section id="caminos-todos" class="registro caminos-todos" aria-labelledby="todos-titulo">
+        <header class="caminos-todos__cabecera">
+          <div class="desplegable__textos">
+            <h2 id="todos-titulo" class="registro__titulo">{{Caminos avalonianos}} <span id="todos-cantidad" class="desplegable__cantidad"></span></h2>
+            <p class="registro__subtitulo">{{Todos los caminos del juego, de 10 en 10, con sus datos oficiales y conexiones abiertas.}}</p>
+          </div>
+          <div class="paginador" role="group" aria-label="{{Navegar por los caminos}}">
+            <button type="button" class="paginador__boton" data-paso="-1" aria-label="{{Tanda anterior}}" title="{{Tanda anterior}}"><span aria-hidden="true">‹</span></button>
+            <span class="paginador__posicion" aria-live="polite"></span>
+            <button type="button" class="paginador__boton" data-paso="1" aria-label="{{Tanda siguiente}}" title="{{Tanda siguiente}}"><span aria-hidden="true">›</span></button>
+          </div>
+        </header>
+        <div id="caminos-todos-cuerpo" class="registro__cuerpo caminos-todos__cuerpo"></div>
+        <div class="paginador paginador--pie" role="group" aria-label="{{Navegar por los caminos}}">
+          <button type="button" class="paginador__boton" data-paso="-1" aria-label="{{Tanda anterior}}" title="{{Tanda anterior}}"><span aria-hidden="true">‹</span></button>
+          <span class="paginador__posicion"></span>
+          <button type="button" class="paginador__boton" data-paso="1" aria-label="{{Tanda siguiente}}" title="{{Tanda siguiente}}"><span aria-hidden="true">›</span></button>
+        </div>
       </section>
 
       <p class="caminos-atribucion">

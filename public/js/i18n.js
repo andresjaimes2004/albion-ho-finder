@@ -471,6 +471,8 @@ export const EN = {
   'Escribe un número válido.': 'Type a valid number.',
   'Marca esta casilla para continuar.': 'Tick this box to continue.',
   'Revisa este campo.': 'Please check this field.',
+  // --- v13.5: tandas de caminos ---
+  '{desde}–{hasta} de {total}': '{desde}–{hasta} of {total}',
 };
 
 const tiene = Object.prototype.hasOwnProperty;

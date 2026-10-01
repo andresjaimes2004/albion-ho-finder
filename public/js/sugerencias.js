@@ -148,11 +148,10 @@ export function conectarSugerencias(input, { opciones = () => [], maximo = 40, a
           tipo.textContent = o.tipo;
           li.append(tipo);
         }
-        // mousedown: elegir antes de que el campo pierda el foco.
-        li.addEventListener('mousedown', (evento) => {
-          evento.preventDefault();
-          elegir(o.valor);
-        });
+        // Al apretar no se elige nada (solo se evita que el campo pierda el
+        // foco): se elige al completar el clic, así arrastrar fuera cancela.
+        li.addEventListener('mousedown', (evento) => evento.preventDefault());
+        li.addEventListener('click', () => elegir(o.valor));
         return li;
       })
     );
