@@ -3,6 +3,7 @@
 import api from './api.js';
 import { crear, crearFuente, crearReloj, crearTarjetaRuta, textoCercania } from './rutas.js';
 import { t, tn, regional } from './i18n.js';
+import { conectarSugerencias, agregarBotonBorrar } from './sugerencias.js';
 
 /**
  * tracking.js
@@ -57,7 +58,10 @@ export class PanelCaminos {
     this.alActualizar = alActualizar;
 
     this.input = document.getElementById('input-camino');
-    this.sugerencias = document.getElementById('caminos-sugerencias');
+    // Sugerencias propias (caminos, mapas y gremios de caminos de hideouts)
+    // y ✕ para borrar lo escrito.
+    this.sugerencias = conectarSugerencias(this.input, { opciones: () => this._opcionesSugeridas() });
+    agregarBotonBorrar(this.input);
     this.filtroGrupo = document.getElementById('caminos-grupo');
     this.filtroTier = document.getElementById('caminos-tier');
     this.filtroActivos = document.getElementById('caminos-activos');
@@ -108,6 +112,15 @@ export class PanelCaminos {
     document.addEventListener('visibilitychange', () => {
       if (this.activo && !document.hidden) this.refrescar();
     });
+  }
+
+  /**
+   * Espacios del usuario: aparecen en el filtro de rutas desde que entra en
+   * ellos, aunque todavía no tengan rutas.
+   */
+  establecerEspacios(espacios = []) {
+    this.espaciosUsuario = espacios.map((e) => ({ id: e.id, nombre: e.nombre, publico: e.publico, miembro: true }));
+    if (this.datos) this._renderizarRutas();
   }
 
   establecerUsuario(usuario) {
@@ -237,16 +250,20 @@ export class PanelCaminos {
   }
 
   _renderizarSugerencias() {
-    const nombres = this._entradas().map((e) => e.nombre);
-    // También los gremios con hideout en caminos: al elegir uno, la lista
-    // muestra sus caminos.
-    const gremios = new Set(this._entradas().flatMap((e) => e.gremios || []));
-    const opciones = [...nombres, ...[...gremios].sort((a, b) => a.localeCompare(b))].map((valor) => {
-      const opcion = document.createElement('option');
-      opcion.value = valor;
-      return opcion;
-    });
-    this.sugerencias.replaceChildren(...opciones);
+    this._cacheOpciones = null;
+    this.sugerencias.actualizar();
+  }
+
+  /** Caminos y mapas (con su tipo) y los gremios con hideout en caminos. */
+  _opcionesSugeridas() {
+    if (this._cacheOpciones) return this._cacheOpciones;
+    const entradas = this._entradas();
+    const gremios = [...new Set(entradas.flatMap((e) => e.gremios || []))].sort((a, b) => a.localeCompare(b));
+    this._cacheOpciones = [
+      ...entradas.map((e) => ({ valor: e.nombre, tipo: e.etiqueta ? t(e.etiqueta) : '' })),
+      ...gremios.map((valor) => ({ valor, tipo: t('Gremio con hideout') })),
+    ];
+    return this._cacheOpciones;
   }
 
   _reiniciarLista() {
@@ -493,6 +510,7 @@ export class PanelCaminos {
     const mensaje = crear('p', 'hideouts-camino__mensaje');
     mensaje.setAttribute('aria-live', 'polite');
     caja.append(entrada);
+    agregarBotonBorrar(entrada);
     formulario.append(caja, anotar, mensaje);
     formulario.addEventListener('submit', async (evento) => {
       evento.preventDefault();
@@ -649,7 +667,7 @@ export class PanelCaminos {
 
     // Espacios privados (o abiertos) que aparecen en las rutas: filtro
     // "Todas / Públicas / <espacio>", recordado en este navegador.
-    const espacios = new Map();
+    const espacios = new Map((this.espaciosUsuario || []).map((e) => [String(e.id), e]));
     for (const r of [...todasAbiertas, ...todasCerradas]) if (r.espacio) espacios.set(String(r.espacio.id), r.espacio);
     if (this._espacioElegido === undefined) {
       this._espacioElegido = null;
@@ -667,7 +685,7 @@ export class PanelCaminos {
 
     // Un administrador ve siempre el bloque, con su barra de borrado (y el
     // resultado de la última acción) aunque ya no quede ninguna ruta.
-    contenedor.hidden = !todasAbiertas.length && !todasCerradas.length && !esAdmin;
+    contenedor.hidden = !todasAbiertas.length && !todasCerradas.length && !esAdmin && !espacios.size;
     if (contenedor.hidden) {
       contenedor.replaceChildren();
       return;
@@ -743,7 +761,18 @@ export class PanelCaminos {
     bloque.append(filtro);
     if (espacios.size) bloque.append(this._crearFiltroEspacios(espacios, espacioElegido, todasAbiertas));
     if (esAdmin) bloque.append(this._crearHerramientasAdmin(elegido));
-    if (!rutas.length && !cerradas.length) bloque.append(crear('p', 'caminos-detalle__vacio', t('No hay rutas registradas ahora.')));
+    if (!rutas.length && !cerradas.length) {
+      const enEspacio = espacioElegido && espacioElegido !== 'publicas' ? espacios.get(espacioElegido) : null;
+      bloque.append(
+        crear(
+          'p',
+          'caminos-detalle__vacio',
+          enEspacio
+            ? t('Todavía no hay rutas abiertas en «{espacio}». Regístralas eligiendo este espacio en «Guardar en».', { espacio: enEspacio.nombre })
+            : t('No hay rutas registradas ahora.')
+        )
+      );
+    }
 
     const portalesVisibles = elegido === null ? orden : [elegido];
     const tituloPortal = (portal) => (portal === OTRAS ? t('Lejos de los portales de ciudad') : portal);

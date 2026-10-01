@@ -4,6 +4,7 @@ import api from './api.js';
 import { crear } from './rutas.js';
 import { t, tn } from './i18n.js';
 import { mostrarSuave, ocultarSuave } from './animar.js';
+import { conectarSugerencias, agregarBotonBorrar } from './sugerencias.js';
 
 /**
  * espacios.js
@@ -26,6 +27,9 @@ export class PanelEspacios {
     this.alCambiar = alCambiar;
     this.usuario = null;
     this.espacios = [];
+    // Cuentas que este usuario agregó antes a sus espacios: solo de aquí
+    // salen las sugerencias (nunca otros usuarios del sitio).
+    this.contactos = [];
     this.abierto = false;
 
     this.alternar = document.getElementById('espacios-alternar');
@@ -38,6 +42,7 @@ export class PanelEspacios {
     this.publico = document.getElementById('espacios-publico');
     this.mensaje = document.getElementById('espacios-mensaje');
 
+    agregarBotonBorrar(this.nombre);
     this.alternar.addEventListener('click', () => (this.abierto ? this._cerrar() : this._abrir()));
     this.formulario.addEventListener('submit', (evento) => {
       evento.preventDefault();
@@ -50,6 +55,7 @@ export class PanelEspacios {
     this.sinSesion.hidden = Boolean(usuario);
     this.conSesion.hidden = !usuario;
     this.espacios = [];
+    this.contactos = [];
     this.lista.replaceChildren();
     this.mensaje.textContent = '';
     if (usuario) await this.cargar();
@@ -58,13 +64,26 @@ export class PanelEspacios {
 
   async cargar() {
     try {
-      this.espacios = (await api.espacios.listar()).espacios || [];
+      const [lista, contactos] = await Promise.all([api.espacios.listar(), api.espacios.contactos().catch(() => ({ contactos: [] }))]);
+      this.espacios = lista.espacios || [];
+      this.contactos = contactos.contactos || [];
     } catch (error) {
       this.espacios = [];
       this.mensaje.textContent = error.message || t('No se pudieron cargar tus espacios.');
     }
     this._renderizar();
     if (this.alCambiar) this.alCambiar(this.espacios);
+  }
+
+  /** Abre el panel y lleva la vista hasta un espacio (desde un aviso). */
+  mostrar(espacioId = null) {
+    const recienAbierto = !this.abierto;
+    if (recienAbierto) this._abrir();
+    // Si se acaba de abrir, se espera a que termine la animación de apertura.
+    setTimeout(() => {
+      const tarjeta = espacioId ? this.lista.querySelector(`[data-espacio="${Number(espacioId)}"]`) : null;
+      (tarjeta || this.alternar.closest('.espacios')).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, recienAbierto ? 350 : 0);
   }
 
   _abrir() {
@@ -116,6 +135,7 @@ export class PanelEspacios {
 
   _tarjeta(espacio) {
     const tarjeta = crear('article', 'espacio');
+    tarjeta.dataset.espacio = String(espacio.id);
     const mensaje = crear('p', 'espacios__mensaje');
     mensaje.setAttribute('aria-live', 'polite');
 
@@ -162,6 +182,13 @@ export class PanelEspacios {
         entrada.placeholder = t('Nombre de usuario');
         entrada.setAttribute('aria-label', t('Nombre de usuario a agregar'));
         caja.append(entrada);
+        agregarBotonBorrar(entrada);
+        // Sugiere las cuentas que ya agregaste antes y no están en este espacio.
+        const presentes = new Set(espacio.miembros.map((m) => m.usuario.toLowerCase()));
+        conectarSugerencias(entrada, {
+          opciones: () => this.contactos.filter((c) => !presentes.has(c.toLowerCase())),
+          alEnfocar: true,
+        });
         const agregar = crear('button', 'boton boton--pequeno', t('Agregar cuenta'));
         agregar.type = 'submit';
         formulario.append(caja, agregar);

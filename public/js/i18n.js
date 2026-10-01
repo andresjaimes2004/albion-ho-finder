@@ -431,6 +431,23 @@ export const EN = {
   // --- v13.2: mensajes del servidor ---
   'Ese nombre de gremio no está permitido.': 'That guild name is not allowed.',
   'Este gremio ya está en el Excel del equipo: para quitarlo, bórralo del Excel y la web lo quitará en la próxima sincronización.': "This guild is already in the team's Excel sheet: to remove it, delete it from the sheet and the site will remove it on the next sync.",
+  // --- v13.4: avisos, sugerencias y borrar ---
+  'Te agregaron a un espacio privado': 'You were added to a private space',
+  '{por} te agregó a «{espacio}». Ya puedes ver y registrar sus rutas.': '{por} added you to «{espacio}». You can now see and register its routes.',
+  'Ver espacio': 'View space',
+  'Ya no estás en un espacio privado': 'You are no longer in a private space',
+  '{por} te quitó de «{espacio}». Dejarás de ver sus rutas.': '{por} removed you from «{espacio}». You will no longer see its routes.',
+  'Se borró un espacio privado': 'A private space was deleted',
+  '{por} borró «{espacio}» junto con sus rutas.': '{por} deleted «{espacio}» along with its routes.',
+  'Alguien salió de tu espacio': 'Someone left your space',
+  '{usuario} salió de «{espacio}».': '{usuario} left «{espacio}».',
+  'Notificaciones': 'Notifications',
+  'Cerrar notificación': 'Close notification',
+  'Borrar': 'Clear',
+  'Borrar lo escrito': 'Clear the text',
+  'Gremio con hideout': 'Guild with a hideout',
+  'Todavía no hay rutas abiertas en «{espacio}». Regístralas eligiendo este espacio en «Guardar en».': 'There are no open routes in «{espacio}» yet. Register them by choosing this space in «Save to».',
+  'Lista de avisos no válida.': 'Invalid notification list.',
 };
 
 const tiene = Object.prototype.hasOwnProperty;

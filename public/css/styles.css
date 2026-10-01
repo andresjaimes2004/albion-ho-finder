@@ -2612,7 +2612,8 @@ button.ruta__nombre:hover { color: var(--color-oro-claro); text-decoration: unde
 .caminos-filtros select,
 .formulario-linea select,
 .admin-fila select,
-.ajuste-imagen__fila select {
+.ajuste-imagen__fila select,
+.registro__destino select {
   -webkit-appearance: none;
   appearance: none;
   padding: 9px 38px 9px 16px;
@@ -2628,7 +2629,8 @@ button.ruta__nombre:hover { color: var(--color-oro-claro); text-decoration: unde
 .caminos-filtros select:hover,
 .formulario-linea select:hover,
 .admin-fila select:hover,
-.ajuste-imagen__fila select:hover { border-color: rgba(201, 162, 39, 0.5); }
+.ajuste-imagen__fila select:hover,
+.registro__destino select:hover { border-color: rgba(201, 162, 39, 0.5); }
 select option { background: #16131c; color: var(--color-texto); }
 
 /* Casillas como interruptor en forma de píldora ("Solo con conexiones activas") */
@@ -3466,3 +3468,191 @@ html:has(dialog[open]) { overflow: hidden; }
 }
 .registro__ruta-hideouts-texto { margin: 0 0 6px; font-size: 0.82rem; color: var(--color-oro-claro); overflow-wrap: anywhere; }
 .registro__ruta-hideouts-caja { padding: 8px 12px; }
+
+/* ============================================================================
+   v13.4 — Sugerencias propias, borrar lo escrito, avisos y barras de scroll
+   ============================================================================ */
+
+/* "Guardar en" del registro: misma píldora que los filtros de caminos. */
+.registro__destino { gap: 8px 12px; }
+.registro__destino > span { font-weight: 600; color: var(--color-texto-suave); }
+.registro__destino select { min-width: 200px; }
+.registro__destino select:focus-visible { outline: 2px solid var(--color-oro-claro); outline-offset: 2px; }
+
+/* Los paneles con buscador se ponen por encima de los siguientes mientras
+   se usa su desplegable (cada panel con desenfoque crea su propia capa). */
+.panel-busqueda,
+.registro,
+.caminos-detalle { position: relative; }
+.panel-busqueda:focus-within,
+.registro:focus-within,
+.caminos-detalle:focus-within { z-index: 30; }
+
+/* Desplegable de sugerencias (sugerencias.js). */
+.sugerencias-ancla { position: relative; }
+.sugerencias {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  min-width: 220px;
+  max-height: min(300px, 50vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  z-index: 40;
+  background: rgba(20, 17, 26, 0.98);
+  border: 1px solid rgba(var(--acento-rgb), 0.35);
+  border-radius: var(--radio);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.55), 0 0 18px rgba(var(--acento-rgb), 0.08);
+  text-align: left;
+}
+.sugerencias__opcion {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--color-texto);
+  cursor: pointer;
+}
+.sugerencias__opcion:hover,
+.sugerencias__opcion[aria-selected='true'] { background: rgba(var(--acento-rgb), 0.14); }
+.sugerencias__opcion[aria-selected='true'] { box-shadow: inset 2px 0 0 rgba(var(--acento-rgb), 0.9); }
+.sugerencias__texto { min-width: 0; overflow-wrap: anywhere; }
+.sugerencias__texto mark { background: none; color: rgb(var(--acento-rgb)); font-weight: 700; }
+.sugerencias__tipo { flex-shrink: 0; font-size: 0.72rem; color: var(--color-texto-tenue); white-space: nowrap; }
+.registro__campo .sugerencias { min-width: 240px; }
+
+/* ✕ para borrar lo escrito (se oculta con el campo vacío). */
+.borrar-entrada {
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-texto-suave);
+  font-size: 0.78rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.borrar-entrada:hover { background: rgba(var(--acento-rgb), 0.18); color: var(--color-texto); border-color: rgba(var(--acento-rgb), 0.45); }
+.borrar-entrada:focus-visible { outline: 2px solid var(--color-oro-claro); outline-offset: 2px; }
+input:placeholder-shown + .borrar-entrada { display: none; }
+
+/* "Tus últimas búsquedas" plegable. */
+.panel-historial__alternar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.panel-historial__alternar:hover { color: var(--color-oro-claro); }
+.panel-historial__alternar:focus-visible { outline: 2px solid var(--color-oro-claro); outline-offset: 3px; border-radius: 4px; }
+.panel-historial--plegado { padding-top: 12px; padding-bottom: 12px; }
+
+/* Hideouts: el mensaje inicial, compacto y antes del historial. */
+.estado--compacto { padding: 2px 20px 16px; gap: 4px; }
+.estado--compacto .estado__icono { font-size: 1.5rem; }
+.estado--compacto p { margin: 0; }
+
+/* Administración: "Últimos cambios" con alto fijo y su propio scroll. */
+#admin-auditoria {
+  max-height: 340px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px 12px;
+  border: 1px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  background: var(--vidrio-fuerte);
+}
+
+/* Notificaciones (avisos.js). */
+.avisos {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(380px, calc(100vw - 32px));
+  pointer-events: none;
+}
+.aviso {
+  --aviso-rgb: 226, 190, 110;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 14px 14px 14px 16px;
+  border: 1px solid var(--color-borde);
+  border-left: 4px solid rgb(var(--aviso-rgb));
+  border-radius: var(--radio-lg);
+  background: rgba(20, 17, 26, 0.97);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55), 0 0 22px rgba(var(--aviso-rgb), 0.12);
+  color: var(--color-texto);
+  pointer-events: auto;
+  animation: aviso-entra 0.25s ease-out;
+}
+.aviso--exito { --aviso-rgb: 110, 200, 160; }
+.aviso--alerta { --aviso-rgb: 226, 140, 110; }
+.aviso__cuerpo { flex: 1; min-width: 0; }
+.aviso__titulo { display: block; font-family: var(--fuente-titulos); font-size: 0.95rem; color: rgb(var(--aviso-rgb)); }
+.aviso__texto { margin: 4px 0 0; font-size: 0.88rem; line-height: 1.45; color: var(--color-texto-suave); overflow-wrap: anywhere; }
+.aviso__accion { margin-top: 10px; }
+.aviso__cerrar {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-texto-suave);
+  cursor: pointer;
+}
+.aviso__cerrar:hover { background: rgba(255, 255, 255, 0.14); color: var(--color-texto); }
+.aviso__cerrar:focus-visible { outline: 2px solid var(--color-oro-claro); outline-offset: 2px; }
+.aviso--saliendo { opacity: 0; transform: translateY(8px); transition: opacity 0.2s ease, transform 0.2s ease; }
+@keyframes aviso-entra { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@media (max-width: 600px) {
+  .avisos { right: 16px; left: 16px; bottom: 16px; width: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aviso { animation: none; }
+  .aviso--saliendo { transition: none; }
+}
+
+/* Barras de desplazamiento con el color de cada apartado (violeta en el
+   inicio, verde en Hideouts, dorado en Caminos de Avalon). La de la página
+   la pinta <html>, por eso el apartado también se marca en él. */
+:root[data-vista='hideouts'] { --acento-rgb: 96, 204, 176; }
+:root[data-vista='caminos'] { --acento-rgb: 226, 190, 110; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: rgba(12, 10, 16, 0.55); }
+::-webkit-scrollbar-thumb {
+  background-color: rgba(var(--acento-rgb), 0.38);
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background-color: rgba(var(--acento-rgb), 0.62); }
+::-webkit-scrollbar-corner { background: transparent; }
+/* Firefox (no tiene los pseudo-elementos de arriba). */
+@supports not selector(::-webkit-scrollbar) {
+  * { scrollbar-width: thin; scrollbar-color: rgba(var(--acento-rgb), 0.45) rgba(12, 10, 16, 0.55); }
+}
