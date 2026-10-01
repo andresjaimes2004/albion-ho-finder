@@ -1,0 +1,15 @@
+{
+  "name": "banco-lector",
+  "private": true,
+  "description": "Banco de pruebas del lector de capturas (no forma parte de la web)",
+  "scripts": {
+    "leer": "node banco.mjs ../.. > resultado.json",
+    "medir": "node medir.mjs resultado.json",
+    "tiempo": "node evaltiempo.mjs ../.. --detalle --recortar",
+    "plantillas": "node evaltiempo.mjs ../.. --podar=0.99 --generar"
+  },
+  "devDependencies": {
+    "pngjs": "^7.0.0",
+    "tesseract.js": "5.1.1"
+  }
+}

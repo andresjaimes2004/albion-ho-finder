@@ -13,3 +13,9 @@ muestras-ocr/
 .DS_Store
 # Imágenes de los mapas para npm run db:imagenes (pesan mucho; van a la BD)
 imagenes-mapas/
+# Banco de pruebas del lector: resultados y cachés locales
+herramientas/banco-lector/resultado.json
+herramientas/banco-lector/lineas-tiempo.json
+herramientas/banco-lector/recortes/
+herramientas/banco-lector/.cache/
+herramientas/banco-lector/package-lock.json

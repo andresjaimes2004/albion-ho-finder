@@ -93,7 +93,10 @@ export function segmentar(mapa) {
     for (const v of valores) cuenta.set(v, (cuenta.get(v) || 0) + 1);
     return [...cuenta.entries()].sort((a, b) => b[1] - a[1] || b[0] - a[0])[0][0];
   };
-  const abajo = moda(piezas.map((t) => t.yb));
+  // Con la parte derecha (solo la hora) si hay bastantes piezas: a veces las
+  // letras de "se cierra", apoyadas un píxel más arriba, son mayoría.
+  const derecha = piezas.filter((t) => t.xa >= ancho * 0.6);
+  const abajo = moda((derecha.length >= 3 ? derecha : piezas).map((t) => t.yb));
   const apoyadas = piezas.filter((t) => Math.abs(t.yb - abajo) <= 1);
   // Arriba: la altura de los dígitos y la "h". Es la mayor que se repite
   // (las minúsculas de "se cierra" son más bajas y el reloj de arena, más
@@ -120,7 +123,8 @@ export function segmentar(mapa) {
     const baja = (p) => abajo - p.ya + 1 < altoLinea * 0.9;
     const hueco = previo ? t.xa - previo.xb - 1 : Infinity;
     // Hueco mínimo: partes de un mismo carácter (el palo y el arco de la
-    // "h"). Hueco algo mayor entre piezas bajas: los trazos de la "m".
+    // "h", las dos mitades de un "0" con el centro tenue). Hueco algo
+    // mayor entre piezas bajas: los trazos de la "m".
     const mismo = previo && (hueco <= Math.max(1, Math.round(altoLinea * 0.15)) || (baja(previo) && baja(t) && hueco <= union));
     if (previo && mismo && t.xb - previo.xa + 1 <= altoLinea * 1.5) {
       previo.xb = t.xb;
@@ -130,6 +134,29 @@ export function segmentar(mapa) {
       glifos.push({ ...t });
     }
   }
+
+  // Los trazos finos (los arcos izquierdos del "3") quedan por debajo del
+  // umbral y el "3" parecía un "1": para reconocer la forma, cada carácter
+  // se amplía hacia los lados con un umbral más bajo (va..vb), sin llegar
+  // a tocar a su vecino. Los huecos entre caracteres se siguen midiendo
+  // con xa..xb.
+  const umbralBajo = fondo + 0.3 * (tope - fondo);
+  const columnaTenue = (x) => {
+    for (let y = Math.max(0, arriba); y <= Math.min(alto - 1, abajo); y++) if (v[y * ancho + x] > umbralBajo) return true;
+    return false;
+  };
+  glifos.forEach((g, k) => {
+    // Solo los estrechos (candidatos a "1"): así llega un "3" recortado.
+    if (g.xb - g.xa + 1 > altoLinea * 0.4) return;
+    const limiteIzq = k > 0 ? glifos[k - 1].xb + 2 : 0;
+    const limiteDer = k < glifos.length - 1 ? glifos[k + 1].xa - 2 : ancho - 1;
+    g.va = g.xa;
+    g.vb = g.xb;
+    // Hasta 2 px a la izquierda (los arcos del "3") y 1 a la derecha: más
+    // allá solo se recoge el suavizado de los vecinos.
+    while (g.va - 1 >= Math.max(limiteIzq, g.xa - 2) && columnaTenue(g.va - 1)) g.va -= 1;
+    while (g.vb + 1 <= Math.min(limiteDer, g.xb + 1) && columnaTenue(g.vb + 1)) g.vb += 1;
+  });
   return { glifos, arriba, abajo, umbral };
 }
 
@@ -139,10 +166,13 @@ export function vectorGlifo(mapa, glifo, arriba, abajo, desplazamiento = 0, desp
   const { ancho: gw, alto: gh } = REJILLA;
   const alto = abajo - arriba + 1;
   const anchoGlifo = glifo.xb - glifo.xa + 1;
+  // Columnas para la forma: las ampliadas con el umbral bajo si las hay.
+  const xa = glifo.va ?? glifo.xa;
+  const xb = glifo.vb ?? glifo.xb;
   // Ventana de ancho fijo (proporcional a la altura) centrada en el
   // carácter: sin estirarlo, un "1" de 1-2 px sigue siendo estrecho.
   const anchoVentana = alto * 1.25;
-  const inicio = (glifo.xa + glifo.xb + 1) / 2 - anchoVentana / 2 + desplazamiento;
+  const inicio = (xa + xb + 1) / 2 - anchoVentana / 2 + desplazamiento;
   const salida = new Float32Array(gw * gh);
   for (let cy = 0; cy < gh; cy++) {
     const y0 = arriba + desplazamientoY + (cy * alto) / gh;
@@ -160,7 +190,7 @@ export function vectorGlifo(mapa, glifo, arriba, abajo, desplazamiento = 0, desp
           const wx = Math.min(x + 1, x1) - Math.max(x, x0);
           if (wx <= 0) continue;
           // Fuera de las columnas del carácter cuenta como fondo (0).
-          if (x >= glifo.xa && x <= glifo.xb && y >= 0 && y < mapa.alto) suma += v[y * ancho + x] * wx * wy;
+          if (x >= xa && x <= xb && y >= 0 && y < mapa.alto) suma += v[y * ancho + x] * wx * wy;
           peso += wx * wy;
         }
       }
@@ -215,19 +245,65 @@ export function clasificar(rasgos, plantillas) {
   return { clase: orden[0][0], puntos: orden[0][1], margen: orden.length > 1 ? orden[0][1] - orden[1][1] : 1 };
 }
 
+/**
+ * Parte en dos una pieza, por la columna con menos tinta de su zona
+ * central (dos cifras que se tocan: "14", "04", "36"...).
+ */
+function partirGlifo(mapa, glifo, umbral) {
+  const { ancho, alto, v } = mapa;
+  let corte = -1;
+  let menor = Infinity;
+  for (let x = glifo.xa + 2; x <= glifo.xb - 2; x++) {
+    let suma = 0;
+    for (let y = 0; y < alto; y++) suma += v[y * ancho + x];
+    if (suma < menor) {
+      menor = suma;
+      corte = x;
+    }
+  }
+  if (corte < 0) return null;
+  const parte = (xa, xb) => {
+    const p = { xa, xb, ya: alto, yb: -1 };
+    for (let y = 0; y < alto; y++) {
+      for (let x = xa; x <= xb; x++) {
+        if (v[y * ancho + x] > umbral) {
+          p.ya = Math.min(p.ya, y);
+          p.yb = Math.max(p.yb, y);
+        }
+      }
+    }
+    return p.yb >= 0 ? p : null;
+  };
+  const izquierda = parte(glifo.xa, corte - 1);
+  const derecha = parte(corte + 1, glifo.xb);
+  return izquierda && derecha ? [izquierda, derecha] : null;
+}
+
 /** Caracteres de la línea con su clase, de izquierda a derecha. */
 export function leerCaracteres(imagen, region, plantillas) {
   const mapa = mapaTinta(imagen, region);
-  const { glifos, arriba, abajo } = segmentar(mapa);
+  const { glifos, arriba, abajo, umbral } = segmentar(mapa);
   if (!glifos.length || abajo - arriba < 3) return [];
-  return glifos.map((glifo) => {
+  const altoLinea = abajo - arriba + 1;
+  const leer = (glifo) => {
     const rasgos = vectorGlifo(mapa, glifo, arriba, abajo);
     // Desplazamientos de menos de un píxel (suavizado, línea base).
     const variantes = [];
     for (const dy of [-0.5, 0, 0.5]) {
       for (const dx of [-0.4, 0, 0.4]) variantes.push(dx || dy ? vectorGlifo(mapa, glifo, arriba, abajo, dx, dy) : rasgos);
     }
-    return { ...glifo, rasgos, altoLinea: abajo - arriba + 1, ...clasificar(variantes, plantillas) };
+    return { ...glifo, rasgos, altoLinea, ...clasificar(variantes, plantillas) };
+  };
+  return glifos.map((glifo) => {
+    const caracter = leer(glifo);
+    // Pieza más ancha que una cifra: se prepara también partida en dos,
+    // por si son dos cifras que se tocan. Lo decide la gramática (solo se
+    // usa donde se esperan cifras).
+    if (glifo.xb - glifo.xa + 1 > altoLinea) {
+      const partes = partirGlifo(mapa, glifo, umbral);
+      if (partes) caracter.partido = partes.map(leer);
+    }
+    return caracter;
   });
 }
 
@@ -261,15 +337,37 @@ export function interpretarCaracteres(caracteres) {
   return null;
 }
 
-function interpretarDesde(lista, desde) {
+function interpretarDesde(original, desde) {
+  // Copia: donde se esperan cifras, una pieza ancha puede sustituirse por
+  // sus dos mitades (ver desplegar()).
+  const lista = original.slice();
   const aceptable = (c) => c && c.puntos >= PUNTOS_MINIMOS;
-  const esDigito = (c) => aceptable(c) && /[0-9]/.test(c.clase) && c.rasgos.alturaRelativa >= 0.8;
+  // (Las mitades de una pieza partida se aceptan algo más bajas: ver desplegar().)
+  const esDigito = (c) => aceptable(c) && /[0-9]/.test(c.clase) && c.rasgos.alturaRelativa >= (c.mitad ? 0.75 : 0.8);
   const esUnidad = (c, u) => aceptable(c) && c.clase === u;
-  const pegados = (izq, der) => der.xa - izq.xb - 1 <= Math.max(3, der.altoLinea * 0.95);
+  // Las cifras de un número van a 1-4 px (un "1" estrecho deja más hueco);
+  // el espacio entre "cierra" y la hora es mayor, así que la última letra
+  // de "se cierra" no puede pasar por la primera cifra.
+  const pegados = (izq, der) => der.xa - izq.xb - 1 <= Math.max(3, Math.round(der.altoLinea * 0.67));
   let i = desde;
   const usados = [];
 
+  // Dos cifras que se tocan llegan como una sola pieza ancha (que no se
+  // reconoce como cifra): si sus dos mitades sí son cifras, se usan ellas.
+  // Las mitades pueden quedar un píxel más bajas que la línea (cuando el
+  // reloj de arena o la "h" la estiran): se exige el 75 % de la altura,
+  // que sigue muy por encima de las minúsculas de "se cierra" (50-67 %).
+  const desplegar = () => {
+    const c = lista[i];
+    const mitades = c && c.partido && c.partido.map((p) => ({ ...p, mitad: true }));
+    if (c && !esDigito(c) && mitades && mitades.every(esDigito)) {
+      lista.splice(i, 1, ...mitades);
+      i += 1;
+    }
+  };
+
   const numero = ({ max = 59, cifras = null } = {}) => {
+    desplegar();
     if (!esDigito(lista[i])) return null;
     const digitos = [lista[i]];
     if (esDigito(lista[i - 1]) && pegados(lista[i - 1], lista[i])) {

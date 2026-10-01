@@ -12,10 +12,17 @@
  *
  *  - Extremos: zonas que NO son caminos de Avalon (Zona Negra, ciudades,
  *    zonas reales…). Intermedios: los caminos de Avalon.
- *  - Desde cada extremo se recorre un árbol de decisión (búsqueda en
- *    profundidad): en cada camino de Avalon se prueba cada portal que
- *    sale de él, sin repetir zonas. Cada vez que se llega a otro extremo
- *    se obtiene una ruta.
+ *  - Desde el extremo de entrada se recorre un árbol de decisión
+ *    (búsqueda en profundidad): en cada camino de Avalon se prueba cada
+ *    portal que sale de él, sin repetir zonas. Cada vez que se llega a
+ *    otro extremo se obtiene una ruta.
+ *  - Entrada: en cada red de caminos (componente conexa), el extremo por
+ *    el que se empezó a explorar: el primero de Zona Negra en aparecer en
+ *    las capturas (las conexiones ya guardadas cuentan como anteriores).
+ *    Así una tanda de 17 capturas desde un mapa da una ruta por destino
+ *    (8) en vez de todas las combinaciones entre extremos (36), que es
+ *    como se recorre en el juego. Con `desdeEntrada: false` se generan
+ *    todas las combinaciones, como antes.
  *  - Por eso un mismo portal puede formar parte de varias rutas: si un
  *    camino lleva a dos mapas de Zona Negra distintos, salen dos rutas
  *    independientes que comparten los tramos anteriores.
@@ -53,13 +60,22 @@ const MAX_PASOS = 50_000;
  * @param {(zona:string) => string|undefined} grupoDe  Grupo de la zona
  *   ('avalon', 'zonaNegra', 'ciudad'...).
  * @param {{maxRutas?: number, maxTramos?: number, aceptar?: (indices:number[]) => boolean,
- *   puedeTerminar?: (zona:string) => boolean}} [limites]
+ *   puedeTerminar?: (zona:string) => boolean, desdeEntrada?: boolean,
+ *   antiguedad?: (i:number) => number}} [limites]  `antiguedad(i)`: orden
+ *   en que se capturó el tramo i (por defecto, su posición).
  * @returns {{ rutas: Array<{indices:number[], zonas:string[]}>, sueltos: number[], truncado: boolean }}
  */
 export function agruparEnRutas(
   tramos,
   grupoDe = () => undefined,
-  { maxRutas = MAX_RUTAS, maxTramos = MAX_TRAMOS_POR_RUTA, aceptar = () => true, puedeTerminar = () => false } = {}
+  {
+    maxRutas = MAX_RUTAS,
+    maxTramos = MAX_TRAMOS_POR_RUTA,
+    aceptar = () => true,
+    puedeTerminar = () => false,
+    desdeEntrada = true,
+    antiguedad = (i) => i,
+  } = {}
 ) {
   // 1. Tramos válidos (sin repetir el mismo portal) y grafo de zonas.
   const vecinos = new Map();
@@ -75,7 +91,7 @@ export function agruparEnRutas(
     for (const [zona, otra] of [[t.origen, t.destino], [t.destino, t.origen]]) {
       if (!vecinos.has(zona)) vecinos.set(zona, []);
       vecinos.get(zona).push({ i, otra });
-      if (!primeraAparicion.has(zona)) primeraAparicion.set(zona, i);
+      if (!primeraAparicion.has(zona) || antiguedad(i) < primeraAparicion.get(zona)) primeraAparicion.set(zona, antiguedad(i));
     }
   });
 
@@ -83,9 +99,35 @@ export function agruparEnRutas(
   const hayGrupos = [...vecinos.keys()].some((z) => grupoDe(z) !== undefined);
   const esExtremo = (z) => (hayGrupos ? grupoDe(z) !== 'avalon' : vecinos.get(z).length === 1);
   const preferencia = (z) => (grupoDe(z) === 'zonaNegra' ? 0 : 1);
-  const extremos = [...vecinos.keys()]
+  const ordenados = [...vecinos.keys()]
     .filter(esExtremo)
     .sort((a, b) => preferencia(a) - preferencia(b) || primeraAparicion.get(a) - primeraAparicion.get(b));
+
+  // Componentes conexas (redes de caminos separadas) para elegir la entrada de cada una.
+  const red = new Map();
+  let numeroRed = 0;
+  for (const zona of vecinos.keys()) {
+    if (red.has(zona)) continue;
+    const pila = [zona];
+    red.set(zona, numeroRed);
+    while (pila.length) {
+      for (const { otra } of vecinos.get(pila.pop())) {
+        if (!red.has(otra)) {
+          red.set(otra, numeroRed);
+          pila.push(otra);
+        }
+      }
+    }
+    numeroRed += 1;
+  }
+  const conEntrada = new Set();
+  const extremos = desdeEntrada
+    ? ordenados.filter((z) => {
+        if (conEntrada.has(red.get(z))) return false;
+        conEntrada.add(red.get(z));
+        return true;
+      })
+    : ordenados;
 
   // 3. Árbol de decisión desde cada extremo.
   const rutas = [];
