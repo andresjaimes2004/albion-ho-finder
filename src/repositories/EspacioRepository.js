@@ -123,6 +123,40 @@ class EspacioRepository extends BaseRepository {
       .map((f) => ({ id: f.id, nombre: f.nombre, publico: Boolean(f.publico), miembro: Boolean(f.miembro) }));
   }
 
+  /** Recuerda que `usuarioId` agregó a `contactoId` a uno de sus espacios. */
+  recordarContacto(usuarioId, contactoId) {
+    this.db
+      .prepare(
+        `INSERT INTO espacio_contactos (usuario_id, contacto_id) VALUES ($usuario, $contacto)
+         ON CONFLICT (usuario_id, contacto_id) DO UPDATE SET ultimo_en = datetime('now')`
+      )
+      .run({ $usuario: usuarioId, $contacto: contactoId });
+  }
+
+  /**
+   * Nombres de las cuentas que el usuario agregó alguna vez a sus espacios
+   * (y las que están ahora en los espacios que creó), las más recientes
+   * primero. Nunca otras cuentas del sitio.
+   */
+  contactos(usuarioId, limite = 100) {
+    return this.db
+      .prepare(
+        `SELECT u.usuario FROM (
+           SELECT contacto_id AS id, ultimo_en AS fecha FROM espacio_contactos WHERE usuario_id = $usuario
+           UNION ALL
+           SELECT m.usuario_id, m.agregado_en FROM espacio_miembros m
+           JOIN espacios e ON e.id = m.espacio_id
+           WHERE e.creador_id = $usuario AND m.usuario_id <> $usuario
+         ) c
+         JOIN usuarios u ON u.id = c.id AND u.activo = 1
+         GROUP BY u.id
+         ORDER BY MAX(c.fecha) DESC, u.usuario COLLATE NOCASE
+         LIMIT $limite`
+      )
+      .all({ $usuario: usuarioId, $limite: limite })
+      .map((f) => f.usuario);
+  }
+
   /** Id de una cuenta activa por su nombre (sin mayúsculas), o null. */
   idDeUsuario(nombreNormalizado) {
     const fila = this.db

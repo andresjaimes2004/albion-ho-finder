@@ -260,3 +260,54 @@ test('borrar el espacio borra sus conexiones y rutas', async () => {
   assert.equal(db.prepare('SELECT COUNT(*) AS n FROM rutas_reportadas').get().n, 0);
   assert.equal(s.listar(creadora).length, 0);
 });
+
+// ------------------------------------------------- avisos y contactos --
+
+test('cada cambio de membresía deja un aviso solo a quien le afecta', () => {
+  limpiar();
+  const db = require('../src/config/database').getConnection();
+  db.exec('DELETE FROM avisos; DELETE FROM espacio_contactos;');
+  const AvisoRepository = require('../src/repositories/AvisoRepository');
+  const avisos = new AvisoRepository();
+  const s = espacios();
+  const { creadora, amigo, extrano } = usuarios;
+  const espacio = s.crear(creadora, { nombre: 'Gank Squad' });
+
+  s.agregarMiembro(creadora, espacio.id, 'amigo');
+  const agregado = avisos.listarNoLeidos(amigo.id);
+  assert.deepEqual(agregado.map((a) => [a.tipo, a.datos.espacio, a.datos.por]), [['ESPACIO_AGREGADO', 'Gank Squad', 'creadora']]);
+  assert.equal(avisos.listarNoLeidos(extrano.id).length, 0);
+
+  // Otro usuario no puede marcar como leídos los avisos ajenos.
+  assert.equal(avisos.marcarLeidos(extrano.id, [agregado[0].id]), 0);
+  assert.equal(avisos.marcarLeidos(amigo.id, [agregado[0].id]), 1);
+  assert.equal(avisos.listarNoLeidos(amigo.id).length, 0);
+
+  s.quitarMiembro(creadora, espacio.id, amigo.id);
+  assert.equal(avisos.listarNoLeidos(amigo.id)[0].tipo, 'ESPACIO_QUITADO');
+
+  s.agregarMiembro(creadora, espacio.id, 'amigo');
+  s.quitarMiembro(amigo, espacio.id, amigo.id);
+  assert.deepEqual(avisos.listarNoLeidos(creadora.id).map((a) => [a.tipo, a.datos.usuario]), [['ESPACIO_SALIO', 'amigo']]);
+
+  s.agregarMiembro(creadora, espacio.id, 'amigo');
+  s.eliminar(creadora, espacio.id);
+  assert.equal(avisos.listarNoLeidos(amigo.id).at(-1).tipo, 'ESPACIO_BORRADO');
+});
+
+test('las sugerencias de cuentas son solo las que ese usuario agregó antes', () => {
+  limpiar();
+  require('../src/config/database').getConnection().exec('DELETE FROM espacio_contactos;');
+  const s = espacios();
+  const { creadora, amigo, extrano } = usuarios;
+  const uno = s.crear(creadora, { nombre: 'Gank Squad' });
+  s.agregarMiembro(creadora, uno.id, 'amigo');
+  s.agregarMiembro(creadora, uno.id, 'otro1');
+  assert.deepEqual(s.contactos(creadora).sort(), ['amigo', 'otro1']);
+  assert.deepEqual(s.contactos(amigo), [], 'ser miembro no da acceso a los nombres de los demás');
+  assert.deepEqual(s.contactos(extrano), []);
+
+  // Se recuerdan aunque el espacio ya no exista.
+  s.eliminar(creadora, uno.id);
+  assert.deepEqual(s.contactos(creadora).sort(), ['amigo', 'otro1']);
+});

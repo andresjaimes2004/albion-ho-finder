@@ -2,6 +2,7 @@
 
 const TrackingService = require('./services/TrackingService');
 const AuthService = require('./services/AuthService');
+const AvisoRepository = require('./repositories/AvisoRepository');
 const { obtenerSincronizacion, intervaloMinutos } = require('./services/SincronizacionExcelService');
 
 /**
@@ -12,7 +13,8 @@ const { obtenerSincronizacion, intervaloMinutos } = require('./services/Sincroni
  *  - Cada minuto: rutas que cerraron hace más de 30 minutos (se borran con
  *    los tramos que quedaron después del portal cerrado) y conexiones ya
  *    cerradas (ver src/services/estadoRutas.js).
- *  - Cada hora: sesiones caducadas e intentos de inicio de sesión viejos.
+ *  - Cada hora: sesiones caducadas, intentos de inicio de sesión viejos y
+ *    avisos de más de 30 días.
  *  - Cada EXCEL_SYNC_MINUTOS (60 por defecto), si está configurada: los
  *    hideouts con el Excel de Google Drive (SincronizacionExcelService).
  *    Y, cada minuto, si hay gremios de caminos de hideouts anotados en la
@@ -33,7 +35,13 @@ function ejecutar(nombre, tarea) {
 
 function iniciarTareas({ seguimiento = new TrackingService(), auth = new AuthService(), sincronizacion = null } = {}) {
   const rutas = () => ejecutar('rutas cerradas', () => seguimiento.mantenimiento());
-  const sesiones = () => ejecutar('sesiones', () => auth.mantenimiento());
+  const sesiones = () =>
+    ejecutar('sesiones', () => {
+      auth.mantenimiento();
+      // Avisos de más de 30 días (leídos o no).
+      const limite = new Date(Date.now() - 30 * 86_400_000).toISOString().replace('T', ' ').slice(0, 19);
+      new AvisoRepository().purgarAntesDe(limite);
+    });
   rutas();
   sesiones();
 
