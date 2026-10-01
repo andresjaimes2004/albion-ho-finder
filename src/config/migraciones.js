@@ -30,6 +30,10 @@ const COLUMNAS_NUEVAS = [
   // minimapa en coordenadas del mapa (archivos del cliente). Las imágenes
   // anteriores a esta columna eran capturas.
   { tabla: 'mapas_imagen', columna: 'proyeccion', definicion: "TEXT NOT NULL DEFAULT 'diamante'" },
+  // Gremios de caminos de hideouts: de dónde vienen y si el Excel ya los
+  // tiene (los de la web se agregan al Excel; ver SincronizacionExcelService).
+  { tabla: 'hideouts_camino', columna: 'origen', definicion: "TEXT NOT NULL DEFAULT 'web'" },
+  { tabla: 'hideouts_camino', columna: 'en_excel', definicion: 'INTEGER NOT NULL DEFAULT 0' },
 ];
 
 function columnasDe(conexion, tabla) {

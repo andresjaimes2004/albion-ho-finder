@@ -74,10 +74,10 @@ function zip(archivos) {
 const escapar = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 /** Excel con la hoja "Mapas BZ" (como segunda hoja) a partir de filas de textos. */
-function crearXlsx(filas, { nombreHoja = 'Mapas BZ' } = {}) {
+function crearXlsx(filas, { nombreHoja = 'Mapas BZ', otra = { nombre: 'Otra', filas: [['!nada']] } } = {}) {
   const compartidas = [];
   const indice = new Map();
-  const celdas = filas
+  const xmlFilas = (lista) => lista
     .map((fila, f) => {
       const cs = fila
         .map((valor, c) => {
@@ -98,10 +98,10 @@ function crearXlsx(filas, { nombreHoja = 'Mapas BZ' } = {}) {
     .join('');
   return zip({
     '[Content_Types].xml': '<?xml version="1.0"?><Types/>',
-    'xl/workbook.xml': `<?xml version="1.0"?><workbook xmlns:r="r"><sheets><sheet name="Otra" sheetId="1" r:id="rId1"/><sheet name="${nombreHoja}" sheetId="2" r:id="rId2"/></sheets></workbook>`,
+    'xl/workbook.xml': `<?xml version="1.0"?><workbook xmlns:r="r"><sheets><sheet name="${otra.nombre}" sheetId="1" r:id="rId1"/><sheet name="${nombreHoja}" sheetId="2" r:id="rId2"/></sheets></workbook>`,
     'xl/_rels/workbook.xml.rels': '<?xml version="1.0"?><Relationships><Relationship Id="rId1" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Target="/xl/worksheets/sheet2.xml"/></Relationships>',
-    'xl/worksheets/sheet1.xml': '<worksheet><sheetData><row r="1"><c r="A1" t="inlineStr"><is><t>nada</t></is></c></row></sheetData></worksheet>',
-    'xl/worksheets/sheet2.xml': `<?xml version="1.0"?><worksheet><sheetData>${celdas}</sheetData></worksheet>`,
+    'xl/worksheets/sheet1.xml': `<worksheet><sheetData>${xmlFilas(otra.filas)}</sheetData></worksheet>`,
+    'xl/worksheets/sheet2.xml': `<?xml version="1.0"?><worksheet><sheetData>${xmlFilas(filas)}</sheetData></worksheet>`,
     'xl/sharedStrings.xml': `<?xml version="1.0"?><sst>${compartidas
       // Un texto partido en dos "runs" con formato, como los genera Excel.
       .map((t) => (t.length > 6 ? `<si><r><t>${escapar(t.slice(0, 3))}</t></r><r><t xml:space="preserve">${escapar(t.slice(3))}</t></r></si>` : `<si><t>${escapar(t)}</t></si>`))
@@ -365,4 +365,254 @@ test('el estado de la sincronización incluye la cuenta con la que compartir el 
   await assert.rejects(() => s.sincronizar(), /no tiene acceso/);
   assert.equal(s.estado().cuenta, 'albion-excel-lector@proyecto.iam.gserviceaccount.com');
   assert.equal(s.estado().ultimo.ok, false);
+});
+
+// ------------------------------------- caminos de Avalon de hideouts --
+
+const HideoutsCaminoService = require('../src/services/HideoutsCaminoService');
+const { crearClienteHojas } = require('../src/excel/googleSheets');
+const { leerLibroHideouts, interpretarFilasCaminos } = require('../src/excel/hojaHideouts');
+
+const CATALOGO_CAMINOS = {
+  caminos: [
+    { id: 'TNL-200', nombre: 'Qiient-Al-Odetum', tipo: 'TUNNEL_HIDEOUT', tier: 6 },
+    { id: 'TNL-201', nombre: 'Qiient-Al-Nusis', tipo: 'TUNNEL_HIDEOUT_DEEP', tier: 8 },
+    { id: 'TNL-202', nombre: 'Casos-Al-Viva', tipo: 'TUNNEL_HIDEOUT', tier: 7 },
+    { id: 'TNL-001', nombre: 'Ouyos-Aoeuam', tipo: 'TUNNEL_ROYAL', tier: 4 },
+  ],
+};
+const HOJA_GOOGLE = 'application/vnd.google-apps.spreadsheet';
+
+function caminosLimpios() {
+  require('../src/config/database').getConnection().exec('DELETE FROM hideouts_camino; DELETE FROM auditoria;');
+  return new HideoutsCaminoService({ catalogo: CATALOGO_CAMINOS });
+}
+
+/** Anotación hecha en la web (pendiente de pasar al Excel). */
+function anotarEnWeb(caminos, camino, gremio) {
+  return caminos.repositorio.guardar({ camino, gremio, gremioNormalizado: gremio.toLowerCase() });
+}
+
+/**
+ * Hoja de cálculo de Google falsa: guarda la hoja "Caminos Avalon" en
+ * memoria y registra cada operación. Solo implementa lo que el cliente
+ * real sabe hacer (no hay forma de borrar).
+ */
+function hojasFalsas(inicial = null, { ocupar = null } = {}) {
+  const libro = new Map();
+  if (inicial) libro.set('Caminos Avalon', inicial.map((f) => [...f]));
+  const operaciones = [];
+  const celda = (ref) => ({ col: ref.charCodeAt(0) - 65, fila: Number(ref.slice(1)) - 1 });
+  return {
+    libro,
+    operaciones,
+    async titulos() {
+      return [...libro.keys()];
+    },
+    async crearHoja(id, titulo, encabezado) {
+      operaciones.push(['crearHoja', titulo]);
+      libro.set(titulo, [encabezado]);
+    },
+    async leer(id, hoja) {
+      return (libro.get(hoja) || []).map((f) => [...f]);
+    },
+    async escribirSiVacia(id, hoja, ref, valor) {
+      const { col, fila } = celda(ref);
+      const filas = libro.get(hoja);
+      // Otra persona escribe en esa celda justo antes (carrera simulada).
+      if (ocupar === ref) filas[fila][col] = 'Otro Gremio';
+      if (filas[fila][col]) {
+        operaciones.push(['ocupada', ref]);
+        return false;
+      }
+      filas[fila][col] = valor;
+      operaciones.push(['escribir', ref, valor]);
+      return true;
+    },
+    async agregarFila(id, hoja, valores) {
+      operaciones.push(['agregarFila', ...valores]);
+      libro.get(hoja).push([...valores]);
+    },
+  };
+}
+
+test('lee la hoja "Caminos Avalon" (opcional) con los gremios de cada camino', () => {
+  const filas = [['Camino', 'Gremio 1', 'Gremio 2'], ['Qiient-Al-Odetum', 'Los Topos', 'Señores (HQ)'], [], ['Casos-Al-Viva']];
+  assert.deepEqual(interpretarFilasCaminos(filas), [
+    { camino: 'Qiient-Al-Odetum', gremios: ['Los Topos', 'Señores'] },
+    { camino: 'Casos-Al-Viva', gremios: [] },
+  ]);
+  const sinHoja = leerLibroHideouts(crearXlsx([['Mapa', 'HO 1'], ['Mapa 1', 'Gremio 1']]));
+  assert.equal(sinHoja.caminos, null, 'sin la hoja no se toca nada de los caminos');
+  assert.equal(sinHoja.mapas.length, 1);
+  const conHoja = leerLibroHideouts(crearXlsx([['Mapa', 'HO 1']], { otra: { nombre: 'Caminos Avalon', filas } }));
+  assert.deepEqual(conHoja.caminos[0], { camino: 'Qiient-Al-Odetum', gremios: ['Los Topos', 'Señores'] });
+});
+
+test('del Excel a la web: valida, agrega, quita lo que el Excel borró y no toca lo pendiente', () => {
+  const caminos = caminosLimpios();
+  const s = new SincronizacionExcelService({ caminos });
+  const viejo = caminos.repositorio.guardar({ camino: 'Qiient-Al-Nusis', gremio: 'Se Fueron', gremioNormalizado: 'se fueron', origen: 'excel' });
+  const pendiente = anotarEnWeb(caminos, 'Qiient-Al-Nusis', 'Recien Anotado');
+  const coincide = anotarEnWeb(caminos, 'Qiient-Al-Odetum', 'Los Topos');
+
+  const r = s.aplicarCaminos([
+    { camino: 'qiient-al-odetum', gremios: ['LOS  TOPOS', 'Nuevos Del Excel', '<script>'] },
+    { camino: 'Ouyos-Aoeuam', gremios: ['No Es De Hideouts'] },
+    { camino: 'Camino Inventado', gremios: ['X Y'] },
+    { camino: 'Qiient-Al-Nusis', gremios: [] },
+  ]);
+  assert.equal(r.agregados, 1);
+  assert.equal(r.quitados, 1);
+  assert.deepEqual(r.caminosDesconocidos, ['Ouyos-Aoeuam', 'Camino Inventado']);
+  assert.deepEqual(r.gremiosInvalidos, ['Qiient-Al-Odetum: <script>']);
+
+  const odetum = caminos.listar('Qiient-Al-Odetum');
+  assert.deepEqual(odetum.map((h) => h.gremio).sort(), ['Los Topos', 'Nuevos Del Excel']);
+  const nuevo = odetum.find((h) => h.gremio === 'Nuevos Del Excel');
+  assert.deepEqual([nuevo.origen, nuevo.enExcel, nuevo.usuarioId], ['excel', 1, null]);
+  assert.equal(caminos.repositorio.obtener(coincide.id).enExcel, 1, 'ya estaba en el Excel: deja de estar pendiente');
+  assert.equal(caminos.repositorio.obtener(viejo.id), undefined, 'el Excel lo borró: la web también');
+  assert.equal(caminos.repositorio.obtener(pendiente.id).enExcel, 0, 'lo pendiente de enviar no se toca');
+
+  assert.equal(s.aplicarCaminos(null), null, 'sin la hoja no se hace nada');
+  assert.equal(caminos.listar('Qiient-Al-Odetum').length, 2);
+});
+
+test('una hoja de caminos vaciada por error no borra la web, salvo que se fuerce', () => {
+  const caminos = caminosLimpios();
+  for (let i = 0; i < 20; i++) {
+    caminos.repositorio.guardar({ camino: 'Qiient-Al-Odetum', gremio: `Gremio ${i}`, gremioNormalizado: `gremio ${i}`, origen: 'excel' });
+  }
+  const s = new SincronizacionExcelService({ caminos });
+  assert.throws(() => s.aplicarCaminos([{ camino: 'Qiient-Al-Odetum', gremios: [] }]), (e) => e.requiereForzar && /no se aplicó nada/.test(e.message));
+  assert.equal(caminos.listar('Qiient-Al-Odetum').length, 20);
+  assert.equal(s.aplicarCaminos([], { forzar: true }).quitados, 20);
+});
+
+test('de la web al Excel: solo agrega, en celdas vacías o filas nuevas, y nunca sobrescribe', async () => {
+  const caminos = caminosLimpios();
+  const hoja = [
+    ['Camino', 'Gremio 1', 'Gremio 2', 'Gremio 3'],
+    ['Qiient-Al-Odetum', 'Los Topos (HQ)', '', 'Tercero'],
+    ['Qiient-Al-Nusis', ...Array.from({ length: 10 }, (_, i) => `Lleno ${i}`)],
+  ];
+  const hojas = hojasFalsas(hoja);
+  const yaEsta = anotarEnWeb(caminos, 'Qiient-Al-Odetum', 'los topos');
+  const hueco = anotarEnWeb(caminos, 'Qiient-Al-Odetum', 'Va Al Hueco');
+  const siguiente = anotarEnWeb(caminos, 'Qiient-Al-Odetum', 'Va Al Final');
+  const lleno = anotarEnWeb(caminos, 'Qiient-Al-Nusis', 'No Cabe');
+  const filaNueva = anotarEnWeb(caminos, 'Casos-Al-Viva', 'Camino Sin Fila');
+
+  const s = new SincronizacionExcelService({ caminos, hojas, archivoId: 'hoja_de_prueba_123' });
+  const r = await s.exportarCaminos();
+  assert.deepEqual([r.agregados, r.yaEstaban, r.sinHueco], [3, 1, 1]);
+  assert.deepEqual(hojas.operaciones, [
+    ['escribir', 'C2', 'Va Al Hueco'],
+    ['escribir', 'E2', 'Va Al Final'],
+    ['agregarFila', 'Casos-Al-Viva', 'Camino Sin Fila'],
+  ]);
+  const despues = hojas.libro.get('Caminos Avalon');
+  assert.deepEqual(despues[1].slice(0, 5), ['Qiient-Al-Odetum', 'Los Topos (HQ)', 'Va Al Hueco', 'Tercero', 'Va Al Final'], 'lo que había sigue igual');
+  assert.deepEqual(despues[2], hoja[2], 'la fila llena no se toca');
+
+  const estado = (registro) => caminos.repositorio.obtener(registro.id).enExcel;
+  assert.deepEqual([yaEsta, hueco, siguiente, filaNueva].map(estado), [1, 1, 1, 1]);
+  assert.equal(estado(lleno), 0, 'sin hueco: sigue pendiente');
+  assert.equal(new AuditoriaRepository().listar().filter((a) => a.accion === 'AGREGAR_EXCEL').length, 1);
+
+  // Una segunda pasada no vuelve a escribir nada.
+  hojas.operaciones.length = 0;
+  assert.equal((await s.exportarCaminos()).agregados, 0);
+  assert.deepEqual(hojas.operaciones, []);
+});
+
+test('si alguien ocupa la celda justo antes, no se sobrescribe y queda pendiente', async () => {
+  const caminos = caminosLimpios();
+  const hojas = hojasFalsas([['Camino', 'Gremio 1'], ['Qiient-Al-Odetum']], { ocupar: 'B2' });
+  const registro = anotarEnWeb(caminos, 'Qiient-Al-Odetum', 'Llega Tarde');
+  const s = new SincronizacionExcelService({ caminos, hojas, archivoId: 'hoja_de_prueba_123' });
+  const r = await s.exportarCaminos();
+  assert.equal(r.agregados, 0);
+  assert.equal(hojas.libro.get('Caminos Avalon')[1][1], 'Otro Gremio');
+  assert.equal(caminos.repositorio.obtener(registro.id).enExcel, 0);
+});
+
+test('sin la hoja "Caminos Avalon", la web la crea con su encabezado', async () => {
+  const caminos = caminosLimpios();
+  const hojas = hojasFalsas();
+  anotarEnWeb(caminos, 'Qiient-Al-Nusis', 'Primeros');
+  const s = new SincronizacionExcelService({ caminos, hojas, archivoId: 'hoja_de_prueba_123' });
+  await s.exportarCaminos();
+  const hoja = hojas.libro.get('Caminos Avalon');
+  assert.equal(hoja[0][0], 'Camino');
+  assert.equal(hoja[0].length, 11);
+  assert.deepEqual(hoja[1], ['Qiient-Al-Nusis', 'Primeros']);
+});
+
+test('sincronizar lee el Excel y después agrega lo pendiente (solo en hojas de cálculo de Google)', async () => {
+  sembrar();
+  const caminos = caminosLimpios();
+  anotarEnWeb(caminos, 'Qiient-Al-Odetum', 'Desde La Web');
+  const filasMapas = [['Mapa', 'HO 1', 'HO 2', 'HO 3']];
+  for (const m of excelIgual()) filasMapas.push([m.mapa, ...m.hideouts.map((h) => h.gremio)]);
+  let mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+  const drive = {
+    metadatos: async () => ({ id: 'x', name: 'Buscador', mimeType, modifiedTime: `${Math.random()}` }),
+    descargar: async () => crearXlsx(filasMapas),
+  };
+  const hojas = hojasFalsas([['Camino', 'Gremio 1']]);
+  const s = new SincronizacionExcelService({ drive, archivoId: 'hoja_de_prueba_123', caminos, hojas });
+
+  // Un .xlsx subido a Drive: se avisa y no se intenta escribir.
+  const conXlsx = await s.sincronizar();
+  assert.match(conXlsx.mensaje, /Hoja de cálculo de Google/);
+  assert.deepEqual(hojas.operaciones, []);
+  assert.equal(s.estado().caminos.pendientes, 1);
+  assert.equal(s.debeExportarPronto(), false, 'tras un aviso se espera');
+
+  mimeType = HOJA_GOOGLE;
+  const conHoja = await s.sincronizar();
+  assert.match(conHoja.mensaje, /1 gremios de caminos agregados al Excel/);
+  assert.deepEqual(hojas.operaciones, [['agregarFila', 'Qiient-Al-Odetum', 'Desde La Web']]);
+  assert.equal(s.estado().caminos.pendientes, 0);
+  assert.equal(s.debeExportarPronto(), false, 'nada pendiente');
+});
+
+test('el cliente de Hojas de cálculo escribe como texto literal y no sobrescribe celdas ocupadas', async () => {
+  const llamadas = [];
+  let celdaB2 = [];
+  const fetch = async (url, opciones = {}) => {
+    if (url === 'https://oauth2.googleapis.com/token') {
+      const datos = JSON.parse(Buffer.from(opciones.body.get('assertion').split('.')[1], 'base64url'));
+      assert.equal(datos.scope, 'https://www.googleapis.com/auth/spreadsheets', 'pide solo el alcance de hojas de cálculo');
+      return new Response(JSON.stringify({ access_token: 'token-hojas', expires_in: 3600 }));
+    }
+    llamadas.push({ url: decodeURIComponent(url), metodo: opciones.method || 'GET', cuerpo: opciones.body ? JSON.parse(opciones.body) : null });
+    assert.equal(opciones.headers.Authorization, 'Bearer token-hojas');
+    if ((opciones.method || 'GET') === 'GET') return new Response(JSON.stringify({ values: celdaB2 }));
+    return new Response('{}');
+  };
+  const hojas = crearClienteHojas(CREDENCIALES, { fetch });
+
+  assert.equal(await hojas.escribirSiVacia('hoja_de_prueba_123', 'Caminos Avalon', 'B2', '=IMPORTXML("x")'), true);
+  const escritura = llamadas.find((l) => l.metodo === 'PUT');
+  assert.match(escritura.url, /'Caminos Avalon'!B2\?valueInputOption=RAW$/);
+  assert.deepEqual(escritura.cuerpo.values, [['=IMPORTXML("x")']], 'RAW: no se convierte en fórmula');
+
+  llamadas.length = 0;
+  celdaB2 = [['Ya Ocupada']];
+  assert.equal(await hojas.escribirSiVacia('hoja_de_prueba_123', 'Caminos Avalon', 'B2', 'Otro'), false);
+  assert.deepEqual(llamadas.map((l) => l.metodo), ['GET'], 'celda ocupada: solo se lee');
+
+  await hojas.agregarFila('hoja_de_prueba_123', 'Caminos Avalon', ['Qiient-Al-Odetum', 'Nuevo']);
+  assert.match(llamadas.at(-1).url, /:append\?valueInputOption=RAW&insertDataOption=INSERT_ROWS$/);
+
+  // No hay forma de borrar ni de escribir fuera de lo previsto.
+  assert.deepEqual(Object.keys(hojas).sort(), ['agregarFila', 'crearHoja', 'cuenta', 'escribirSiVacia', 'leer', 'titulos']);
+  await assert.rejects(() => hojas.escribirSiVacia('hoja_de_prueba_123', 'Caminos Avalon', 'A1:Z99', 'x'), /Celda no válida/);
+  await assert.rejects(() => hojas.agregarFila('hoja_de_prueba_123', "Hoja'!A1", ['x']), /Nombre de hoja no válido/);
+  await assert.rejects(() => hojas.agregarFila('../otro', 'Caminos Avalon', ['x']), /formato de un id/);
+  await assert.rejects(() => hojas.agregarFila('hoja_de_prueba_123', 'Caminos Avalon', ['x'.repeat(61)]), /Valor no válido/);
+  assert.ok(llamadas.every((l) => l.metodo !== 'DELETE' && !/:clear|deleteSheet|deleteDimension/.test(l.url)));
 });

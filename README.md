@@ -8,6 +8,38 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v13.2 — Gremios de caminos de hideouts que la web recuerda (y comparte con el Excel)
+
+- **Se anotan al crear la ruta**: cuando una ruta nueva llega a un camino de
+  hideouts, el panel de registro muestra los gremios que ya se conocen allí y
+  un campo para escribir los que se vieron (separados por comas). Se guardan
+  con la ruta y quedan para siempre: la próxima ruta a ese camino ya los
+  muestra.
+- **Pestaña Caminos de Avalon**: con el filtro "Hideout" cada tarjeta muestra
+  los gremios del camino, y el buscador también encuentra caminos por gremio
+  (sin importar espacios ni tildes: "requiem" encuentra "R E Q U I E M").
+- **Pestaña Hideouts**: al buscar un gremio aparecen también los caminos de
+  Avalon donde tiene hideout.
+- **Excel de Drive en los dos sentidos**, en la hoja nueva "Caminos Avalon"
+  (columna A el camino, B..K los gremios):
+  - Del Excel a la web: lo que el equipo escribe aparece en la web. Antes se
+    valida (solo caminos de hideouts reales y nombres válidos; lo demás se
+    ignora y se avisa en el panel de administración).
+  - De la web al Excel, **solo agregando**: lo anotado en la web que el Excel
+    no tiene se escribe en la primera celda vacía de la fila del camino, o en
+    una fila nueva al final. Antes de escribir se vuelve a leer la hoja y se
+    comprueba que la celda siga vacía. La web no tiene ninguna forma de
+    borrar ni sobrescribir nada del Excel.
+  - El Excel manda: si el equipo borra un gremio del Excel, la web también lo
+    quita (con la misma protección del 30 % contra hojas vaciadas por error),
+    y desde la web ya no se puede borrar lo que está en el Excel.
+  - Lo anotado en la web llega al Excel en un par de minutos.
+  - Requiere que el archivo sea una **Hoja de cálculo de Google** y dar
+    permiso de edición a la cuenta de servicio (ver "Sincronización con el
+    Excel de Google Drive" → "Agregar gremios de caminos al Excel").
+- Como mucho 10 gremios por camino (las columnas del Excel) y sin nombres
+  ofensivos.
+
 ### v13.1 — Lector de capturas afinado y rutas desde la entrada
 
 - **Lector medido con 106 capturas reales** (antes 31), revisadas a ojo una
@@ -804,6 +836,40 @@ para los que corren fuera).
    En el panel de administración aparecen el estado, la cuenta con la que se
    comparte el Excel y el botón "Sincronizar ahora". Cada sincronización con
    cambios queda en la bitácora.
+
+**Agregar gremios de caminos al Excel (v13.2, opcional)**
+
+Los gremios de caminos de Avalon de hideouts viven en la hoja **"Caminos
+Avalon"** (columna A = camino, B..K = gremios). Del Excel a la web funciona con
+la configuración de arriba. Para que la web también **agregue** al Excel lo que
+se anota en ella hace falta permiso de edición. La web solo agrega: escribe en
+celdas vacías o en filas nuevas al final, nunca borra ni sobrescribe, y crea la
+hoja "Caminos Avalon" si no existe.
+
+1. El archivo tiene que ser una **Hoja de cálculo de Google**. Si en Drive
+   aparece la etiqueta `XLSX` junto al título, ábrelo y usa *Archivo → Guardar
+   como Hoja de cálculo de Google*; el equipo pasa a editar la copia y en
+   `EXCEL_DRIVE_ID` va el id de la copia.
+2. Consola de Google Cloud: *APIs y servicios → Biblioteca* → **Google Sheets
+   API** → *Habilitar*.
+3. En Drive, cambia el permiso de la cuenta `albion-excel-lector@…` sobre la
+   hoja de **Lector** a **Editor** (si es miembro de una unidad compartida,
+   a **Colaborador**). Solo puede editar lo que se comparte con ella.
+4. En **Cloud Shell**, añade el alcance de Hojas de cálculo a la VM (se apaga
+   1–2 minutos, la IP fija no cambia):
+   ```bash
+   gcloud compute instances stop albion-ho-finder --zone=ZONA
+   gcloud compute instances set-service-account albion-ho-finder --zone=ZONA \
+     --service-account=albion-excel-lector@<proyecto>.iam.gserviceaccount.com \
+     --scopes=https://www.googleapis.com/auth/drive.readonly,https://www.googleapis.com/auth/spreadsheets,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write
+   gcloud compute instances start albion-ho-finder --zone=ZONA
+   ```
+5. Pulsa "Sincronizar ahora" en el panel de administración: si hay gremios
+   pendientes, el estado dice cuántos se agregaron o qué permiso falta.
+
+Sin estos pasos todo lo demás sigue funcionando: los gremios anotados se
+guardan en la web y el panel de administración muestra cuántos están
+pendientes de pasar al Excel.
 
 **Fuera de Google Cloud** (por ejemplo, para probar en local) no hay VM que
 entregue tokens: ahí sí hace falta una clave JSON de la cuenta de servicio en
