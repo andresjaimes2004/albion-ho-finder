@@ -423,6 +423,12 @@
               <input id="registro-combinaciones" type="checkbox" />
               {{Proponer también las rutas entre destinos (todas las combinaciones)}}
             </label>
+            <label id="registro-destino-caja" class="registro__destino" hidden>
+              <span>{{Guardar en}}</span>
+              <select id="registro-destino">
+                <option value="">{{Público: lo ven todos}}</option>
+              </select>
+            </label>
             <div id="registro-acciones" class="registro__acciones" hidden>
               <button id="registro-guardar" type="button" class="boton con-icono icono-guardar">{{Guardar conexiones}}</button>
               <button id="registro-vaciar" type="button" class="boton boton--sutil con-icono icono-papelera">{{Vaciar}}</button>
@@ -430,6 +436,37 @@
             <p class="registro__privacidad">{{Las capturas se leen en tu navegador y no se suben: solo se guarda lo que confirmas.}}</p>
           </div>
           <datalist id="registro-zonas"></datalist>
+        </div>
+      </section>
+
+      <section class="registro espacios" aria-labelledby="espacios-titulo">
+        <div class="registro__cabecera">
+          <div>
+            <h2 id="espacios-titulo" class="registro__titulo">{{Espacios privados}}</h2>
+            <p class="registro__subtitulo">{{Rutas solo para tu grupo: gankers, farmers o transportistas.}}</p>
+          </div>
+          <button id="espacios-alternar" type="button" class="boton boton--pequeno con-icono icono-abajo" aria-expanded="false" aria-controls="espacios-cuerpo">{{Abrir}}</button>
+        </div>
+
+        <div id="espacios-cuerpo" class="registro__cuerpo" hidden>
+          <p id="espacios-sin-sesion" class="estado estado--info registro__aviso">
+            {{Inicia sesión para crear un espacio privado o ver los tuyos.}}
+          </p>
+          <div id="espacios-con-sesion" hidden>
+            <p class="espacios__explicacion">
+              {{Crea un espacio y agrega por su nombre de usuario las cuentas de tu grupo (hasta 7 en total, contándote). Al registrar conexiones, elige “Guardar en” tu espacio: solo sus miembros verán esas rutas. Si quieres que todos se beneficien, marca “Permitir que los demás vean las conexiones”.}}
+            </p>
+            <div id="espacios-lista" class="espacios__lista"></div>
+            <form id="espacios-crear" class="espacios__crear">
+              <div class="panel-busqueda__caja espacios__caja">
+                <input id="espacios-nombre" class="entrada-busqueda" type="text" minlength="3" maxlength="30" required autocomplete="off"
+                       placeholder="{{Nombre del espacio}}" aria-label="{{Nombre del espacio}}" />
+              </div>
+              <label class="casilla"><input id="espacios-publico" type="checkbox" /> {{Permitir que los demás vean las conexiones}}</label>
+              <button type="submit" class="boton boton--pequeno">{{Crear un espacio privado}}</button>
+            </form>
+            <p id="espacios-mensaje" class="espacios__mensaje" aria-live="polite"></p>
+          </div>
         </div>
       </section>
 

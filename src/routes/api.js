@@ -8,6 +8,7 @@ const auth = require('../controllers/authController');
 const mapas = require('../controllers/mapaController');
 const admin = require('../controllers/adminController');
 const tracking = require('../controllers/trackingController');
+const espacios = require('../controllers/espaciosController');
 const db = require('../config/database');
 const crearLimitador = require('../middlewares/limitador');
 const config = require('../config/seguridad');
@@ -70,6 +71,15 @@ router.post('/auth/login', limitarAuth, auth.iniciarSesion);
 router.post('/auth/logout', auth.cerrarSesion);
 router.get('/auth/sesion', auth.sesionActual);
 router.post('/auth/clave', exigirAutenticacion, auth.cambiarClave);
+
+// ------------------------------------------------------- espacios privados ---
+
+router.get('/espacios', exigirAutenticacion, espacios.listar);
+router.post('/espacios', exigirAutenticacion, espacios.crear);
+router.put('/espacios/:id', exigirAutenticacion, espacios.actualizar);
+router.delete('/espacios/:id', exigirAutenticacion, espacios.eliminar);
+router.post('/espacios/:id/miembros', exigirAutenticacion, espacios.agregarMiembro);
+router.delete('/espacios/:id/miembros/:usuario', exigirAutenticacion, espacios.quitarMiembro);
 
 // -------------------------------------------------------------- historial ---
 

@@ -30,6 +30,17 @@ const COLUMNAS_NUEVAS = [
   // minimapa en coordenadas del mapa (archivos del cliente). Las imágenes
   // anteriores a esta columna eran capturas.
   { tabla: 'mapas_imagen', columna: 'proyeccion', definicion: "TEXT NOT NULL DEFAULT 'diamante'" },
+  // Espacios privados: a qué espacio pertenece cada conexión y ruta (NULL =
+  // pública). Al borrar el espacio se borran con él.
+  { tabla: 'conexiones_reportadas', columna: 'espacio_id', definicion: 'INTEGER REFERENCES espacios(id) ON DELETE CASCADE' },
+  { tabla: 'rutas_reportadas', columna: 'espacio_id', definicion: 'INTEGER REFERENCES espacios(id) ON DELETE CASCADE' },
+];
+
+// Índices sobre columnas añadidas por estas migraciones (schema.sql se
+// ejecuta antes y no puede crearlos en una base de datos anterior).
+const INDICES_NUEVOS = [
+  'CREATE INDEX IF NOT EXISTS idx_conexiones_reportadas_espacio ON conexiones_reportadas (espacio_id)',
+  'CREATE INDEX IF NOT EXISTS idx_rutas_reportadas_espacio ON rutas_reportadas (espacio_id)',
 ];
 
 function columnasDe(conexion, tabla) {
@@ -55,6 +66,7 @@ function ejecutarMigraciones(conexion) {
     // entrada del usuario: no hay superficie de inyección aquí.
     conexion.exec(`ALTER TABLE ${tabla} ADD COLUMN ${columna} ${definicion}`);
   }
+  for (const sql of INDICES_NUEVOS) conexion.exec(sql);
 }
 
 module.exports = ejecutarMigraciones;

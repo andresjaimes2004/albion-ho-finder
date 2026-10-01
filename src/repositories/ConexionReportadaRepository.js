@@ -11,27 +11,31 @@ const BaseRepository = require('./BaseRepository');
  * ----------------------------------------------------------------------
  */
 class ConexionReportadaRepository extends BaseRepository {
-  crear({ origen, destino, cierraEn, usuarioId }) {
+  crear({ origen, destino, cierraEn, usuarioId, espacioId = null }) {
     const info = this.db
       .prepare(
-        `INSERT INTO conexiones_reportadas (origen, destino, cierra_en, usuario_id)
-         VALUES ($origen, $destino, $cierra, $usuario)`
+        `INSERT INTO conexiones_reportadas (origen, destino, cierra_en, usuario_id, espacio_id)
+         VALUES ($origen, $destino, $cierra, $usuario, $espacio)`
       )
-      .run({ $origen: origen, $destino: destino, $cierra: cierraEn, $usuario: usuarioId });
+      .run({ $origen: origen, $destino: destino, $cierra: cierraEn, $usuario: usuarioId, $espacio: espacioId });
     return this.obtener(Number(info.lastInsertRowid));
   }
 
-  /** Conexión vigente entre las mismas dos zonas, en cualquier sentido. */
-  buscarVigenteEntre(zonaA, zonaB, ahoraIso) {
+  /**
+   * Conexión vigente entre las mismas dos zonas, en cualquier sentido, del
+   * mismo espacio (null = pública): nunca se toca una de otro espacio.
+   */
+  buscarVigenteEntre(zonaA, zonaB, ahoraIso, espacioId = null) {
     return this.db
       .prepare(
         `SELECT id FROM conexiones_reportadas
          WHERE cierra_en > $ahora
            AND ((origen = $a AND destino = $b) OR (origen = $b AND destino = $a))
+           AND espacio_id IS $espacio
          ORDER BY cierra_en DESC
          LIMIT 1`
       )
-      .get({ $ahora: ahoraIso, $a: zonaA, $b: zonaB });
+      .get({ $ahora: ahoraIso, $a: zonaA, $b: zonaB, $espacio: espacioId });
   }
 
   actualizar(id, { origen, destino, cierraEn, usuarioId }) {
@@ -50,7 +54,7 @@ class ConexionReportadaRepository extends BaseRepository {
     return this.db
       .prepare(
         `SELECT c.id, c.origen, c.destino, c.cierra_en AS cierraEn, c.creado_en AS creadoEn,
-                c.usuario_id AS usuarioId, u.usuario AS usuario
+                c.usuario_id AS usuarioId, u.usuario AS usuario, c.espacio_id AS espacioId
          FROM conexiones_reportadas c
          LEFT JOIN usuarios u ON u.id = c.usuario_id
          WHERE c.id = $id`
@@ -62,7 +66,7 @@ class ConexionReportadaRepository extends BaseRepository {
     return this.db
       .prepare(
         `SELECT c.id, c.origen, c.destino, c.cierra_en AS cierraEn, c.creado_en AS creadoEn,
-                c.usuario_id AS usuarioId, u.usuario AS usuario
+                c.usuario_id AS usuarioId, u.usuario AS usuario, c.espacio_id AS espacioId
          FROM conexiones_reportadas c
          LEFT JOIN usuarios u ON u.id = c.usuario_id
          WHERE c.cierra_en > $ahora
@@ -76,7 +80,7 @@ class ConexionReportadaRepository extends BaseRepository {
     return this.db
       .prepare(
         `SELECT c.id, c.origen, c.destino, c.cierra_en AS cierraEn, c.creado_en AS creadoEn,
-                c.usuario_id AS usuarioId, u.usuario AS usuario
+                c.usuario_id AS usuarioId, u.usuario AS usuario, c.espacio_id AS espacioId
          FROM conexiones_reportadas c
          LEFT JOIN usuarios u ON u.id = c.usuario_id
          WHERE c.cierra_en > $limite
@@ -98,11 +102,6 @@ class ConexionReportadaRepository extends BaseRepository {
            AND NOT EXISTS (SELECT 1 FROM rutas_tramos t WHERE t.conexion_id = conexiones_reportadas.id)`
       )
       .run({ $limite: limiteSqlite }).changes;
-  }
-
-  /** Borra todas las conexiones (solo para "borrar todas las rutas"). */
-  eliminarTodas() {
-    return this.db.prepare('DELETE FROM conexiones_reportadas').run().changes;
   }
 
   eliminar(id) {

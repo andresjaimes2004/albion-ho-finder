@@ -733,3 +733,43 @@ test('la consulta de rutas por mapa valida la lista de mapas', async () => {
   const excedida = await cliente.peticion('/api/tracking/rutas?mapas=' + encodeURIComponent(demasiados));
   assert.equal(excedida.estado, 400);
 });
+
+test('espacios privados por HTTP: exigen sesión y CSRF, y lo privado no sale en /api/tracking', async () => {
+  const anonimo = crearCliente();
+  assert.equal((await anonimo.peticion('/api/espacios')).estado, 401);
+
+  const auth = new AuthService();
+  const cliente = (usuario) => {
+    auth.registrar({ usuario, clave: 'ClaveSegura99' });
+    const sesion = auth.iniciarSesion({ usuario, clave: 'ClaveSegura99', huella: 'pruebas' });
+    const c = crearCliente();
+    c.cookies.set('ho_sesion', sesion.token);
+    c.cookies.set('ho_csrf', sesion.csrf);
+    return c;
+  };
+  const duena = cliente('duenaespacio');
+  const intrusa = cliente('intrusa');
+
+  const sinCsrf = await duena.peticion('/api/espacios', { metodo: 'POST', datos: { nombre: 'Gank Squad' } });
+  assert.equal(sinCsrf.estado, 403);
+  const creado = await duena.escribir('/api/espacios', { metodo: 'POST', datos: { nombre: 'Gank Squad' } });
+  assert.equal(creado.estado, 201);
+  const id = creado.json.espacio.id;
+
+  const conexiones = [{ origen: 'Ouyos-Aoeuam', destino: 'Martlock', minutos: 90 }];
+  const ajena = await intrusa.escribir('/api/tracking/reportes', { metodo: 'POST', datos: { conexiones, espacio: id } });
+  assert.equal(ajena.estado, 404, 'no puede registrar en un espacio ajeno');
+  const propia = await duena.escribir('/api/tracking/reportes', { metodo: 'POST', datos: { conexiones, espacio: id } });
+  assert.equal(propia.estado, 201);
+
+  const vista = async (c) => (await c.peticion('/api/tracking')).json.conexiones.filter((x) => x.destino.nombre === 'Martlock');
+  assert.equal((await vista(duena)).length, 1);
+  assert.equal((await vista(duena))[0].espacio.nombre, 'Gank Squad');
+  assert.equal((await vista(intrusa)).length, 0);
+  assert.equal((await vista(anonimo)).length, 0);
+  assert.equal((await intrusa.escribir(`/api/espacios/${id}`, { metodo: 'DELETE' })).estado, 404);
+
+  const agregada = await duena.escribir(`/api/espacios/${id}/miembros`, { metodo: 'POST', datos: { usuario: 'intrusa' } });
+  assert.equal(agregada.estado, 201);
+  assert.equal((await vista(intrusa)).length, 1, 'ya es miembro');
+});
