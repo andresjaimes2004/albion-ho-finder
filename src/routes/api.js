@@ -9,6 +9,7 @@ const mapas = require('../controllers/mapaController');
 const admin = require('../controllers/adminController');
 const tracking = require('../controllers/trackingController');
 const espacios = require('../controllers/espaciosController');
+const avisos = require('../controllers/avisosController');
 const db = require('../config/database');
 const crearLimitador = require('../middlewares/limitador');
 const config = require('../config/seguridad');
@@ -75,11 +76,17 @@ router.post('/auth/clave', exigirAutenticacion, auth.cambiarClave);
 // ------------------------------------------------------- espacios privados ---
 
 router.get('/espacios', exigirAutenticacion, espacios.listar);
+router.get('/espacios/contactos', exigirAutenticacion, espacios.contactos);
 router.post('/espacios', exigirAutenticacion, espacios.crear);
 router.put('/espacios/:id', exigirAutenticacion, espacios.actualizar);
 router.delete('/espacios/:id', exigirAutenticacion, espacios.eliminar);
 router.post('/espacios/:id/miembros', exigirAutenticacion, espacios.agregarMiembro);
 router.delete('/espacios/:id/miembros/:usuario', exigirAutenticacion, espacios.quitarMiembro);
+
+// ----------------------------------------------------------------- avisos ---
+
+router.get('/avisos', exigirAutenticacion, avisos.listar);
+router.post('/avisos/leidos', exigirAutenticacion, avisos.marcarLeidos);
 
 // -------------------------------------------------------------- historial ---
 

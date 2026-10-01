@@ -10,6 +10,7 @@ const { manejar } = require('./utilidades');
  * Espacios privados (todas con sesión y token CSRF en las escrituras):
  *
  * GET    /api/espacios                       → mis espacios, con miembros
+ * GET    /api/espacios/contactos             → cuentas que agregué antes
  * POST   /api/espacios                       → crear { nombre, publico }
  * PUT    /api/espacios/:id                   → renombrar o cambiar si los
  *                                               demás ven sus conexiones
@@ -23,6 +24,12 @@ const { manejar } = require('./utilidades');
 const servicio = new EspaciosService();
 
 const id = (req) => entero(req.params.id, 'id', { min: 1 });
+
+/** Nombres que el usuario agregó antes a sus espacios (sugerencias). */
+const contactos = manejar((req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.json({ ok: true, contactos: servicio.contactos(req.usuario) });
+});
 
 const listar = manejar((req, res) => {
   res.set('Cache-Control', 'no-store');
@@ -56,4 +63,4 @@ const quitarMiembro = manejar((req, res) => {
   res.json({ ok: true, espacio });
 });
 
-module.exports = { listar, crear, actualizar, eliminar, agregarMiembro, quitarMiembro };
+module.exports = { contactos, listar, crear, actualizar, eliminar, agregarMiembro, quitarMiembro };

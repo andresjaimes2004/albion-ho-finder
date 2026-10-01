@@ -7,6 +7,15 @@ import { t, tn } from './i18n.js';
 import { mostrarSuave, ocultarSuave } from './animar.js';
 import * as borrador from './capturas/borrador.js';
 import { crearReloj, iniciarRelojes } from './rutas.js';
+import { conectarSugerencias, agregarBotonBorrar } from './sugerencias.js';
+
+/** Tipo de zona que se muestra junto a cada sugerencia. */
+const TIPOS_ZONA = {
+  avalon: 'Camino de Avalon',
+  zonaNegra: 'Zona Negra',
+  ciudad: 'Ciudad',
+  portalCiudad: 'Portal de ciudad',
+};
 
 /**
  * registroCaminos.js
@@ -95,7 +104,6 @@ export class PanelRegistro {
     this.lista = document.getElementById('registro-lista');
     this.acciones = document.getElementById('registro-acciones');
     this.guardar = document.getElementById('registro-guardar');
-    this.sugerencias = document.getElementById('registro-zonas');
     this.contenedorRutas = document.getElementById('registro-rutas');
     // Por defecto, una ruta por destino desde la entrada de cada red; con
     // la casilla, todas las combinaciones entre extremos (recordada).
@@ -450,13 +458,7 @@ export class PanelRegistro {
         this.zonas = r.zonas;
         this.indice = crearIndiceZonas(r.zonas);
         this.porNombre = new Map(r.zonas.map((z) => [z.nombre.toLowerCase(), z]));
-        this.sugerencias.replaceChildren(
-          ...r.zonas.map((z) => {
-            const opcion = document.createElement('option');
-            opcion.value = z.nombre;
-            return opcion;
-          })
-        );
+        this.opcionesZonas = r.zonas.map((z) => ({ valor: z.nombre, tipo: TIPOS_ZONA[z.grupo] ? t(TIPOS_ZONA[z.grupo]) : '' }));
         return this.zonas;
       });
       this._cargaZonas.catch(() => { this._cargaZonas = null; });
@@ -569,7 +571,6 @@ export class PanelRegistro {
     const entradaZona = () => {
       const input = crear('input');
       input.type = 'text';
-      input.setAttribute('list', 'registro-zonas');
       input.maxLength = 60;
       input.autocomplete = 'off';
       return input;
@@ -596,6 +597,8 @@ export class PanelRegistro {
     quitar.setAttribute('aria-label', t('Quitar esta captura'));
 
     campos.append(campo(t('Origen'), origen), campo(t('Destino'), destino), campo(t('Cierra en'), tiempo));
+    // Sugerencias de zonas oficiales (desplegable propio).
+    for (const entrada of [origen, destino]) conectarSugerencias(entrada, { opciones: () => this.opcionesZonas || [], maximo: 30 });
     item.append(vista, campos, quitar, estado, etiquetaRuta);
 
     // En edición el orden de las filas es el de la ruta: se puede cambiar.
@@ -955,6 +958,7 @@ export class PanelRegistro {
     entrada.value = this.gremiosPorAnotar.get(camino) || '';
     entrada.addEventListener('input', () => this.gremiosPorAnotar.set(camino, entrada.value));
     contenedor.append(entrada);
+    agregarBotonBorrar(entrada);
     caja.append(contenedor);
     return caja;
   }

@@ -8,10 +8,12 @@ import { PanelAdmin } from './admin.js';
 import { PanelCaminos } from './tracking.js';
 import { PanelRegistro } from './registroCaminos.js';
 import { PanelEspacios } from './espacios.js';
+import { CentroAvisos } from './avisos.js';
 import { crear, crearListaConexiones, crearTarjetaRuta, iniciarRelojes } from './rutas.js';
 import { t, tn } from './i18n.js';
 import { Portada } from './portada.js';
 import { mostrarSuave, ocultarSuave } from './animar.js';
+import { conectarSugerencias, agregarBotonBorrar } from './sugerencias.js';
 
 /**
  * app.js
@@ -32,6 +34,10 @@ class BuscadorUI {
   constructor() {
     this.input = document.getElementById('input-gremio');
     this.badgeTemporada = document.getElementById('badge-temporada');
+    // Sugerencias propias (gremios y mapas) y ✕ para borrar lo escrito.
+    this.opcionesBusqueda = [];
+    this.sugerenciasBusqueda = conectarSugerencias(this.input, { opciones: () => this.opcionesBusqueda });
+    agregarBotonBorrar(this.input);
 
     this.estados = {
       vacio: document.getElementById('estado-vacio'),
@@ -84,11 +90,24 @@ class BuscadorUI {
     this.panelEspacios = new PanelEspacios({
       alCambiar: (espacios) => {
         this.panelRegistro.establecerEspacios(espacios);
+        // Los espacios se ven en el filtro de rutas aunque aún no tengan rutas.
+        this.panelCaminos.establecerEspacios(espacios);
         // Lo que se ve depende de la sesión: al entrar, salir o cambiar de
         // espacios se vuelve a pedir (si la pestaña no está abierta, se
         // pedirá al abrirla).
         if (this.panelCaminos.activo) this.panelCaminos.refrescar();
       },
+    });
+
+    // Avisos en vivo: al agregarte o quitarte de un espacio se actualizan
+    // los espacios y las rutas sin recargar, con una notificación.
+    this.avisos = new CentroAvisos({
+      alCambiarEspacios: () => {
+        this.panelEspacios.cargar();
+        // La búsqueda de hideouts también muestra rutas: se repite.
+        if (this.vistaActual === 'hideouts') this._repetirBusqueda();
+      },
+      verEspacio: (id) => this._irA('caminos', { alTerminar: () => this.panelEspacios.mostrar(id) }),
     });
 
     this.panelSesion = new PanelSesion({
@@ -98,6 +117,7 @@ class BuscadorUI {
         this.panelCaminos.establecerUsuario(usuario);
         this.panelRegistro.establecerUsuario(usuario);
         this.panelEspacios.establecerUsuario(usuario);
+        this.avisos.establecerUsuario(usuario);
       },
       alElegirTermino: (termino) => {
         this._irA('hideouts');
@@ -173,9 +193,9 @@ class BuscadorUI {
 
   /**
    * Sugerencias del buscador (gremios y mapas), como en Caminos de Avalon.
-   * Se cargan una vez, al empezar a usar el buscador. Un gremio escrito con
-   * espacios ("R E Q U I E M") lleva también su forma junta como etiqueta,
-   * así aparece al teclear "requiem".
+   * Se cargan una vez, al empezar a usar el buscador, y se muestran en el
+   * desplegable propio (sugerencias.js), que también encuentra los nombres
+   * escritos con espacios ("requiem" → "R E Q U I E M").
    */
   _cargarSugerencias() {
     if (this._sugerenciasCargadas) return;
@@ -183,15 +203,11 @@ class BuscadorUI {
     api
       .sugerencias()
       .then(({ gremios = [], mapas = [] }) => {
-        const lista = document.getElementById('gremio-sugerencias');
-        const opcion = (valor) => {
-          const el = document.createElement('option');
-          el.value = valor;
-          const junto = valor.toLowerCase().replace(/[\s._-]+/g, '');
-          if (junto !== valor.toLowerCase()) el.label = junto;
-          return el;
-        };
-        lista.replaceChildren(...[...gremios, ...mapas].map(opcion));
+        this.opcionesBusqueda = [
+          ...gremios.map((valor) => ({ valor, tipo: t('Gremio') })),
+          ...mapas.map((valor) => ({ valor, tipo: t('Mapa') })),
+        ];
+        this.sugerenciasBusqueda.actualizar();
       })
       .catch(() => {
         this._sugerenciasCargadas = false;
@@ -325,6 +341,9 @@ class BuscadorUI {
       pestana.setAttribute('aria-selected', String(pestana.dataset.vista === vista));
     }
     document.body.dataset.vista = vista;
+    // También en <html>: la barra de desplazamiento de la página toma el
+    // color del apartado.
+    document.documentElement.dataset.vista = vista;
     if (vista === 'caminos') this.panelCaminos.activar();
     else this.panelCaminos.desactivar();
     this.panelRegistro.establecerVisible(vista === 'caminos');

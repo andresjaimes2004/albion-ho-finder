@@ -224,12 +224,10 @@
         <input
           id="input-gremio"
           type="text"
-          list="gremio-sugerencias"
           placeholder="{{Ej: Gankers Letales o Timbertop Escarp}}"
           autocomplete="off"
           maxlength="60"
         />
-        <datalist id="gremio-sugerencias"></datalist>
       </div>
       <p class="panel-busqueda__ayuda">
         {{Escribe el nombre de un gremio o de un mapa, completo o solo una parte. Toca cualquier mapa del resultado para abrirlo en detalle.}}
@@ -239,9 +237,16 @@
       </button>
     </section>
 
+    <div id="estado-vacio" class="estado estado--info estado--compacto" aria-live="polite">
+      <span class="estado__icono">🗺️</span>
+      <p>{{Escribe al menos 2 caracteres para empezar a buscar.}}</p>
+    </div>
+
     <section id="historial" class="panel-historial" hidden>
       <div class="panel-historial__cabecera">
-        <h2>{{Tus últimas búsquedas}}</h2>
+        <h2>
+          <button id="historial-alternar" type="button" class="panel-historial__alternar con-icono icono-abajo" aria-expanded="true" aria-controls="historial-lista">{{Tus últimas búsquedas}}</button>
+        </h2>
         <button id="historial-limpiar" type="button" class="boton boton--pequeno boton--sutil con-icono icono-papelera">{{Limpiar}}</button>
       </div>
       <ul id="historial-lista" class="historial"></ul>
@@ -279,11 +284,6 @@
     </section>
 
     <section id="zona-resultados" class="zona-resultados" aria-live="polite">
-      <div id="estado-vacio" class="estado estado--info">
-        <span class="estado__icono">🗺️</span>
-        <p>{{Escribe al menos 2 caracteres para empezar a buscar.}}</p>
-      </div>
-
       <div id="estado-cargando" class="estado" hidden>
         <span class="cargando" aria-hidden="true"></span>
         <p>{{Buscando en la Zona Negra...}}</p>
@@ -348,9 +348,8 @@
             <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
             <path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>
-          <input id="input-camino" class="entrada-busqueda" type="text" list="caminos-sugerencias"
+          <input id="input-camino" class="entrada-busqueda" type="text"
                  placeholder="{{Ej: Ouyos-Aoeuam, Deepwood Copse...}}" autocomplete="off" maxlength="80" />
-          <datalist id="caminos-sugerencias"></datalist>
         </div>
         <div class="caminos-filtros">
           <select id="caminos-grupo" aria-label="{{Tipo de camino}}">
@@ -435,7 +434,6 @@
             </div>
             <p class="registro__privacidad">{{Las capturas se leen en tu navegador y no se suben: solo se guarda lo que confirmas.}}</p>
           </div>
-          <datalist id="registro-zonas"></datalist>
         </div>
       </section>
 

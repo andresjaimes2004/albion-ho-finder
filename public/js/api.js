@@ -117,8 +117,16 @@ export const api = {
   historial: () => peticion('/api/historial'),
   limpiarHistorial: () => peticion('/api/historial', { metodo: 'DELETE' }),
 
+  // Avisos del usuario (cambios en sus espacios privados).
+  avisos: {
+    listar: () => peticion('/api/avisos'),
+    marcarLeidos: (ids) => peticion('/api/avisos/leidos', { metodo: 'POST', datos: { ids } }),
+  },
+
   espacios: {
     listar: () => peticion('/api/espacios'),
+    // Cuentas que el usuario agregó antes a sus espacios (sugerencias).
+    contactos: () => peticion('/api/espacios/contactos'),
     crear: (nombre, publico) => peticion('/api/espacios', { metodo: 'POST', datos: { nombre, publico } }),
     actualizar: (id, cambios) => peticion(`/api/espacios/${id}`, { metodo: 'PUT', datos: cambios }),
     borrar: (id) => peticion(`/api/espacios/${id}`, { metodo: 'DELETE' }),

@@ -1,6 +1,7 @@
 'use strict';
 
 const EspacioRepository = require('../repositories/EspacioRepository');
+const AvisoRepository = require('../repositories/AvisoRepository');
 const db = require('../config/database');
 const { texto, ErrorValidacion } = require('../security/validacion');
 const { esOfensivo } = require('../security/nombresOfensivos');
@@ -24,6 +25,11 @@ const { esOfensivo } = require('../security/nombresOfensivos');
  *    no sea miembro (los borrados masivos tampoco lo tocan).
  *  - Ante quien no es miembro, un espacio privado "no existe" (404): no se
  *    revela qué espacios hay.
+ *  - Cada cambio de membresía deja un aviso a quien le afecta (lo agregaron,
+ *    lo quitaron, salió alguien, se borró el espacio): la página lo muestra
+ *    y se actualiza sin recargar.
+ *  - Las sugerencias al agregar cuentas salen solo de las cuentas que ese
+ *    mismo usuario agregó antes a sus espacios.
  * ----------------------------------------------------------------------
  */
 
@@ -40,9 +46,19 @@ function errorPublico(mensaje, estado) {
 }
 
 class EspaciosService {
-  constructor({ repositorio = new EspacioRepository(), transaccion = (fn) => db.transaccion(fn) } = {}) {
+  constructor({
+    repositorio = new EspacioRepository(),
+    avisos = new AvisoRepository(),
+    transaccion = (fn) => db.transaccion(fn),
+  } = {}) {
     this.repositorio = repositorio;
+    this.avisos = avisos;
     this.transaccion = transaccion;
+  }
+
+  /** Cuentas que el usuario agregó alguna vez a sus espacios (para sugerirlas). */
+  contactos(usuario) {
+    return this.repositorio.contactos(usuario.id);
   }
 
   _nombre(valor) {
@@ -125,6 +141,8 @@ class EspaciosService {
         throw new ErrorValidacion(`Esa cuenta ya pertenece a ${MAX_ESPACIOS_POR_CUENTA} espacios, el máximo.`);
       }
       this.repositorio.agregarMiembro(espacio.id, id);
+      this.repositorio.recordarContacto(usuario.id, id);
+      this.avisos.crear(id, 'ESPACIO_AGREGADO', { espacio: espacio.nombre, espacioId: espacio.id, por: usuario.usuario });
       return this._conMiembros(espacio, usuario);
     });
   }
@@ -138,13 +156,24 @@ class EspaciosService {
       throw new ErrorValidacion('Quien creó el espacio no puede salir de él: si ya no lo quiere, puede borrarlo.');
     }
     if (!this.repositorio.quitarMiembro(espacio.id, usuarioId)) throw errorPublico('Esa cuenta no está en el espacio.', 404);
-    return propio ? null : this._conMiembros(espacio, usuario);
+    if (propio) {
+      this.avisos.crear(espacio.creadorId, 'ESPACIO_SALIO', { espacio: espacio.nombre, espacioId: espacio.id, usuario: usuario.usuario });
+      return null;
+    }
+    this.avisos.crear(usuarioId, 'ESPACIO_QUITADO', { espacio: espacio.nombre, espacioId: espacio.id, por: usuario.usuario });
+    return this._conMiembros(espacio, usuario);
   }
 
   /** Borra el espacio con todas sus conexiones y rutas. */
   eliminar(usuario, espacioId) {
     const espacio = this._comoCreador(usuario, espacioId);
-    this.repositorio.eliminar(espacio.id);
+    const otros = this.repositorio.miembros(espacio.id).filter((m) => m.id !== usuario.id);
+    this.transaccion(() => {
+      this.repositorio.eliminar(espacio.id);
+      for (const m of otros) {
+        this.avisos.crear(m.id, 'ESPACIO_BORRADO', { espacio: espacio.nombre, espacioId: espacio.id, por: usuario.usuario });
+      }
+    });
   }
 
   /**

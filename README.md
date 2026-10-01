@@ -8,6 +8,27 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v13.4 — Espacios en vivo, sugerencias propias y pulido visual
+
+- **Espacios en vivo, sin recargar**: al agregarte a un espacio, quitarte,
+  borrarlo o si alguien sale del tuyo, llega una notificación (abajo a la
+  derecha) y se actualizan al momento tus espacios, el "Guardar en" y las
+  rutas. La página consulta los avisos cada 10 segundos mientras está
+  visible; cada usuario solo ve los suyos.
+- Tus espacios aparecen en el filtro de rutas desde que entras en ellos,
+  aunque todavía no tengan rutas.
+- **Agregar cuenta** sugiere los nombres que tú mismo agregaste antes a tus
+  espacios (nunca otros usuarios del sitio).
+- **Sugerencias propias** en los buscadores de Hideouts y Caminos de Avalon y
+  en origen/destino del registro: con el color de cada apartado, el tipo de
+  cada resultado, la parte que coincide resaltada y teclado (↑ ↓ Enter Esc).
+- **✕ para borrar** lo escrito en los buscadores y campos de texto.
+- **Barras de desplazamiento** con el color de cada apartado.
+- "Tus últimas búsquedas" se pliega con su flecha; el mensaje "Escribe al
+  menos 2 caracteres" va antes y ocupa menos.
+- "Últimos cambios" del panel de administración con alto fijo y su scroll.
+- "Guardar en" con el mismo estilo que los demás selectores.
+
 ### v13.3 — Espacios privados
 
 - **Crear un espacio privado** (pestaña Caminos de Avalon → "Espacios
@@ -741,6 +762,10 @@ Con sesión (+ token CSRF):
   (cada ruta es la lista, en orden, de posiciones dentro de `conexiones`;
   `espacio` es el id de un espacio privado del que se es miembro, o `null`
   para público).
+- `GET /api/avisos`, `POST /api/avisos/leidos` `{ ids }` → avisos del
+  usuario (cambios en sus espacios).
+- `GET /api/espacios/contactos` → cuentas que el usuario agregó antes a sus
+  espacios (sugerencias al agregar miembros).
 - `GET /api/espacios`, `POST /api/espacios` `{ nombre, publico }`,
   `PUT|DELETE /api/espacios/:id`, `POST /api/espacios/:id/miembros` `{ usuario }`,
   `DELETE /api/espacios/:id/miembros/:usuarioId` → espacios privados (crear,

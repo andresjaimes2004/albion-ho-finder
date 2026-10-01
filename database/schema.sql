@@ -266,3 +266,30 @@ CREATE TABLE IF NOT EXISTS espacio_miembros (
 );
 
 CREATE INDEX IF NOT EXISTS idx_espacio_miembros_usuario ON espacio_miembros (usuario_id);
+
+-- ============================================================================
+-- v13.4: avisos y contactos de los espacios privados
+-- ============================================================================
+
+-- Avisos para un usuario (te agregaron a un espacio, te quitaron, lo
+-- borraron...). La página los consulta cada pocos segundos y los muestra
+-- como notificación; `datos` es JSON con los nombres que se muestran.
+CREATE TABLE IF NOT EXISTS avisos (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    usuario_id  INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    tipo        TEXT    NOT NULL,
+    datos       TEXT    NOT NULL DEFAULT '{}',
+    leido       INTEGER NOT NULL DEFAULT 0 CHECK (leido IN (0, 1)),
+    creado_en   TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_avisos_usuario ON avisos (usuario_id, leido);
+
+-- Cuentas que cada usuario agregó alguna vez a sus espacios: solo de aquí
+-- salen las sugerencias al agregar miembros (nunca la lista de usuarios).
+CREATE TABLE IF NOT EXISTS espacio_contactos (
+    usuario_id   INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    contacto_id  INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    ultimo_en    TEXT    NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (usuario_id, contacto_id)
+);
