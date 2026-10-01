@@ -122,9 +122,10 @@ function columna(referencia) {
 /**
  * @param {Buffer} buffer  Contenido del .xlsx.
  * @param {string} nombreHoja
- * @returns {Array<Array<string|number|null>>} filas (la primera, el encabezado)
+ * @param {{opcional?: boolean}} [opciones]  opcional: si no existe, null.
+ * @returns {Array<Array<string|number|null>> | null} filas (la primera, el encabezado)
  */
-function leerHoja(buffer, nombreHoja) {
+function leerHoja(buffer, nombreHoja, { opcional = false } = {}) {
   if (!Buffer.isBuffer(buffer) || buffer.length < 22) throw new ErrorExcel('El archivo está vacío.');
   if (buffer.length > MAX_ARCHIVO) throw new ErrorExcel('El Excel es demasiado grande.');
   const indice = indiceZip(buffer);
@@ -134,7 +135,11 @@ function leerHoja(buffer, nombreHoja) {
   if (!libro || !relaciones) throw new ErrorExcel('El archivo no es un Excel (.xlsx) válido.');
 
   const hoja = [...libro.matchAll(/<sheet\b[^>]*>/g)].map((m) => m[0]).find((e) => atributo(e, 'name') === nombreHoja);
-  if (!hoja) throw new ErrorExcel(`El Excel no tiene una hoja llamada "${nombreHoja}".`);
+  if (!hoja) {
+    // Una hoja opcional que no existe: null (no es un error).
+    if (opcional) return null;
+    throw new ErrorExcel(`El Excel no tiene una hoja llamada "${nombreHoja}".`);
+  }
   const idRelacion = atributo(hoja, 'r:id');
   const relacion = [...relaciones.matchAll(/<Relationship\b[^>]*>/g)].map((m) => m[0]).find((e) => atributo(e, 'Id') === idRelacion);
   if (!relacion) throw new ErrorExcel('El Excel está dañado (relación de la hoja).');

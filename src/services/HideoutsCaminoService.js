@@ -5,6 +5,8 @@ const fs = require('fs');
 
 const HideoutCaminoRepository = require('../repositories/HideoutCaminoRepository');
 const { texto, ErrorValidacion } = require('../security/validacion');
+const { esOfensivo } = require('../security/nombresOfensivos');
+const { COLUMNAS_GREMIOS } = require('../excel/hojaHideouts');
 
 /**
  * HideoutsCaminoService
@@ -12,24 +14,32 @@ const { texto, ErrorValidacion } = require('../security/validacion');
  * Gremios con hideout en los caminos de Avalon de hideouts.
  *
  * Los caminos de tipo TUNNEL_HIDEOUT y TUNNEL_HIDEOUT_DEEP (dumps del
- * juego) admiten hideouts, pero ni los datos oficiales ni el Excel dicen
- * de quién son. Quien llega a uno por una ruta puede anotar los gremios
- * que tienen hideout allí, y luego se buscan por gremio o por camino.
+ * juego) admiten hideouts, pero los datos oficiales no dicen de quién son.
+ * Quien llega a uno por una ruta anota los gremios que tienen hideout allí
+ * y quedan guardados para siempre: la próxima ruta a ese camino ya los
+ * muestra, y se buscan por gremio o por camino.
+ *
+ * Además se comparten con la hoja "Caminos Avalon" del Excel de Drive (ver
+ * SincronizacionExcelService): lo anotado en la web se agrega al Excel y lo
+ * que el equipo escribe en el Excel aparece en la web.
  *
  * Reglas:
  *  - Solo usuarios con sesión; cada registro queda a su nombre.
  *  - El camino debe ser un camino de hideouts del catálogo oficial (se
  *    guarda su nombre canónico).
  *  - El nombre del gremio: 2 a 40 caracteres, letras, números, espacios y
- *    . _ - ' &. Se compara sin mayúsculas ni espacios de más: anotar otra
- *    vez el mismo gremio solo renueva la fecha de confirmación.
- *  - Como mucho MAX_POR_CAMINO gremios por camino (evita el spam).
- *  - Solo quien lo anotó o un administrador pueden borrarlo.
+ *    . _ - ' &, sin insultos. Se compara sin mayúsculas ni espacios de
+ *    más: anotar otra vez el mismo gremio solo renueva la fecha.
+ *  - Como mucho MAX_POR_CAMINO gremios por camino (las columnas de gremios
+ *    del Excel; también evita el spam).
+ *  - Solo quien lo anotó o un administrador pueden borrarlo, y solo
+ *    mientras no esté en el Excel: el Excel manda y la web nunca borra
+ *    nada del Excel.
  * ----------------------------------------------------------------------
  */
 
 const TIPOS_HIDEOUT = new Set(['TUNNEL_HIDEOUT', 'TUNNEL_HIDEOUT_DEEP']);
-const MAX_POR_CAMINO = 30;
+const MAX_POR_CAMINO = COLUMNAS_GREMIOS;
 const FORMATO_GREMIO = /^[\p{L}\p{N} ._\-'&]+$/u;
 
 function clave(textoLibre) {
@@ -87,13 +97,23 @@ class HideoutsCaminoService {
     return mapa;
   }
 
-  agregar(usuario, nombreCamino, nombreGremio) {
-    const camino = this.camino(typeof nombreCamino === 'string' ? nombreCamino : '');
-    if (!camino) throw new ErrorValidacion('Ese no es un camino de Avalon de hideouts.');
+  /**
+   * Nombre de gremio válido (con espacios simples) o ErrorValidacion. Vale
+   * para lo que escriben los usuarios y para lo que llega del Excel.
+   */
+  validarGremio(nombreGremio, { revisarOfensivo = true } = {}) {
     const gremio = texto(nombreGremio, 'gremio', { min: 2, max: 40 }).replace(/\s+/g, ' ');
     if (!FORMATO_GREMIO.test(gremio)) {
       throw new ErrorValidacion('El nombre del gremio solo puede tener letras, números, espacios y . _ - \' &');
     }
+    if (revisarOfensivo && esOfensivo(gremio)) throw new ErrorValidacion('Ese nombre de gremio no está permitido.');
+    return gremio;
+  }
+
+  agregar(usuario, nombreCamino, nombreGremio) {
+    const camino = this.camino(typeof nombreCamino === 'string' ? nombreCamino : '');
+    if (!camino) throw new ErrorValidacion('Ese no es un camino de Avalon de hideouts.');
+    const gremio = this.validarGremio(nombreGremio);
     const normalizado = normalizarGremio(gremio);
     const actuales = this.repositorio.listarPorCamino(camino.nombre);
     const yaEsta = actuales.some((h) => normalizarGremio(h.gremio) === normalizado);
@@ -108,6 +128,12 @@ class HideoutsCaminoService {
     if (!registro) throw errorPublico('Ese registro no existe.', 404);
     if (registro.usuarioId !== usuario.id && usuario.rol !== 'ADMIN') {
       throw errorPublico('Solo quien lo anotó o un administrador puede borrarlo.', 403);
+    }
+    if (registro.enExcel) {
+      throw errorPublico(
+        'Este gremio ya está en el Excel del equipo: para quitarlo, bórralo del Excel y la web lo quitará en la próxima sincronización.',
+        409
+      );
     }
     this.repositorio.eliminar(id);
   }
@@ -142,6 +168,7 @@ class HideoutsCaminoService {
             gremio: h.gremio,
             usuario: h.usuario || null,
             confirmadoEn: h.confirmadoEn,
+            origen: h.origen,
           })),
         };
       });
@@ -150,3 +177,4 @@ class HideoutsCaminoService {
 
 module.exports = HideoutsCaminoService;
 module.exports.MAX_POR_CAMINO = MAX_POR_CAMINO;
+module.exports.normalizarGremio = normalizarGremio;

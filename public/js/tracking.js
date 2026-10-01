@@ -36,6 +36,18 @@ function normalizar(texto) {
   return String(texto || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
 }
 
+/**
+ * Nombre de gremio para buscar: sin tildes, mayúsculas, espacios ni
+ * signos ("R E Q U I E M" y "Requiem" coinciden).
+ */
+function claveGremio(texto) {
+  return String(texto || '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '');
+}
+
 
 export class PanelCaminos {
   constructor({ abrirMapa, alActualizar = null, alEditarRuta = null }) {
@@ -188,13 +200,16 @@ export class PanelCaminos {
 
   _entradasFiltradas() {
     const texto = normalizar(this.input.value);
+    const textoGremio = claveGremio(this.input.value);
     const grupo = this.filtroGrupo.value;
     const tier = this.filtroTier.value ? Number(this.filtroTier.value) : null;
     const soloActivos = this.filtroActivos.checked;
 
     return this._entradas()
       .filter((e) => {
-        if (texto && !normalizar(e.nombre).includes(texto)) return false;
+        // Un camino de hideouts también se encuentra por sus gremios.
+        const porGremio = textoGremio.length >= 2 && (e.gremios || []).some((g) => claveGremio(g).includes(textoGremio));
+        if (texto && !normalizar(e.nombre).includes(texto) && !porGremio) return false;
         if (grupo && e.grupo !== grupo) return false;
         if (tier && e.tier !== tier) return false;
         if (soloActivos && !e.conexiones) return false;
@@ -222,9 +237,13 @@ export class PanelCaminos {
   }
 
   _renderizarSugerencias() {
-    const opciones = this._entradas().map((e) => {
+    const nombres = this._entradas().map((e) => e.nombre);
+    // También los gremios con hideout en caminos: al elegir uno, la lista
+    // muestra sus caminos.
+    const gremios = new Set(this._entradas().flatMap((e) => e.gremios || []));
+    const opciones = [...nombres, ...[...gremios].sort((a, b) => a.localeCompare(b))].map((valor) => {
       const opcion = document.createElement('option');
-      opcion.value = e.nombre;
+      opcion.value = valor;
       return opcion;
     });
     this.sugerencias.replaceChildren(...opciones);
@@ -288,6 +307,17 @@ export class PanelCaminos {
     }
 
     tarjeta.append(cabeza, crear('span', 'tarjeta-camino__meta', meta.join(' · ')));
+    // Caminos de hideouts: qué gremios tienen hideout allí.
+    if (entrada.gremios) {
+      const gremios = crear(
+        'span',
+        `tarjeta-camino__gremios${entrada.gremios.length ? '' : ' tarjeta-camino__gremios--vacio'}`,
+        entrada.gremios.length
+          ? t('Hideouts: {gremios}', { gremios: entrada.gremios.join(', ') })
+          : t('Sin gremios anotados todavía')
+      );
+      tarjeta.append(gremios);
+    }
     tarjeta.addEventListener('click', () => this.abrirDetalle(entrada.nombre));
     return tarjeta;
   }
@@ -408,10 +438,12 @@ export class PanelCaminos {
         item.append(crear('strong', null, h.gremio));
         const fecha = new Date(`${String(h.confirmadoEn).replace(' ', 'T')}Z`);
         const partes = [];
-        if (h.usuario) partes.push(t('anotado por {usuario}', { usuario: h.usuario }));
+        if (h.origen === 'excel') partes.push(t('del Excel del equipo'));
+        else if (h.usuario) partes.push(t('anotado por {usuario}', { usuario: h.usuario }));
         if (!Number.isNaN(fecha.getTime())) partes.push(t('visto el {fecha}', { fecha: fecha.toLocaleDateString(regional) }));
         item.append(crear('span', 'hideouts-camino__meta', partes.join(' · ')));
-        const puedeBorrar = this.usuario && (this.usuario.id === h.usuarioId || this.usuario.rol === 'ADMIN');
+        // Lo que ya está en el Excel solo se quita desde el Excel (el Excel manda).
+        const puedeBorrar = this.usuario && !h.enExcel && (this.usuario.id === h.usuarioId || this.usuario.rol === 'ADMIN');
         if (puedeBorrar) {
           const borrar = crear('button', 'conexion__borrar', '✕');
           borrar.type = 'button';
@@ -438,6 +470,13 @@ export class PanelCaminos {
       bloque.append(crear('p', 'caminos-detalle__vacio', t('Inicia sesión para anotar gremios.')));
       return bloque;
     }
+    bloque.append(
+      crear(
+        'p',
+        'hideouts-camino__nota',
+        t('Lo que anotes queda guardado: la próxima ruta a este camino ya mostrará estos gremios, y se agrega al Excel del equipo.')
+      )
+    );
     const formulario = crear('form', 'hideouts-camino__formulario');
     // Mismo estilo que el buscador de caminos: caja con borde y entrada lisa.
     const caja = crear('div', 'panel-busqueda__caja hideouts-camino__caja');

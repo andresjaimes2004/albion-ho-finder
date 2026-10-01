@@ -78,6 +78,10 @@ export class PanelRegistro {
     this.guardadasEnRutas = [];
     // Modo edición de una ruta ya guardada: { ruta, previas, preferencias }.
     this.edicion = null;
+    // Caminos de hideouts: gremios ya conocidos (del servidor) y los que el
+    // usuario escribe en el aviso de cada ruta para anotarlos al guardar.
+    this.gremiosCaminos = new Map();
+    this.gremiosPorAnotar = new Map();
 
     this.alternar = document.getElementById('registro-alternar');
     this.avisoEdicion = document.getElementById('registro-edicion');
@@ -185,6 +189,11 @@ export class PanelRegistro {
     return this.destino.value ? Number(this.destino.value) : null;
   }
 
+  /** Gremios conocidos de cada camino de hideouts (resumen de caminos). */
+  establecerGremiosCaminos(caminos = []) {
+    this.gremiosCaminos = new Map(caminos.filter((c) => c.gremios).map((c) => [c.nombre, c.gremios]));
+  }
+
   _claveUsuario() {
     return this.usuario ? String(this.usuario.id ?? this.usuario.usuario) : null;
   }
@@ -192,6 +201,7 @@ export class PanelRegistro {
   _limpiarLista() {
     this.filas = [];
     this.preferencias.clear();
+    this.gremiosPorAnotar.clear();
     this.lista.replaceChildren();
     this._actualizarAcciones();
   }
@@ -904,7 +914,77 @@ export class PanelRegistro {
     acciones.append(invertir, separar);
 
     caja.append(titulo, recorrido, acciones);
+    if (!ruta.separada) for (const camino of this._caminosHideout(ruta.zonas)) caja.append(this._crearAnotacionGremios(camino));
     return caja;
+  }
+
+  /** Caminos de hideouts (nombre oficial) por los que pasa una ruta. */
+  _caminosHideout(zonas) {
+    const caminos = [];
+    for (const nombre of zonas) {
+      const z = this.porNombre && this.porNombre.get(String(nombre).toLowerCase());
+      if (z && z.hideout && !caminos.includes(z.nombre)) caminos.push(z.nombre);
+    }
+    return caminos;
+  }
+
+  /**
+   * En el aviso de una ruta a un camino de hideouts: los gremios que ya se
+   * conocen allí y un campo para anotar los que se vieron (se guardan con
+   * la ruta y quedan para las próximas).
+   */
+  _crearAnotacionGremios(camino) {
+    const caja = crear('div', 'registro__ruta-hideouts');
+    const conocidos = this.gremiosCaminos.get(camino) || [];
+    caja.append(
+      crear(
+        'p',
+        'registro__ruta-hideouts-texto',
+        conocidos.length
+          ? t('Hideouts conocidos en {camino}: {gremios}', { camino, gremios: conocidos.join(', ') })
+          : t('Aún no se conoce ningún gremio con hideout en {camino}.', { camino })
+      )
+    );
+    const contenedor = crear('div', 'panel-busqueda__caja registro__ruta-hideouts-caja');
+    const entrada = crear('input', 'entrada-busqueda');
+    entrada.type = 'text';
+    entrada.maxLength = 200;
+    entrada.autocomplete = 'off';
+    entrada.placeholder = conocidos.length ? t('¿Viste otros? Sepáralos con comas') : t('Gremios que viste, separados por comas');
+    entrada.setAttribute('aria-label', t('Gremios con hideout en {camino}', { camino }));
+    entrada.value = this.gremiosPorAnotar.get(camino) || '';
+    entrada.addEventListener('input', () => this.gremiosPorAnotar.set(camino, entrada.value));
+    contenedor.append(entrada);
+    caja.append(contenedor);
+    return caja;
+  }
+
+  /**
+   * Anota los gremios escritos en los avisos de las rutas guardadas.
+   * Devuelve cuántos se anotaron y los errores (no detiene el guardado).
+   */
+  async _anotarGremios(caminos) {
+    let anotados = 0;
+    const errores = [];
+    for (const camino of caminos) {
+      const texto = this.gremiosPorAnotar.get(camino) || '';
+      const nombres = [...new Set(texto.split(',').map((g) => g.trim().replace(/\s+/g, ' ')).filter(Boolean))].slice(0, 10);
+      const fallidos = [];
+      for (const gremio of nombres) {
+        try {
+          const r = await api.anotarHideoutCamino(camino, gremio);
+          // Uno que ya estaba solo se confirma: no cuenta como nuevo.
+          if (r.hideout && r.hideout.nuevo) anotados += 1;
+        } catch (error) {
+          fallidos.push(gremio);
+          errores.push(`${gremio}: ${error.message || t('No se pudo guardar.')}`);
+        }
+      }
+      // Lo que falló queda escrito para corregirlo.
+      if (fallidos.length) this.gremiosPorAnotar.set(camino, fallidos.join(', '));
+      else this.gremiosPorAnotar.delete(camino);
+    }
+    return { anotados, errores };
   }
 
   _cambiarPreferencia(clave, campo) {
@@ -977,6 +1057,11 @@ export class PanelRegistro {
     this.estado.textContent = t('Guardando…');
     try {
       const r = await api.reportarConexiones(listas.map((f) => f.datos()), rutas, this._espacioDestino());
+      // Gremios anotados en los caminos de hideouts de las rutas guardadas.
+      const caminosGuardados = new Set(
+        this.rutasDetectadas.filter((ruta) => !ruta.separada).flatMap((ruta) => this._caminosHideout(ruta.zonas))
+      );
+      const gremios = await this._anotarGremios([...caminosGuardados]);
       for (const fila of listas) {
         fila.item.remove();
         borrador.borrar(fila.id);
@@ -986,11 +1071,15 @@ export class PanelRegistro {
       if (r.creadas) partes.push(tn(r.creadas, '{n} nueva', '{n} nuevas'));
       if (r.actualizadas) partes.push(tn(r.actualizadas, '{n} actualizada', '{n} actualizadas'));
       if (r.rutas && r.rutas.length) partes.push(tn(r.rutas.length, '{n} ruta', '{n} rutas'));
+      if (gremios.anotados) partes.push(tn(gremios.anotados, '{n} gremio anotado', '{n} gremios anotados'));
       const espacio = (this.espaciosDisponibles || []).find((e) => e.id === this._espacioDestino());
       const resumen = partes.join(t(' y '));
       if (!espacio) this.estado.textContent = t('Guardado: {resumen}. ¡Gracias!', { resumen });
       else if (espacio.publico) this.estado.textContent = t('Guardado en {espacio}: {resumen}. Lo ven todos.', { espacio: espacio.nombre, resumen });
       else this.estado.textContent = t('Guardado en {espacio}: {resumen}. Solo lo ven sus miembros.', { espacio: espacio.nombre, resumen });
+      if (gremios.errores.length) {
+        this.estado.textContent += ` ${t('Gremios sin anotar: {errores}', { errores: gremios.errores.join('; ') })}`;
+      }
       if (this.alGuardar) this.alGuardar();
     } catch (error) {
       this.estado.textContent = error.message || t('No se pudo guardar.');

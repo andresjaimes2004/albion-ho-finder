@@ -66,7 +66,11 @@ class BuscadorUI {
     this.panelCaminos = new PanelCaminos({
       abrirMapa: (nombre) => this.ventanaMapa.abrir(nombre),
       // Las conexiones guardadas permiten continuar rutas desde el registro.
-      alActualizar: (datos) => this.panelRegistro.establecerGuardadas(datos.conexiones),
+      alActualizar: (datos) => {
+        this.panelRegistro.establecerGuardadas(datos.conexiones);
+        // Gremios conocidos de cada camino de hideouts, para las rutas nuevas.
+        this.panelRegistro.establecerGremiosCaminos(datos.caminos);
+      },
       // "Editar" en una ruta la abre en el panel de registro.
       alEditarRuta: (ruta) => this.panelRegistro.editarRuta(ruta),
     });

@@ -414,6 +414,23 @@ export const EN = {
   'Solo quien creó el espacio puede quitar cuentas.': "Only the space's creator can remove accounts.",
   'Esa cuenta no está en el espacio.': 'That account is not in the space.',
   'El espacio indicado no es válido.': 'The space given is not valid.',
+  // --- v13.2: gremios de caminos de hideouts ---
+  '{n} gremio de caminos pendiente de agregar al Excel.': '{n} road guild waiting to be added to the Excel sheet.',
+  '{n} gremios de caminos pendientes de agregar al Excel.': '{n} road guilds waiting to be added to the Excel sheet.',
+  'Hideouts conocidos en {camino}: {gremios}': 'Known hideouts on {camino}: {gremios}',
+  'Aún no se conoce ningún gremio con hideout en {camino}.': 'No guild with a hideout on {camino} is known yet.',
+  '¿Viste otros? Sepáralos con comas': 'Saw others? Separate them with commas',
+  'Gremios que viste, separados por comas': 'Guilds you saw, separated by commas',
+  'Gremios con hideout en {camino}': 'Guilds with a hideout on {camino}',
+  'Gremios sin anotar: {errores}': 'Guilds not added: {errores}',
+  '{n} gremio anotado': '{n} guild added',
+  '{n} gremios anotados': '{n} guilds added',
+  'Sin gremios anotados todavía': 'No guilds added yet',
+  'del Excel del equipo': "from the team's Excel sheet",
+  'Lo que anotes queda guardado: la próxima ruta a este camino ya mostrará estos gremios, y se agrega al Excel del equipo.': "What you add is saved: the next route to this road will already show these guilds, and it is added to the team's Excel sheet.",
+  // --- v13.2: mensajes del servidor ---
+  'Ese nombre de gremio no está permitido.': 'That guild name is not allowed.',
+  'Este gremio ya está en el Excel del equipo: para quitarlo, bórralo del Excel y la web lo quitará en la próxima sincronización.': "This guild is already in the team's Excel sheet: to remove it, delete it from the sheet and the site will remove it on the next sync.",
 };
 
 const tiene = Object.prototype.hasOwnProperty;
