@@ -1,7 +1,7 @@
 'use strict';
 
 import api from './api.js';
-import { crear, crearReloj, crearTarjetaRuta, textoCercania } from './rutas.js';
+import { crear, crearFuente, crearReloj, crearTarjetaRuta, textoCercania } from './rutas.js';
 import { t, tn, regional } from './i18n.js';
 
 /**
@@ -576,8 +576,7 @@ export class PanelCaminos {
 
   /** Quién registró la conexión y, si es tuya (o eres admin), botón para borrarla. */
   _crearFuente(conexion) {
-    const fuente = crear('span', 'conexion__fuente conexion__fuente--gremio');
-    fuente.textContent = conexion.reportadoPor ? t('gremio · {usuario}', { usuario: conexion.reportadoPor }) : t('gremio');
+    const fuente = crearFuente(conexion);
     fuente.title = t('Registrada por un miembro desde una captura del juego');
     const puedeBorrar = this.usuario && (this.usuario.id === conexion.reportadoPorId || this.usuario.rol === 'ADMIN');
     if (puedeBorrar) {
@@ -644,12 +643,31 @@ export class PanelCaminos {
    */
   _renderizarRutas() {
     const contenedor = document.getElementById('caminos-rutas');
-    const rutas = (this.datos && this.datos.rutas) || [];
-    const cerradas = (this.datos && this.datos.rutasCerradas) || [];
+    const todasAbiertas = (this.datos && this.datos.rutas) || [];
+    const todasCerradas = (this.datos && this.datos.rutasCerradas) || [];
     const esAdmin = Boolean(this.usuario && this.usuario.rol === 'ADMIN');
+
+    // Espacios privados (o abiertos) que aparecen en las rutas: filtro
+    // "Todas / Públicas / <espacio>", recordado en este navegador.
+    const espacios = new Map();
+    for (const r of [...todasAbiertas, ...todasCerradas]) if (r.espacio) espacios.set(String(r.espacio.id), r.espacio);
+    if (this._espacioElegido === undefined) {
+      this._espacioElegido = null;
+      try {
+        this._espacioElegido = localStorage.getItem('rutas-espacio');
+      } catch (error) {
+        // Sin almacenamiento: se muestran todas.
+      }
+    }
+    const espacioElegido = this._espacioElegido === 'publicas' || espacios.has(this._espacioElegido) ? this._espacioElegido : null;
+    const pasa = (r) =>
+      espacioElegido === null || (espacioElegido === 'publicas' ? !r.espacio : Boolean(r.espacio) && String(r.espacio.id) === espacioElegido);
+    const rutas = todasAbiertas.filter(pasa);
+    const cerradas = todasCerradas.filter(pasa);
+
     // Un administrador ve siempre el bloque, con su barra de borrado (y el
     // resultado de la última acción) aunque ya no quede ninguna ruta.
-    contenedor.hidden = !rutas.length && !cerradas.length && !esAdmin;
+    contenedor.hidden = !todasAbiertas.length && !todasCerradas.length && !esAdmin;
     if (contenedor.hidden) {
       contenedor.replaceChildren();
       return;
@@ -723,6 +741,7 @@ export class PanelCaminos {
       );
     }
     bloque.append(filtro);
+    if (espacios.size) bloque.append(this._crearFiltroEspacios(espacios, espacioElegido, todasAbiertas));
     if (esAdmin) bloque.append(this._crearHerramientasAdmin(elegido));
     if (!rutas.length && !cerradas.length) bloque.append(crear('p', 'caminos-detalle__vacio', t('No hay rutas registradas ahora.')));
 
@@ -901,6 +920,39 @@ export class PanelCaminos {
       },
       alEditar: this.alEditarRuta,
     });
+  }
+
+  /** Chips "Todas / Públicas / 🔒 espacio" sobre la lista de rutas. */
+  _crearFiltroEspacios(espacios, elegido, abiertas) {
+    const filtro = crear('div', 'rutas-portales rutas-espacios');
+    filtro.setAttribute('role', 'group');
+    filtro.setAttribute('aria-label', t('Filtrar rutas por espacio'));
+    const cuantas = (pasa) => abiertas.filter(pasa).length;
+    const chip = (valor, texto, cantidad) => {
+      const boton = crear('button', 'rutas-portales__chip');
+      boton.type = 'button';
+      boton.setAttribute('aria-pressed', String(valor === elegido));
+      boton.append(texto, ' ', crear('span', 'rutas-portales__cantidad', String(cantidad)));
+      boton.addEventListener('click', () => {
+        this._espacioElegido = valor;
+        try {
+          if (valor === null) localStorage.removeItem('rutas-espacio');
+          else localStorage.setItem('rutas-espacio', valor);
+        } catch (error) {
+          // Sin almacenamiento: el filtro vale hasta la próxima recarga.
+        }
+        this._renderizarRutas();
+      });
+      return boton;
+    };
+    filtro.append(
+      chip(null, t('Todos los espacios'), abiertas.length),
+      chip('publicas', t('Públicas'), cuantas((r) => !r.espacio))
+    );
+    for (const [id, espacio] of espacios) {
+      filtro.append(chip(id, `${espacio.publico ? '👥' : '🔒'} ${espacio.nombre}`, cuantas((r) => r.espacio && String(r.espacio.id) === id)));
+    }
+    return filtro;
   }
 
   _crearBloqueRutas(rutas, { titulo = t('Rutas que pasan por aquí'), resaltar = null } = {}) {

@@ -11,13 +11,13 @@ const BaseRepository = require('./BaseRepository');
  * ----------------------------------------------------------------------
  */
 class RutaReportadaRepository extends BaseRepository {
-  crear({ zonas, conexionIds, usuarioId }) {
+  crear({ zonas, conexionIds, usuarioId, espacioId = null }) {
     const info = this.db
       .prepare(
-        `INSERT INTO rutas_reportadas (zonas, total_tramos, usuario_id)
-         VALUES ($zonas, $total, $usuario)`
+        `INSERT INTO rutas_reportadas (zonas, total_tramos, usuario_id, espacio_id)
+         VALUES ($zonas, $total, $usuario, $espacio)`
       )
-      .run({ $zonas: JSON.stringify(zonas), $total: conexionIds.length, $usuario: usuarioId });
+      .run({ $zonas: JSON.stringify(zonas), $total: conexionIds.length, $usuario: usuarioId, $espacio: espacioId });
     const id = Number(info.lastInsertRowid);
 
     const tramo = this.db.prepare(
@@ -27,11 +27,11 @@ class RutaReportadaRepository extends BaseRepository {
     return this.obtener(id);
   }
 
-  /** Ruta existente con exactamente la misma secuencia de zonas. */
-  buscarPorZonas(zonas) {
+  /** Ruta existente con exactamente la misma secuencia de zonas, en el mismo espacio (null = pública). */
+  buscarPorZonas(zonas, espacioId = null) {
     return this.db
-      .prepare('SELECT id FROM rutas_reportadas WHERE zonas = $zonas')
-      .get({ $zonas: JSON.stringify(zonas) });
+      .prepare('SELECT id FROM rutas_reportadas WHERE zonas = $zonas AND espacio_id IS $espacio')
+      .get({ $zonas: JSON.stringify(zonas), $espacio: espacioId });
   }
 
   /** Vuelve a apuntar los tramos (tras actualizar las conexiones) y renueva autor y fecha. */
@@ -64,7 +64,7 @@ class RutaReportadaRepository extends BaseRepository {
     const fila = this.db
       .prepare(
         `SELECT r.id, r.zonas, r.total_tramos AS totalTramos, r.usuario_id AS usuarioId,
-                r.creado_en AS creadoEn, u.usuario AS usuario
+                r.creado_en AS creadoEn, u.usuario AS usuario, r.espacio_id AS espacioId
          FROM rutas_reportadas r
          LEFT JOIN usuarios u ON u.id = r.usuario_id
          WHERE r.id = $id`
@@ -78,7 +78,7 @@ class RutaReportadaRepository extends BaseRepository {
     return this.db
       .prepare(
         `SELECT r.id, r.zonas, r.total_tramos AS totalTramos, r.usuario_id AS usuarioId,
-                r.creado_en AS creadoEn, u.usuario AS usuario
+                r.creado_en AS creadoEn, u.usuario AS usuario, r.espacio_id AS espacioId
          FROM rutas_reportadas r
          LEFT JOIN usuarios u ON u.id = r.usuario_id
          WHERE (SELECT COUNT(*) FROM rutas_tramos t WHERE t.ruta_id = r.id) = r.total_tramos
@@ -106,11 +106,6 @@ class RutaReportadaRepository extends BaseRepository {
       )
       .all({ $id: id })
       .map((f) => f.id);
-  }
-
-  /** Borra todas las rutas (sus tramos se borran en cascada). */
-  eliminarTodas() {
-    return this.db.prepare('DELETE FROM rutas_reportadas').run().changes;
   }
 
   /** ¿Alguna ruta usa esta conexión? */

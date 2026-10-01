@@ -238,3 +238,31 @@ CREATE TABLE IF NOT EXISTS hideouts_camino (
 );
 
 CREATE INDEX IF NOT EXISTS idx_hideouts_camino_gremio ON hideouts_camino (gremio_normalizado);
+
+-- ============================================================================
+-- v13.3: espacios privados
+-- ============================================================================
+
+-- Un grupo (amigos que gankean, farmers, transportistas...) guarda sus rutas
+-- solo para sus miembros. Quien lo crea agrega las cuentas (como mucho 7 en
+-- total, contándole a él). Con `publico` = 1 las conexiones del espacio las ve
+-- también todo el mundo. Las conexiones y rutas de un espacio llevan su
+-- `espacio_id` (columna añadida en src/config/migraciones.js); al borrar el
+-- espacio se borran con él.
+CREATE TABLE IF NOT EXISTS espacios (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre      TEXT    NOT NULL,
+    creador_id  INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    publico     INTEGER NOT NULL DEFAULT 0 CHECK (publico IN (0, 1)),
+    creado_en   TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Miembros de cada espacio (el creador también figura aquí).
+CREATE TABLE IF NOT EXISTS espacio_miembros (
+    espacio_id   INTEGER NOT NULL REFERENCES espacios(id) ON DELETE CASCADE,
+    usuario_id   INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    agregado_en  TEXT    NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (espacio_id, usuario_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_espacio_miembros_usuario ON espacio_miembros (usuario_id);

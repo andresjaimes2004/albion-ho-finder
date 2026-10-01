@@ -88,8 +88,9 @@ export const api = {
     peticion(`/api/tracking/${encodeURIComponent(nombre)}`, { senal }),
   // ?v= cambia cuando cambia el formato: la lista se guarda 24 h en caché.
   zonas: () => peticion('/api/tracking/zonas?v=2'),
-  reportarConexiones: (conexiones, rutas = []) =>
-    peticion('/api/tracking/reportes', { metodo: 'POST', datos: { conexiones, rutas } }),
+  // `espacio`: id de un espacio privado del usuario, o null para público.
+  reportarConexiones: (conexiones, rutas = [], espacio = null) =>
+    peticion('/api/tracking/reportes', { metodo: 'POST', datos: { conexiones, rutas, espacio } }),
   borrarReporte: (id) => peticion(`/api/tracking/reportes/${id}`, { metodo: 'DELETE' }),
   borrarRuta: (id) => peticion(`/api/tracking/rutas/${id}`, { metodo: 'DELETE' }),
   /** Solo administradores: alcance 'todas', 'activas', 'zona' o 'portal'. */
@@ -115,6 +116,15 @@ export const api = {
 
   historial: () => peticion('/api/historial'),
   limpiarHistorial: () => peticion('/api/historial', { metodo: 'DELETE' }),
+
+  espacios: {
+    listar: () => peticion('/api/espacios'),
+    crear: (nombre, publico) => peticion('/api/espacios', { metodo: 'POST', datos: { nombre, publico } }),
+    actualizar: (id, cambios) => peticion(`/api/espacios/${id}`, { metodo: 'PUT', datos: cambios }),
+    borrar: (id) => peticion(`/api/espacios/${id}`, { metodo: 'DELETE' }),
+    agregarMiembro: (id, usuario) => peticion(`/api/espacios/${id}/miembros`, { metodo: 'POST', datos: { usuario } }),
+    quitarMiembro: (id, usuarioId) => peticion(`/api/espacios/${id}/miembros/${usuarioId}`, { metodo: 'DELETE' }),
+  },
 
   admin: {
     resumen: () => peticion('/api/admin/resumen'),

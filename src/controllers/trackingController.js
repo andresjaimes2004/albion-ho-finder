@@ -3,6 +3,7 @@
 const TrackingService = require('../services/TrackingService');
 const ReportesCaminosService = require('../services/ReportesCaminosService');
 const HideoutsCaminoService = require('../services/HideoutsCaminoService');
+const EspaciosService = require('../services/EspaciosService');
 const AuditoriaRepository = require('../repositories/AuditoriaRepository');
 const { texto, entero, ErrorValidacion } = require('../security/validacion');
 
@@ -19,7 +20,8 @@ const { manejar } = require('./utilidades');
  *                                      esos mapas (vista de hideouts)
  * GET    /api/tracking/:nombre       → un camino o mapa: datos oficiales y
  *                                      sus conexiones vigentes
- * POST   /api/tracking/reportes      → registrar conexiones (con sesión)
+ * POST   /api/tracking/reportes      → registrar conexiones (con sesión),
+ *                                      en público o en un espacio privado
  * DELETE /api/tracking/reportes/:id  → borrar una (autor o admin)
  * GET    /api/tracking/hideouts?camino=X → gremios con hideout en un
  *                                      camino de Avalon de hideouts
@@ -29,15 +31,21 @@ const { manejar } = require('./utilidades');
  * DELETE /api/tracking/rutas/:id     → borrar una ruta (autor o admin)
  * DELETE /api/tracking/rutas?alcance=todas|activas|zona|portal&valor=X
  *                                    → borrado masivo (solo admin)
+ *
+ * Las consultas solo devuelven lo que quien pregunta puede ver: lo
+ * público, lo de sus espacios privados y lo de espacios abiertos.
  * ----------------------------------------------------------------------
  */
 const hideouts = new HideoutsCaminoService();
 const servicio = new TrackingService({ hideoutsCamino: hideouts });
 const reportes = new ReportesCaminosService();
+const espacios = new EspaciosService();
+/** Qué espacios puede ver quien hace la petición (sin sesión: solo los abiertos). */
+const visor = (req) => espacios.visor(req.usuario || null);
 
 const resumen = manejar(async (req, res) => {
   res.set('Cache-Control', 'no-store');
-  res.json(await servicio.resumen());
+  res.json(await servicio.resumen(visor(req)));
 });
 
 const zonas = manejar((req, res) => {
@@ -51,7 +59,7 @@ const zonas = manejar((req, res) => {
 
 const detalle = manejar(async (req, res) => {
   const nombre = texto(req.params.nombre, 'mapa', { min: 2, max: 80 });
-  const resultado = await servicio.detalle(nombre);
+  const resultado = await servicio.detalle(nombre, visor(req));
 
   res.set('Cache-Control', 'no-store');
   if (!resultado.ok) {
@@ -73,12 +81,14 @@ function listaDeMapas(valor) {
 const rutasDeMapas = manejar(async (req, res) => {
   const nombres = listaDeMapas(req.query.mapas);
   res.set('Cache-Control', 'no-store');
-  res.json(await servicio.paraMapas(nombres));
+  res.json(await servicio.paraMapas(nombres, visor(req)));
 });
 
 const registrar = manejar((req, res) => {
   const cuerpo = req.body || {};
-  const resultado = reportes.registrar(req.usuario.id, cuerpo.conexiones, cuerpo.rutas || []);
+  // null = público; si no, un espacio del que sea miembro (o 404).
+  const espacioId = espacios.espacioParaRegistrar(req.usuario, cuerpo.espacio ?? null);
+  const resultado = reportes.registrar(req.usuario.id, cuerpo.conexiones, cuerpo.rutas || [], { espacioId });
   res.status(201).json({ ok: true, ...resultado });
 });
 
@@ -115,7 +125,8 @@ const auditoria = new AuditoriaRepository();
 const borrarRutasEnBloque = manejar((req, res) => {
   const alcance = texto(req.query.alcance, 'alcance', { min: 4, max: 10 });
   const valor = texto(req.query.valor, 'valor', { min: 2, max: 80, obligatorio: false });
-  const resultado = servicio.borrarRutas({ alcance, valor });
+  // Solo lo público: los espacios privados no se tocan.
+  const resultado = servicio.borrarRutas({ alcance, valor, visor: espacios.visor(null) });
   auditoria.registrar({
     usuarioId: req.usuario.id,
     accion: 'BORRAR_RUTAS',

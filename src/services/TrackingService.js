@@ -9,6 +9,7 @@ const RutaReportadaRepository = require('../repositories/RutaReportadaRepository
 const { cargarZonas, ETIQUETAS_GRUPO } = require('./zonas');
 const { crearCercania } = require('./portales');
 const { clasificarRutas, VENTANA_CERRADAS_MS } = require('./estadoRutas');
+const { VISOR_PUBLICO } = require('./EspaciosService');
 const db = require('../config/database');
 
 /**
@@ -31,6 +32,11 @@ const db = require('../config/database');
  *
  * No se consulta ninguna API externa: todo lo que se muestra sale de los
  * dumps oficiales o de la base de datos propia.
+ *
+ * Espacios privados: cada consulta recibe un "visor" (EspaciosService.visor)
+ * y solo ve las conexiones y rutas públicas, las de sus espacios y las de
+ * espacios que permiten que los demás las vean. El filtro se aplica aquí,
+ * en el servidor, antes de calcular nada.
  * ----------------------------------------------------------------------
  */
 
@@ -115,13 +121,22 @@ class TrackingService {
    * hace menos de 30 minutos (ver estadoRutas.js). Los tramos que quedaron
    * después de un portal cerrado no cuentan como conexiones abiertas.
    */
-  _conexionesVigentes() {
+  _conexionesVigentes(visor = VISOR_PUBLICO) {
     const ahora = this.ahora();
     const indiceZonaNegra = this._indiceZonaNegra();
+    this._visor = visor;
 
-    const reportadas = this.reportes.listarDesde(new Date(ahora - VENTANA_CERRADAS_MS).toISOString());
+    // Solo lo que este visor puede ver (públicas, sus espacios, espacios abiertos).
+    const todas = this.reportes.listarDesde(new Date(ahora - VENTANA_CERRADAS_MS).toISOString());
+    const reportadas = todas.filter((r) => visor.puedeVer(r.espacioId ?? null));
+    // Defensa en profundidad: una ruta visible con algún tramo que este visor
+    // no puede ver no se muestra (las reglas de registro ya lo impiden).
+    const ocultas = new Set(todas.filter((r) => !visor.puedeVer(r.espacioId ?? null)).map((r) => r.id));
     const cierres = new Map(reportadas.map((r) => [r.id, Date.parse(r.cierraEn)]));
-    const orientadas = this.rutasRepo.listarCompletas().map((ruta) => this._orientar(ruta));
+    const orientadas = this.rutasRepo
+      .listarCompletas()
+      .filter((ruta) => visor.puedeVer(ruta.espacioId ?? null) && !ruta.conexionIds.some((id) => ocultas.has(id)))
+      .map((ruta) => this._orientar(ruta));
     const { activas, cerradas, desconectadas } = clasificarRutas(orientadas, cierres, ahora);
     this._gremiosPorCamino = this.hideoutsCamino ? this.hideoutsCamino.porCamino() : new Map();
 
@@ -192,7 +207,14 @@ class TrackingService {
       cercania: ruta.cercania ? { ...ruta.cercania, desde: zonas[0].nombre } : null,
       reportadoPor: ruta.usuario || null,
       reportadoPorId: ruta.usuarioId,
+      espacio: this._espacioPublico(ruta.espacioId),
     };
+  }
+
+  /** Nombre y visibilidad del espacio de una ruta o conexión (null = pública). */
+  _espacioPublico(espacioId) {
+    const info = this._visor ? this._visor.info(espacioId ?? null) : null;
+    return info ? { id: info.id, nombre: info.nombre, publico: info.publico, miembro: info.miembro } : null;
   }
 
   /**
@@ -226,25 +248,26 @@ class TrackingService {
   /**
    * Borrado masivo de rutas (solo administradores), con las conexiones que
    * dejan de usar si ninguna otra ruta las usa:
-   *  - 'todas':   todas las rutas y todas las conexiones.
+   *  - 'todas':   todas las rutas y conexiones.
    *  - 'activas': las rutas abiertas (no toca las cerradas hace poco).
    *  - 'zona':    las rutas que pasan por esa zona (mapa o camino).
    *  - 'portal':  las rutas cuyo portal de ciudad más cercano es ese.
+   * Solo afecta a lo público (y a los espacios que permiten que los demás
+   * vean sus conexiones): lo de los espacios privados es de sus miembros.
+   * `visor` es el de un visitante sin sesión (EspaciosService.visor(null)).
    */
-  borrarRutas({ alcance, valor = null }) {
-    if (alcance === 'todas') {
-      return this.transaccion(() => {
-        const rutas = this.rutasRepo.eliminarTodas();
-        const conexiones = this.reportes.eliminarTodas();
-        return { rutas, conexiones };
-      });
-    }
-
+  borrarRutas({ alcance, valor = null, visor = VISOR_PUBLICO }) {
     const ahora = this.ahora();
-    const cierres = new Map(this.reportes.listarDesde('').map((r) => [r.id, Date.parse(r.cierraEn)]));
-    const orientadas = this.rutasRepo.listarCompletas().map((ruta) => this._orientar(ruta));
+    const conexionesVisibles = this.reportes.listarDesde('').filter((r) => visor.puedeVer(r.espacioId ?? null));
+    const cierres = new Map(conexionesVisibles.map((r) => [r.id, Date.parse(r.cierraEn)]));
+    const orientadas = this.rutasRepo
+      .listarCompletas()
+      .filter((ruta) => visor.puedeVer(ruta.espacioId ?? null))
+      .map((ruta) => this._orientar(ruta));
     let elegidas;
-    if (alcance === 'activas') {
+    if (alcance === 'todas') {
+      elegidas = orientadas;
+    } else if (alcance === 'activas') {
       elegidas = clasificarRutas(orientadas, cierres, ahora).activas;
     } else if (alcance === 'zona') {
       const clave = normalizar(valor);
@@ -259,6 +282,8 @@ class TrackingService {
 
     return this.transaccion(() => {
       const usadas = new Set(elegidas.flatMap((r) => r.conexionIds));
+      // "Todas": también las conexiones públicas sueltas (sin ruta).
+      if (alcance === 'todas') for (const c of conexionesVisibles) usadas.add(c.id);
       for (const ruta of elegidas) this.rutasRepo.eliminar(ruta.id);
       let conexiones = 0;
       for (const id of usadas) {
@@ -289,6 +314,7 @@ class TrackingService {
           reporteId: c.reporteId,
           reportadoPor: c.reportadoPor,
           reportadoPorId: c.reportadoPorId,
+          espacio: c.espacio,
           hacia: esOrigen ? c.destino : c.origen,
           sentido: esOrigen ? 'salida' : 'entrada',
           cierraEn: c.cierraEn,
@@ -306,6 +332,7 @@ class TrackingService {
       origen: this._extremo(reporte.origen, indiceZonaNegra),
       destino: this._extremo(reporte.destino, indiceZonaNegra),
       cierraEn: Date.parse(reporte.cierraEn),
+      espacio: this._espacioPublico(reporte.espacioId),
     };
   }
 
@@ -347,8 +374,8 @@ class TrackingService {
   // ----------------------------------------------------------- públicos --
 
   /** Catálogo completo + todas las conexiones vigentes. */
-  async resumen() {
-    const { conexiones, rutas, rutasCerradas, estado } = this._conexionesVigentes();
+  async resumen(visor = VISOR_PUBLICO) {
+    const { conexiones, rutas, rutasCerradas, estado } = this._conexionesVigentes(visor);
 
     const conteo = new Map();
     for (const c of conexiones) {
@@ -393,9 +420,9 @@ class TrackingService {
    * Un mapa concreto (camino de Avalon o mapa de Zona Negra): sus datos
    * oficiales y las conexiones vigentes que salen o llegan a él.
    */
-  async detalle(nombreMapa) {
+  async detalle(nombreMapa, visor = VISOR_PUBLICO) {
     const clave = normalizar(nombreMapa);
-    const { conexiones, rutas: todas, estado } = this._conexionesVigentes();
+    const { conexiones, rutas: todas, estado } = this._conexionesVigentes(visor);
 
     const propias = this._conexionesDe(clave, conexiones);
     const rutas = todas.filter((r) => r.zonas.some((z) => z.clave === clave));
@@ -448,8 +475,8 @@ class TrackingService {
    * que pasan por él y sus conexiones directas vigentes. Solo aparecen
    * los mapas que tienen algo.
    */
-  async paraMapas(nombres) {
-    const { conexiones, rutas, estado } = this._conexionesVigentes();
+  async paraMapas(nombres, visor = VISOR_PUBLICO) {
+    const { conexiones, rutas, estado } = this._conexionesVigentes(visor);
     const mapas = {};
     for (const nombre of nombres) {
       const clave = normalizar(nombre);

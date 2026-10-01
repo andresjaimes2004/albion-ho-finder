@@ -8,6 +8,28 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v13.3 — Espacios privados
+
+- **Crear un espacio privado** (pestaña Caminos de Avalon → "Espacios
+  privados"): un grupo de amigos que gankea, farmea o transporta guarda sus
+  rutas solo para ellos. Quien lo crea agrega las cuentas por su nombre de
+  usuario, **hasta 7 en total contándose**, y puede quitarlas, renombrarlo o
+  borrarlo (con todas sus rutas). Cualquier miembro puede salir.
+- **"Guardar en"** en el panel de registro: público o uno de tus espacios.
+  Una ruta solo se encadena con conexiones del mismo sitio (no se mezclan
+  públicas y privadas, ni espacios distintos).
+- **"Permitir que los demás vean las conexiones"**: para los grupos que
+  quieren alimentar el sitio, las rutas del espacio las ve todo el mundo.
+- Las rutas y conexiones muestran a qué espacio pertenecen (🔒 privado, 👥
+  abierto) y quién las registró ("por usuario"), y la lista de rutas se
+  puede filtrar por espacio.
+- Seguridad: el filtrado se hace en el servidor en cada consulta. Lo privado
+  no existe (404) para quien no es miembro, aunque sea administrador; al
+  deduplicar nunca se toca una conexión o ruta de otro espacio; los borrados
+  masivos del administrador solo afectan a lo público; al cerrar sesión la
+  lista se vuelve a pedir y desaparece lo privado.
+- Límites: hasta 3 espacios creados y 10 espacios por cuenta.
+
 ### v13.2 — Gremios de caminos de hideouts que la web recuerda (y comparte con el Excel)
 
 - **Se anotan al crear la ruta**: cuando una ruta nueva llega a un camino de
@@ -705,7 +727,8 @@ Públicos:
 - `GET /api/mapas/:nombre/imagen` → imagen de fondo propia del mapa.
 - `GET /api/gremios/:id/logo` → logo del gremio (servido desde la BD).
 - `GET /api/tracking` → catálogo de caminos de Avalon + conexiones vigentes
-  + estado de la fuente en vivo.
+  + estado de la fuente en vivo. Las consultas de caminos solo devuelven lo
+  público, lo de los espacios de quien pregunta y lo de espacios abiertos.
 - `GET /api/tracking/:nombre` → un camino o mapa: datos oficiales y sus
   conexiones vigentes (entradas y salidas, con hora de cierre).
 - `GET /api/tracking/zonas` → zonas oficiales a las que puede llevar un portal.
@@ -714,8 +737,15 @@ Públicos:
 
 Con sesión (+ token CSRF):
 
-- `POST /api/tracking/reportes` → registrar conexiones `{ conexiones: [{ origen, destino, minutos }], rutas: [[0, 1, 2]] }`
-  (cada ruta es la lista, en orden, de posiciones dentro de `conexiones`).
+- `POST /api/tracking/reportes` → registrar conexiones `{ conexiones: [{ origen, destino, minutos }], rutas: [[0, 1, 2]], espacio: null }`
+  (cada ruta es la lista, en orden, de posiciones dentro de `conexiones`;
+  `espacio` es el id de un espacio privado del que se es miembro, o `null`
+  para público).
+- `GET /api/espacios`, `POST /api/espacios` `{ nombre, publico }`,
+  `PUT|DELETE /api/espacios/:id`, `POST /api/espacios/:id/miembros` `{ usuario }`,
+  `DELETE /api/espacios/:id/miembros/:usuarioId` → espacios privados (crear,
+  cambiar, borrar y agregar o quitar cuentas los hace quien lo creó; salir,
+  cualquier miembro).
 - `DELETE /api/tracking/rutas/:id` → borrar una ruta (autor o administrador).
 - `DELETE /api/tracking/reportes/:id` → borrar una (autor o administrador).
 - `GET /api/salud` → chequeo de salud de la base de datos.

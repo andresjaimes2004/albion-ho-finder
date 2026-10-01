@@ -3390,6 +3390,60 @@ html:has(dialog[open]) { overflow: hidden; }
 .registro--edicion .registro__combinaciones { display: none; }
 
 /* ============================================================================
+   v13.3 — Espacios privados
+   ============================================================================ */
+
+.espacios { margin-top: 14px; }
+.espacios__explicacion { margin: 0 0 12px; font-size: 0.86rem; color: var(--color-texto-suave); }
+.espacios__lista { display: grid; gap: 10px; margin-bottom: 14px; }
+.espacios__crear { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.espacios__caja { flex: 1 1 220px; min-width: 0; padding: 8px 12px; }
+.espacios__mensaje { margin: 6px 0 0; font-size: 0.82rem; color: var(--color-texto-suave); overflow-wrap: anywhere; }
+.espacios__mensaje:empty { display: none; }
+
+.espacio {
+  border: 1px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
+.espacio__cabecera { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.espacio__nombre { overflow-wrap: anywhere; }
+.espacio__meta { font-size: 0.78rem; color: var(--color-texto-tenue); }
+.espacio__miembros { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; padding: 0; list-style: none; }
+.espacio__miembro {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  padding: 2px 10px;
+  border: 1px solid var(--color-borde-suave);
+  border-radius: 999px;
+  font-size: 0.82rem;
+}
+.espacio__rol { font-size: 0.7rem; color: var(--color-oro-claro); }
+.espacio__agregar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
+.espacio__visible { display: flex; margin: 4px 0 8px; font-size: 0.84rem; }
+.espacio__acciones { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* "Guardar en" del panel de registro (no se cambia al editar una ruta). */
+.registro__destino { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin: 4px 0 10px; font-size: 0.86rem; }
+.registro__destino select { max-width: 100%; }
+.registro--edicion .registro__destino { display: none; }
+
+/* Insignia del espacio en rutas y conexiones. */
+.insignia-espacio {
+  display: inline-block;
+  padding: 0 6px;
+  border-radius: 999px;
+  border: 1px solid var(--color-oro);
+  color: var(--color-oro-claro);
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+.insignia-espacio--abierto { border-color: var(--color-borde-suave); color: var(--color-texto-suave); }
+.rutas-espacios { margin-top: 6px; }
+
+/* ============================================================================
    v13.2 — Gremios de caminos de hideouts (web + Excel)
    ============================================================================ */
 
