@@ -382,10 +382,27 @@
       <p id="caminos-error" class="estado estado--error" hidden></p>
       <section id="caminos-detalle" class="caminos-detalle" hidden aria-live="polite"></section>
 
-      <section id="caminos-resultados" class="caminos-resultados" hidden aria-label="{{Resultados de la búsqueda}}">
-        <div id="caminos-resumen" class="resumen-resultados" hidden></div>
-        <div id="caminos-lista" class="caminos-lista"></div>
-        <button id="caminos-mas" type="button" class="boton boton--sutil caminos-mas con-icono icono-abajo" hidden>{{Mostrar más}}</button>
+      <section id="caminos-resultados" class="registro caminos-todos caminos-resultados" hidden aria-labelledby="resultados-titulo">
+        <header class="caminos-todos__cabecera">
+          <div class="desplegable__textos">
+            <h2 id="resultados-titulo" class="registro__titulo">{{Resultados de la búsqueda}} <span id="resultados-cantidad" class="desplegable__cantidad"></span></h2>
+            <p class="registro__subtitulo">{{Los caminos y mapas que coinciden con tu búsqueda y filtros, de 9 en 9.}}</p>
+          </div>
+          <div class="paginador" role="group" aria-label="{{Navegar por los caminos}}">
+          <button type="button" class="paginador__boton" data-paso="-1" aria-label="{{Tanda anterior}}" title="{{Tanda anterior}}"><span aria-hidden="true">‹</span></button>
+          <span class="paginador__posicion" aria-live="polite"></span>
+          <button type="button" class="paginador__boton" data-paso="1" aria-label="{{Tanda siguiente}}" title="{{Tanda siguiente}}"><span aria-hidden="true">›</span></button>
+        </div>
+        </header>
+        <div id="caminos-resultados-cuerpo" class="registro__cuerpo caminos-todos__cuerpo">
+          <div id="caminos-resumen" class="resumen-resultados" hidden></div>
+          <div id="caminos-lista" class="caminos-lista"></div>
+        </div>
+        <div class="paginador paginador--pie" role="group" aria-label="{{Navegar por los caminos}}">
+          <button type="button" class="paginador__boton" data-paso="-1" aria-label="{{Tanda anterior}}" title="{{Tanda anterior}}"><span aria-hidden="true">‹</span></button>
+          <span class="paginador__posicion"></span>
+          <button type="button" class="paginador__boton" data-paso="1" aria-label="{{Tanda siguiente}}" title="{{Tanda siguiente}}"><span aria-hidden="true">›</span></button>
+        </div>
       </section>
 
       <section class="registro desplegable" aria-labelledby="registro-titulo">
@@ -504,7 +521,7 @@
         <header class="caminos-todos__cabecera">
           <div class="desplegable__textos">
             <h2 id="todos-titulo" class="registro__titulo">{{Caminos avalonianos}} <span id="todos-cantidad" class="desplegable__cantidad"></span></h2>
-            <p class="registro__subtitulo">{{Todos los caminos del juego, de 10 en 10, con sus datos oficiales y conexiones abiertas.}}</p>
+            <p class="registro__subtitulo">{{Todos los caminos del juego, de 9 en 9, con sus datos oficiales y conexiones abiertas.}}</p>
           </div>
           <div class="paginador" role="group" aria-label="{{Navegar por los caminos}}">
             <button type="button" class="paginador__boton" data-paso="-1" aria-label="{{Tanda anterior}}" title="{{Tanda anterior}}"><span aria-hidden="true">‹</span></button>

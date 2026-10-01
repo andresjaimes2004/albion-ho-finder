@@ -473,6 +473,8 @@ export const EN = {
   'Revisa este campo.': 'Please check this field.',
   // --- v13.5: tandas de caminos ---
   '{desde}–{hasta} de {total}': '{desde}–{hasta} of {total}',
+  // --- v13.5: tanda de un solo camino ---
+  '{n} de {total}': '{n} of {total}',
 };
 
 const tiene = Object.prototype.hasOwnProperty;

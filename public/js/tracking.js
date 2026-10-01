@@ -26,9 +26,9 @@ import { tanda } from './paginacion.js';
  */
 
 const INTERVALO_REFRESCO_MS = 60_000;
-const POR_PAGINA = 60;
-// "Caminos avalonianos" (sin búsqueda): de 10 en 10, en tandas circulares.
-const POR_TANDA = 10;
+// Resultados de la búsqueda y "Caminos avalonianos": de 9 en 9 (3 × 3), en
+// tandas circulares.
+const POR_TANDA = 9;
 const CURVA = 'cubic-bezier(0.4, 0, 0.2, 1)';
 
 const RECURSOS = {
@@ -85,7 +85,6 @@ export class PanelCaminos {
     this.error = document.getElementById('caminos-error');
     this.resumen = document.getElementById('caminos-resumen');
     this.lista = document.getElementById('caminos-lista');
-    this.botonMas = document.getElementById('caminos-mas');
     this.detalle = document.getElementById('caminos-detalle');
     // Resultados de la búsqueda (bajo el buscador) y tarjeta desplegable con
     // todos los caminos (cuando no se busca nada).
@@ -95,11 +94,23 @@ export class PanelCaminos {
     this.todosCantidad = document.getElementById('todos-cantidad');
     this.rutasTarjeta = document.getElementById('caminos-rutas-tarjeta');
     this.rutasCantidad = document.getElementById('rutas-cantidad');
-    this.tandaTodos = 0;
-    this.posicionesTodos = [...this.todos.querySelectorAll('.paginador__posicion')];
-    this.botonesTandas = [...this.todos.querySelectorAll('.paginador__boton')];
-    for (const boton of this.botonesTandas) {
-      boton.addEventListener('click', () => this._cambiarTanda(Number(boton.dataset.paso)));
+    // Las dos secciones fijas con tandas de 9: cada una recuerda la suya.
+    this.secciones = {
+      resultados: {
+        seccion: this.resultados,
+        cuerpo: document.getElementById('caminos-resultados-cuerpo'),
+        cantidad: document.getElementById('resultados-cantidad'),
+      },
+      todos: { seccion: this.todos, cuerpo: this.todosCuerpo, cantidad: this.todosCantidad },
+    };
+    for (const [nombre, seccion] of Object.entries(this.secciones)) {
+      seccion.tanda = 0;
+      seccion.paginadores = [...seccion.seccion.querySelectorAll('.paginador')];
+      seccion.posiciones = [...seccion.seccion.querySelectorAll('.paginador__posicion')];
+      seccion.botones = [...seccion.seccion.querySelectorAll('.paginador__boton')];
+      for (const boton of seccion.botones) {
+        boton.addEventListener('click', () => this._cambiarTanda(nombre, Number(boton.dataset.paso)));
+      }
     }
     conectarDesplegable(document.getElementById('rutas-alternar'), document.getElementById('caminos-rutas'), {
       clave: 'rutas-abiertas',
@@ -107,7 +118,6 @@ export class PanelCaminos {
     });
 
     this.datos = null;
-    this.visibles = POR_PAGINA;
     this.mapaAbierto = null;
     this.controladorDetalle = null;
     this.temporizadorRefresco = null;
@@ -131,11 +141,6 @@ export class PanelCaminos {
     for (const filtro of [this.filtroGrupo, this.filtroTier, this.filtroActivos]) {
       filtro.addEventListener('change', () => this._reiniciarLista());
     }
-
-    this.botonMas.addEventListener('click', () => {
-      this.visibles += POR_PAGINA;
-      this._renderizarLista();
-    });
 
     document.addEventListener('visibilitychange', () => {
       if (this.activo && !document.hidden) this.refrescar();
@@ -294,8 +299,9 @@ export class PanelCaminos {
     return this._cacheOpciones;
   }
 
+  /** Búsqueda o filtros nuevos: los resultados vuelven a su primera tanda. */
   _reiniciarLista() {
-    this.visibles = POR_PAGINA;
+    this.secciones.resultados.tanda = 0;
     this._renderizarLista();
   }
 
@@ -307,15 +313,15 @@ export class PanelCaminos {
   }
 
   /**
-   * Siguiente o anterior tanda de 10 caminos. Da la vuelta: desde la última
+   * Siguiente o anterior tanda de 9 caminos. Da la vuelta: desde la última
    * se pasa a la primera y desde la primera a la última.
    */
-  _cambiarTanda(paso) {
-    this.tandaTodos += paso;
+  _cambiarTanda(nombre, paso) {
+    const seccion = this.secciones[nombre];
+    seccion.tanda += paso;
     this._renderizarLista({ direccion: paso });
     // Si la sección queda por encima de la pantalla, se vuelve a su inicio.
-    const arriba = this.todos.getBoundingClientRect().top;
-    if (arriba < 0) this.todos.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (seccion.seccion.getBoundingClientRect().top < 0) seccion.seccion.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   _renderizarLista({ direccion = 0 } = {}) {
@@ -324,18 +330,19 @@ export class PanelCaminos {
     const conConexiones = filtradas.filter((e) => e.conexiones > 0).length;
 
     // Con una búsqueda o un filtro, los resultados van justo bajo el
-    // buscador; sin nada, la lista vive en la tarjeta "Caminos avalonianos".
+    // buscador; sin nada, la lista vive en la sección "Caminos avalonianos".
+    // Las dos son secciones fijas con tandas de 9.
     const activa = this._busquedaActiva();
-    const destino = activa ? this.resultados : this.todosCuerpo;
-    if (this.lista.parentElement !== destino) destino.append(this.resumen, this.lista, this.botonMas);
+    const seccion = activa ? this.secciones.resultados : this.secciones.todos;
+    if (this.lista.parentElement !== seccion.cuerpo) seccion.cuerpo.append(this.resumen, this.lista);
     if (activa) {
       mostrarSuave(this.resultados);
       ocultarSuave(this.todos);
     } else {
       ocultarSuave(this.resultados);
       mostrarSuave(this.todos);
-      this.todosCantidad.textContent = `(${filtradas.length})`;
     }
+    seccion.cantidad.textContent = `(${filtradas.length})`;
 
     this.resumen.hidden = false;
     this.resumen.replaceChildren(
@@ -343,23 +350,15 @@ export class PanelCaminos {
       this._crearDato(conConexiones, t('con conexiones abiertas'))
     );
 
-    // Con búsqueda: los primeros resultados y "Mostrar más". Sin ella: la
-    // tanda de 10 que toca.
-    let visibles;
-    if (activa) {
-      visibles = filtradas.slice(0, this.visibles);
-      this.botonMas.hidden = filtradas.length <= this.visibles;
-    } else {
-      const { pagina, paginas, desde, hasta } = tanda(filtradas.length, this.tandaTodos, POR_TANDA);
-      this.tandaTodos = pagina;
-      visibles = filtradas.slice(desde, hasta);
-      this.botonMas.hidden = true;
-      const texto = filtradas.length
-        ? t('{desde}–{hasta} de {total}', { desde: desde + 1, hasta, total: filtradas.length })
-        : '';
-      for (const posicion of this.posicionesTodos) posicion.textContent = texto;
-      for (const boton of this.botonesTandas) boton.disabled = paginas <= 1;
-    }
+    // La tanda de 9 que toca; las flechas solo si hay más de una tanda.
+    const { pagina, paginas, desde, hasta } = tanda(filtradas.length, seccion.tanda, POR_TANDA);
+    seccion.tanda = pagina;
+    const visibles = filtradas.slice(desde, hasta);
+    let texto = '';
+    if (hasta - desde === 1) texto = t('{n} de {total}', { n: hasta, total: filtradas.length });
+    else if (filtradas.length) texto = t('{desde}–{hasta} de {total}', { desde: desde + 1, hasta, total: filtradas.length });
+    for (const posicion of seccion.posiciones) posicion.textContent = texto;
+    for (const paginador of seccion.paginadores) paginador.hidden = paginas <= 1;
 
     this.lista.replaceChildren(...visibles.map((e) => this._crearTarjeta(e)));
     if (!filtradas.length) {

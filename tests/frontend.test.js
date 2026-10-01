@@ -2,7 +2,7 @@
 
 /**
  * Pruebas del frontend que no necesitan navegador:
- *  - las tandas circulares de "Caminos avalonianos" (paginacion.js);
+ *  - las tandas circulares de "Caminos avalonianos" y de los resultados (paginacion.js);
  *  - que cada elemento que el JavaScript busca por id exista en la página
  *    (o lo cree el propio JavaScript): así una reorganización del HTML no
  *    deja botones o secciones sin conectar;
@@ -103,4 +103,14 @@ test('las secciones de Caminos de Avalon están en el orden pedido', () => {
   const hideouts = es.principal.slice(es.principal.indexOf('id="vista-hideouts"'));
   assert.ok(hideouts.indexOf('id="mapa-mundial"') < hideouts.indexOf('id="estado-vacio"'));
   assert.ok(hideouts.indexOf('id="estado-vacio"') < hideouts.indexOf('id="historial"'));
+});
+
+test('tandas de 9: 400 caminos son 45 tandas y la última tiene 4', async () => {
+  const { tanda } = await import(pathToFileURL(path.join(CARPETA_JS, 'paginacion.js')).href);
+  assert.deepEqual(tanda(400, 0, 9), { pagina: 0, paginas: 45, desde: 0, hasta: 9 });
+  assert.deepEqual(tanda(400, -1, 9), { pagina: 44, paginas: 45, desde: 396, hasta: 400 });
+  assert.equal(tanda(400, 45, 9).pagina, 0);
+  // Hasta 9 resultados caben en una sola tanda (sin flechas).
+  assert.equal(tanda(9, 0, 9).paginas, 1);
+  assert.equal(tanda(10, 0, 9).paginas, 2);
 });

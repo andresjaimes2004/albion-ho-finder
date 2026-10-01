@@ -13,9 +13,11 @@ Avalon abiertas que registra la comunidad.
 - **Caminos de Avalon reorganizado**: la ficha del camino consultado y los
   resultados de la búsqueda aparecen justo debajo del buscador; después,
   "Registrar conexiones", "Espacios privados", "Rutas del gremio" y una
-  sección fija "Caminos avalonianos" que muestra los caminos de 10 en 10, con
-  flechas ‹ › para pasar de tanda (circulares: desde la última se vuelve a la
-  primera y al revés) y transición horizontal. Registro, espacios y rutas
+  sección fija "Caminos avalonianos" que muestra los caminos de 9 en 9 (3 × 3),
+  con flechas ‹ › para pasar de tanda (circulares: desde la última se vuelve
+  a la primera y al revés) y transición horizontal. Los resultados de una
+  búsqueda o un filtro usan el mismo formato fijo de 9 en 9 (antes, una lista
+  larga con "Mostrar más"). Registro, espacios y rutas
   son tarjetas que se abren pulsando cualquier parte de su cabecera.
 - Una sugerencia se elige al completar el clic (antes, al apretar el botón
   del ratón). Mientras se escribe solo se filtra la lista, sin consultar

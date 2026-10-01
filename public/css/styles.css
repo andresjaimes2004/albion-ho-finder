@@ -1310,7 +1310,6 @@ body[data-vista='caminos'] .fondo__capa--caminos { opacity: 1; }
   color: var(--color-texto-suave);
 }
 
-.caminos-mas { display: block; margin: 16px auto 0; }
 
 .caminos-atribucion {
   margin: 28px 0 0;
@@ -2604,7 +2603,6 @@ button.ruta__nombre:hover { color: var(--color-oro-claro); text-decoration: unde
 
 /* Botones que abren o despliegan algo: la flecha gira al abrirse. */
 .icono-abajo[aria-expanded='true']::before { transform: rotate(180deg); }
-.caminos-mas.con-icono { display: flex; margin: 16px auto 0; }
 .con-icono:hover::before { transform: translateY(1px); }
 #registro-alternar.con-icono:hover::before { transform: none; }
 
@@ -3757,7 +3755,6 @@ input:placeholder-shown + .borrar-entrada { display: none; }
 
 /* Resultados de la búsqueda de caminos, justo bajo el buscador. */
 .caminos-resultados { margin-bottom: 22px; }
-.caminos-resultados .caminos-mas { margin-top: 14px; }
 .caminos-rutas__cuerpo .bloque-rutas { margin: 0; padding: 0; border: none; background: none; }
 
 /* ---- Ventana de confirmación (dialogos.js) ---- */
@@ -3932,4 +3929,15 @@ input:placeholder-shown + .borrar-entrada { display: none; }
   .paginador__boton { transition: none; }
   .paginador__boton:hover:not(:disabled),
   .paginador__boton:active:not(:disabled) { transform: none; }
+}
+
+/* ---- Tandas de 9: rejilla de 3 × 3 en escritorio (2 columnas en tableta y
+        1 en el móvil), con todas las tarjetas de una fila a la misma altura. ---- */
+.caminos-todos__cuerpo .caminos-lista { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.caminos-todos__cuerpo .tarjeta-camino { height: 100%; }
+@media (max-width: 900px) {
+  .caminos-todos__cuerpo .caminos-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .caminos-todos__cuerpo .caminos-lista { grid-template-columns: minmax(0, 1fr); }
 }
