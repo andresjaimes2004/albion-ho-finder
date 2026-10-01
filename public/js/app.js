@@ -7,6 +7,7 @@ import { PanelSesion } from './sesion.js';
 import { PanelAdmin } from './admin.js';
 import { PanelCaminos } from './tracking.js';
 import { PanelRegistro } from './registroCaminos.js';
+import { PanelEspacios } from './espacios.js';
 import { crear, crearListaConexiones, crearTarjetaRuta, iniciarRelojes } from './rutas.js';
 import { t, tn } from './i18n.js';
 import { Portada } from './portada.js';
@@ -74,12 +75,25 @@ class BuscadorUI {
       alGuardar: () => this.panelCaminos.refrescar(),
     });
 
+    // Espacios privados: alimentan el "Guardar en" del registro y, al
+    // cambiar (crear, salir, cambiar visibilidad), se recargan las rutas.
+    this.panelEspacios = new PanelEspacios({
+      alCambiar: (espacios) => {
+        this.panelRegistro.establecerEspacios(espacios);
+        // Lo que se ve depende de la sesión: al entrar, salir o cambiar de
+        // espacios se vuelve a pedir (si la pestaña no está abierta, se
+        // pedirá al abrirla).
+        if (this.panelCaminos.activo) this.panelCaminos.refrescar();
+      },
+    });
+
     this.panelSesion = new PanelSesion({
       alCambiarSesion: (usuario) => {
         this.usuario = usuario;
         this.panelAdmin.establecerUsuario(usuario);
         this.panelCaminos.establecerUsuario(usuario);
         this.panelRegistro.establecerUsuario(usuario);
+        this.panelEspacios.establecerUsuario(usuario);
       },
       alElegirTermino: (termino) => {
         this._irA('hideouts');

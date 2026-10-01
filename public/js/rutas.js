@@ -76,6 +76,25 @@ export function textoCercania({ portal, saltos }) {
 }
 
 /**
+ * Quién registró una ruta o conexión y, si es de un espacio, cuál: un
+ * candado si es privado (solo lo ven sus miembros) o un grupo si sus
+ * conexiones las ven todos.
+ */
+export function crearFuente(item) {
+  const fuente = crear('span', 'conexion__fuente conexion__fuente--gremio');
+  if (item.espacio) {
+    const abierto = item.espacio.publico;
+    const insignia = crear('span', `insignia-espacio${abierto ? ' insignia-espacio--abierto' : ''}`, `${abierto ? '👥' : '🔒'} ${item.espacio.nombre}`);
+    insignia.title = abierto
+      ? t('Espacio {nombre}: sus conexiones las ven todos', { nombre: item.espacio.nombre })
+      : t('Espacio privado {nombre}: solo lo ven sus miembros', { nombre: item.espacio.nombre });
+    fuente.append(insignia, ' ');
+  }
+  if (item.reportadoPor) fuente.append(t('por {usuario}', { usuario: item.reportadoPor }));
+  return fuente;
+}
+
+/**
  * Tarjeta de una ruta del gremio.
  * @param {object} ruta  { id, zonas:[{nombre, etiqueta, tier, clase}], tramos:[{cierraEn}], cierraEn, reportadoPor, reportadoPorId }
  * @param {object} opciones
@@ -106,7 +125,7 @@ export function crearTarjetaRuta(ruta, { usuario = null, resaltar = null, alEleg
     cabecera.append(crearReloj(ruta.cierraEn, { clase: 'reloj ruta__cierre' }));
   }
 
-  const fuente = crear('span', 'conexion__fuente conexion__fuente--gremio', ruta.reportadoPor ? t('gremio · {usuario}', { usuario: ruta.reportadoPor }) : t('gremio'));
+  const fuente = crearFuente(ruta);
   const puedeBorrar = alBorrar && usuario && (usuario.id === ruta.reportadoPorId || usuario.rol === 'ADMIN');
   if (puedeBorrar) {
     const borrar = crear('button', 'conexion__borrar', '✕');
@@ -216,7 +235,7 @@ export function crearListaConexiones(conexiones, { alElegirZona = null } = {}) {
       destino,
       crear('span', 'rutas-hideout__meta', meta),
       c.cierraEn ? crearReloj(c.cierraEn) : crear('span', 'rutas-hideout__meta', t('sin hora de cierre')),
-      crear('span', 'conexion__fuente conexion__fuente--gremio', c.reportadoPor ? t('gremio · {usuario}', { usuario: c.reportadoPor }) : t('gremio'))
+      crearFuente(c)
     );
     lista.appendChild(item);
   }

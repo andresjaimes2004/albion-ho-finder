@@ -96,6 +96,17 @@ export class PanelRegistro {
     // Por defecto, una ruta por destino desde la entrada de cada red; con
     // la casilla, todas las combinaciones entre extremos (recordada).
     this.combinaciones = document.getElementById('registro-combinaciones');
+    // Dónde se guardan las conexiones: público o un espacio privado propio.
+    this.destinoCaja = document.getElementById('registro-destino-caja');
+    this.destino = document.getElementById('registro-destino');
+    this.destino.addEventListener('change', () => {
+      try {
+        localStorage.setItem('registro-espacio', this.destino.value);
+      } catch (error) {
+        // Sin almacenamiento: vale hasta recargar.
+      }
+      this._actualizarAcciones();
+    });
     try {
       this.combinaciones.checked = localStorage.getItem('registro-combinaciones') === '1';
     } catch (error) {
@@ -134,8 +145,44 @@ export class PanelRegistro {
   establecerGuardadas(conexiones = []) {
     this.guardadas = conexiones
       .filter((c) => c.reporteId && c.origen && c.origen.nombre && c.destino && c.destino.nombre)
-      .map((c) => ({ id: c.reporteId, origen: c.origen.nombre, destino: c.destino.nombre, cierraEn: c.cierraEn }));
+      .map((c) => ({
+        id: c.reporteId,
+        origen: c.origen.nombre,
+        destino: c.destino.nombre,
+        cierraEn: c.cierraEn,
+        espacioId: c.espacio ? c.espacio.id : null,
+      }));
     if (this.filas.length) this._actualizarAcciones();
+  }
+
+  /**
+   * Espacios privados del usuario: opciones de "Guardar en" (se recuerda
+   * la última elegida). Sin espacios, el selector no se muestra.
+   */
+  establecerEspacios(espacios = []) {
+    let recordado = '';
+    try {
+      recordado = localStorage.getItem('registro-espacio') || '';
+    } catch (error) {
+      // Sin almacenamiento: público.
+    }
+    const actual = this.destino.value || recordado;
+    const opciones = espacios.map((e) => {
+      const opcion = document.createElement('option');
+      opcion.value = String(e.id);
+      opcion.textContent = `${e.publico ? '👥' : '🔒'} ${e.nombre}`;
+      return opcion;
+    });
+    this.destino.replaceChildren(this.destino.options[0], ...opciones);
+    this.destino.value = espacios.some((e) => String(e.id) === actual) ? actual : '';
+    this.destinoCaja.hidden = !espacios.length;
+    this.espaciosDisponibles = espacios;
+    if (this.filas.length) this._actualizarAcciones();
+  }
+
+  /** Id del espacio elegido en "Guardar en", o null (público). */
+  _espacioDestino() {
+    return this.destino.value ? Number(this.destino.value) : null;
   }
 
   _claveUsuario() {
@@ -721,7 +768,10 @@ export class PanelRegistro {
     const nuevas = this.filas.length;
     const tramos = this.filas.map((f) => (f.estadoActual !== 'leyendo' ? f.datos() : null));
     const limite = Date.now() + MARGEN_GUARDADAS_MS;
-    this.guardadasEnRutas = nuevas ? this.guardadas.filter((g) => g.cierraEn > limite) : [];
+    // Solo se encadena con conexiones guardadas del mismo destino (público
+    // o el mismo espacio): el servidor no deja mezclarlas.
+    const destino = this._espacioDestino();
+    this.guardadasEnRutas = nuevas ? this.guardadas.filter((g) => g.cierraEn > limite && g.espacioId === destino) : [];
     for (const g of this.guardadasEnRutas) tramos.push({ origen: g.origen, destino: g.destino });
 
     const grupoDe = (zona) => {
@@ -926,7 +976,7 @@ export class PanelRegistro {
     this.guardar.disabled = true;
     this.estado.textContent = t('Guardando…');
     try {
-      const r = await api.reportarConexiones(listas.map((f) => f.datos()), rutas);
+      const r = await api.reportarConexiones(listas.map((f) => f.datos()), rutas, this._espacioDestino());
       for (const fila of listas) {
         fila.item.remove();
         borrador.borrar(fila.id);
@@ -936,7 +986,11 @@ export class PanelRegistro {
       if (r.creadas) partes.push(tn(r.creadas, '{n} nueva', '{n} nuevas'));
       if (r.actualizadas) partes.push(tn(r.actualizadas, '{n} actualizada', '{n} actualizadas'));
       if (r.rutas && r.rutas.length) partes.push(tn(r.rutas.length, '{n} ruta', '{n} rutas'));
-      this.estado.textContent = t('Guardado: {resumen}. ¡Gracias!', { resumen: partes.join(t(' y ')) });
+      const espacio = (this.espaciosDisponibles || []).find((e) => e.id === this._espacioDestino());
+      const resumen = partes.join(t(' y '));
+      if (!espacio) this.estado.textContent = t('Guardado: {resumen}. ¡Gracias!', { resumen });
+      else if (espacio.publico) this.estado.textContent = t('Guardado en {espacio}: {resumen}. Lo ven todos.', { espacio: espacio.nombre, resumen });
+      else this.estado.textContent = t('Guardado en {espacio}: {resumen}. Solo lo ven sus miembros.', { espacio: espacio.nombre, resumen });
       if (this.alGuardar) this.alGuardar();
     } catch (error) {
       this.estado.textContent = error.message || t('No se pudo guardar.');
