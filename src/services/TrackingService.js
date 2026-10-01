@@ -372,6 +372,8 @@ class TrackingService {
         dungeons: c.dungeons,
         recursos: [...new Set(c.recursos.map((r) => r.tipo))],
         conexiones: conteo.get(normalizar(c.nombre)) || 0,
+        // Caminos de hideouts: los gremios que se conocen (web y Excel).
+        ...(c.grupo === 'hideout' ? { gremios: this._gremiosPorCamino.get(c.nombre) || [] } : {}),
       })),
       mapasZonaNegra: this.mapas.listarResumenGeo().map((m) => ({
         nombre: m.nombre,

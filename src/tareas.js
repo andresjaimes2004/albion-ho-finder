@@ -15,6 +15,9 @@ const { obtenerSincronizacion, intervaloMinutos } = require('./services/Sincroni
  *  - Cada hora: sesiones caducadas e intentos de inicio de sesión viejos.
  *  - Cada EXCEL_SYNC_MINUTOS (60 por defecto), si está configurada: los
  *    hideouts con el Excel de Google Drive (SincronizacionExcelService).
+ *    Y, cada minuto, si hay gremios de caminos de hideouts anotados en la
+ *    web que el Excel aún no tiene, se adelanta la sincronización para
+ *    agregarlos (como mucho cada 2 minutos; tras un fallo, cada 30).
  *
  * Un fallo en una tarea se registra y no detiene el servidor.
  * ----------------------------------------------------------------------
@@ -52,6 +55,11 @@ function iniciarTareas({ seguimiento = new TrackingService(), auth = new AuthSer
         .catch((error) => console.error(`[tareas] Excel de Drive: ${error.message}`));
     // La primera, poco después de arrancar; luego cada EXCEL_SYNC_MINUTOS.
     temporizadores.push(setTimeout(sincronizar, 30_000), setInterval(sincronizar, intervaloMinutos() * 60_000));
+    // Gremios de caminos recién anotados: no esperan a la próxima hora.
+    const pendientes = () => ejecutar('Excel de Drive', () => {
+      if (excel.debeExportarPronto()) sincronizar();
+    });
+    temporizadores.push(setInterval(pendientes, 60_000));
   }
   // No mantienen vivo el proceso por sí solos (cierre ordenado y pruebas).
   for (const t of temporizadores) t.unref();

@@ -90,7 +90,7 @@ test('solo quien lo anotó o un administrador pueden borrarlo', () => {
 test('limita cuántos gremios se anotan por camino', () => {
   const s = servicio();
   for (let i = 0; i < HideoutsCaminoService.MAX_POR_CAMINO; i++) s.agregar(autor, 'Qiient-Al-Nusis', `Relleno ${i}`);
-  assert.throws(() => s.agregar(autor, 'Qiient-Al-Nusis', 'Uno Más'), /ya tiene 30 gremios/);
+  assert.throws(() => s.agregar(autor, 'Qiient-Al-Nusis', 'Uno Más'), /ya tiene 10 gremios/);
   // Uno que ya estaba sí se puede confirmar.
   assert.equal(s.agregar(otro, 'Qiient-Al-Nusis', 'relleno 3').nuevo, false);
 });
@@ -144,4 +144,21 @@ test('las rutas que terminan en un camino de hideouts muestran sus gremios', asy
   const normal = await seguimiento.detalle('Ouyos-Aoeuam');
   assert.equal(normal.mapa.esHideout, false);
   assert.equal(normal.hideouts, undefined);
+});
+
+test('no admite nombres de gremio ofensivos escritos en la web', () => {
+  const s = servicio();
+  assert.throws(() => s.agregar(autor, 'Qiient-Al-Odetum', 'Hijos de Puta'), /no está permitido/);
+  // Desde el Excel (lo mantiene el equipo) no se aplica ese filtro.
+  assert.equal(s.validarGremio('Hijos de Puta', { revisarOfensivo: false }), 'Hijos de Puta');
+});
+
+test('lo que ya está en el Excel no se borra desde la web', () => {
+  const s = servicio();
+  const registro = s.agregar(autor, 'Qiient-Al-Odetum', 'Ya En Excel');
+  assert.equal(registro.origen, 'web');
+  assert.equal(registro.enExcel, 0, 'nace pendiente de pasar al Excel');
+  s.repositorio.marcarEnExcel(registro.id);
+  assert.throws(() => s.eliminar(admin, registro.id), (e) => e.estado === 409 && /bórralo del Excel/.test(e.message));
+  assert.ok(s.listar('Qiient-Al-Odetum').some((h) => h.id === registro.id));
 });
