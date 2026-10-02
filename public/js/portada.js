@@ -67,7 +67,12 @@ export class Portada {
   _enlazarDesplazamientos() {
     for (const enlace of document.querySelectorAll('a[data-desplazar]')) {
       enlace.addEventListener('click', (evento) => {
-        const destino = document.querySelector(enlace.getAttribute('href'));
+        // El pie es común a todas las páginas: sus enlaces llevan la ruta
+        // (/#apoyar). En esta misma página, desplazamiento suave; en otra, el
+        // navegador la abre.
+        const url = new URL(enlace.href, location.href);
+        if (url.pathname !== location.pathname || !url.hash) return;
+        const destino = document.getElementById(decodeURIComponent(url.hash.slice(1)));
         if (!destino) return;
         evento.preventDefault();
         const panel = destino.closest('[data-panel]');

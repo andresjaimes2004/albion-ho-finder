@@ -86,12 +86,12 @@ body {
   transition: opacity 0.6s ease;
 }
 
-.fondo__capa--inicio { background-image: url('../assets/fondo-inicio.webp'); background-position: 35% 30%; }
+.fondo__capa--inicio { background-image: url('../assets/fondo-inicio-v2.webp'); background-position: 35% 30%; }
 .fondo__capa--hideouts { background-image: url('../assets/fondo-hideouts.webp'); background-position: 50% 45%; }
 .fondo__capa--caminos { background-image: url('../assets/fondo-caminos.webp'); background-position: 40% 35%; }
 
 @media (max-width: 960px) {
-  .fondo__capa--inicio { background-image: url('../assets/fondo-inicio-960.webp'); }
+  .fondo__capa--inicio { background-image: url('../assets/fondo-inicio-v2-movil.webp'); }
 }
 
 /* Sin JavaScript (o antes de que cargue) se ve el fondo del inicio. */
@@ -450,8 +450,8 @@ body[data-vista='caminos'] .fondo__capa--caminos { opacity: 1; }
 
 .pie__rejilla {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr));
-  gap: 32px 48px;
+  grid-template-columns: minmax(0, 1.7fr) repeat(3, minmax(0, 1fr));
+  gap: 32px 40px;
 }
 
 .pie__marca p { margin: 14px 0 0; max-width: 42ch; line-height: 1.6; }
@@ -500,9 +500,46 @@ body[data-vista='caminos'] .fondo__capa--caminos { opacity: 1; }
   max-width: 90ch;
 }
 
+/* Redes sociales (por ahora, Discord): botón cuadrado con el icono, como en
+   AlbionOnlineBuilds; al pasar el ratón se ilumina con el color de Discord. */
+.pie__redes { display: flex; gap: 10px; margin-top: 18px; }
+.pie a.pie__red {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--color-borde);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--color-texto-suave);
+  transition:
+    color var(--duracion) var(--curva),
+    background-color var(--duracion) var(--curva),
+    border-color var(--duracion) var(--curva),
+    transform var(--duracion) var(--curva),
+    box-shadow var(--duracion) var(--curva);
+}
+.pie a.pie__red:hover,
+.pie a.pie__red:focus-visible {
+  color: #fff;
+  background-color: #5865f2;
+  border-color: #7983f5;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(88, 101, 242, 0.35);
+}
+.pie a.pie__red:active { transform: translateY(0); }
+
+@media (max-width: 960px) {
+  .pie__rejilla { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .pie__marca { grid-column: 1 / -1; }
+}
 @media (max-width: 720px) {
   .pie__rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .pie__marca { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pie a.pie__red { transition: none; }
+  .pie a.pie__red:hover { transform: none; }
 }
 
 /* ---------- Responsive ---------- */
@@ -1993,7 +2030,7 @@ button.ruta__nombre:hover { color: var(--color-oro-claro); text-decoration: unde
   background:
     radial-gradient(ellipse at 50% 0%, rgba(167, 123, 255, 0.22), transparent 60%),
     linear-gradient(180deg, rgba(12, 10, 16, 0.55), rgba(12, 10, 16, 0.9)),
-    url('../assets/fondo-inicio.webp') 35% 15% / auto 135% no-repeat,
+    url('../assets/fondo-inicio-v2.webp') 35% 15% / auto 135% no-repeat,
     var(--color-fondo);
   box-shadow: var(--sombra);
 }
@@ -4159,7 +4196,7 @@ button.conexion__nombre:hover { text-decoration: none; }
 .rutas-entrada__editar { padding: 3px 10px; font-size: 0.78rem; align-self: center; }
 
 /* ============================================================================
-   Hideouts con los colores de "Tus últimas búsquedas" (v13.9)
+   Hideouts con los colores de "Tus últimas búsquedas" (v14.1)
    En la vista de hideouts (y en la ventana del mapa abierta desde ella) los
    estados al pasar el ratón, al enfocar y al elegir usan el color del
    apartado (--acento-rgb, verde azulado) en lugar del dorado: borde y fondo
