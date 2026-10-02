@@ -5,7 +5,6 @@ const fs = require('fs');
 
 const HideoutCaminoRepository = require('../repositories/HideoutCaminoRepository');
 const { texto, ErrorValidacion } = require('../security/validacion');
-const { esOfensivo } = require('../security/nombresOfensivos');
 const { COLUMNAS_GREMIOS } = require('../excel/hojaHideouts');
 
 /**
@@ -28,8 +27,11 @@ const { COLUMNAS_GREMIOS } = require('../excel/hojaHideouts');
  *  - El camino debe ser un camino de hideouts del catálogo oficial (se
  *    guarda su nombre canónico).
  *  - El nombre del gremio: 2 a 40 caracteres, letras, números, espacios y
- *    . _ - ' &, sin insultos. Se compara sin mayúsculas ni espacios de
- *    más: anotar otra vez el mismo gremio solo renueva la fecha.
+ *    . _ - ' &. Se compara sin mayúsculas ni espacios de más: anotar otra
+ *    vez el mismo gremio solo renueva la fecha. No se filtran palabras: el
+ *    nombre es el del gremio en el juego, y si el juego lo permite, aquí
+ *    también (el filtro de insultos es solo para los nombres de cuenta y de
+ *    espacio, que sí elige cada usuario).
  *  - Como mucho MAX_POR_CAMINO gremios por camino (las columnas de gremios
  *    del Excel; también evita el spam).
  *  - Solo quien lo anotó o un administrador pueden borrarlo, y solo
@@ -99,14 +101,14 @@ class HideoutsCaminoService {
 
   /**
    * Nombre de gremio válido (con espacios simples) o ErrorValidacion. Vale
-   * para lo que escriben los usuarios y para lo que llega del Excel.
+   * para lo que escriben los usuarios y para lo que llega del Excel. Solo
+   * se comprueba el formato (longitud y caracteres), no las palabras.
    */
-  validarGremio(nombreGremio, { revisarOfensivo = true } = {}) {
+  validarGremio(nombreGremio) {
     const gremio = texto(nombreGremio, 'gremio', { min: 2, max: 40 }).replace(/\s+/g, ' ');
     if (!FORMATO_GREMIO.test(gremio)) {
       throw new ErrorValidacion('El nombre del gremio solo puede tener letras, números, espacios y . _ - \' &');
     }
-    if (revisarOfensivo && esOfensivo(gremio)) throw new ErrorValidacion('Ese nombre de gremio no está permitido.');
     return gremio;
   }
 

@@ -146,11 +146,14 @@ test('las rutas que terminan en un camino de hideouts muestran sus gremios', asy
   assert.equal(normal.hideouts, undefined);
 });
 
-test('no admite nombres de gremio ofensivos escritos en la web', () => {
+test('los nombres de gremio no pasan por el filtro de palabras: si el juego los admite, la web también', () => {
   const s = servicio();
-  assert.throws(() => s.agregar(autor, 'Qiient-Al-Odetum', 'Hijos de Puta'), /no está permitido/);
-  // Desde el Excel (lo mantiene el equipo) no se aplica ese filtro.
-  assert.equal(s.validarGremio('Hijos de Puta', { revisarOfensivo: false }), 'Hijos de Puta');
+  // Nombres reales de gremios que el filtro de cuentas rechazaría.
+  for (const nombre of ['Hijos de Puta', 'Retards', 'Nigga Please']) {
+    assert.equal(s.agregar(autor, 'Qiient-Al-Odetum', nombre).gremio, nombre);
+  }
+  // El formato sí se sigue comprobando (nada de HTML ni símbolos raros).
+  assert.throws(() => s.agregar(autor, 'Qiient-Al-Odetum', '<b>x</b>'), /solo puede tener letras/);
 });
 
 test('lo que ya está en el Excel no se borra desde la web', () => {
