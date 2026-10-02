@@ -120,7 +120,7 @@ function htmlContenido(pagina, idioma, config = contacto()) {
       ? ''
       : `<nav class="legal__indice" aria-label="${escaparHtml(comun.indice)}">
         <p class="legal__indice-titulo">${escaparHtml(comun.indice)}</p>
-        <ol>${textos.secciones.map((s) => `<li><a href="#${s.id}">${escaparHtml(s.titulo)}</a></li>`).join('')}</ol>
+        <ul>${textos.secciones.map((s) => `<li><a href="#${s.id}">${escaparHtml(s.titulo)}</a></li>`).join('')}</ul>
       </nav>`;
   const secciones = textos.secciones
     .map(

@@ -192,6 +192,8 @@ function variablesLegales(pagina, idioma) {
     urlEn: `${sitio}${rutas.en}`,
     rutaEs: rutas.es,
     rutaEn: rutas.en,
+    // Cada página de soporte tiene su fondo y su color (public/css/legal.css).
+    paginaSoporte: pagina,
     contenidoLegal: legal.htmlContenido(pagina, idioma),
   };
 }

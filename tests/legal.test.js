@@ -72,6 +72,9 @@ test('las tres páginas de soporte responden en español e inglés y enlazan su 
     assert.equal(r.estado, 200, ruta);
     assert.match(r.cuerpo, new RegExp(`<html lang="${idioma}">`));
     assert.match(r.cuerpo, new RegExp(`<h1 class="legal__titulo">${titulo}</h1>`));
+    // Cada página lleva su nombre en <body> para su fondo y su color.
+    const pagina = { contacto: 'contacto', contact: 'contacto', privacidad: 'privacidad', privacy: 'privacidad', terminos: 'terminos', terms: 'terminos' }[ruta.split('/').pop()];
+    assert.match(r.cuerpo, new RegExp(`data-soporte="${pagina}"`));
     assert.match(r.cuerpo, /rel="canonical"/);
     assert.match(r.cuerpo, /hreflang="es"/);
     assert.match(r.cuerpo, /hreflang="en"/);
@@ -145,6 +148,8 @@ test('todo el texto de las páginas de soporte se escapa y cada sección tiene s
         assert.match(html, new RegExp(`<section id="${s.id}"`), `${idioma}/${pagina}#${s.id}`);
         if (pagina !== 'contacto') assert.match(html, new RegExp(`href="#${s.id}"`));
       }
+      // El índice va sin numeración (lista simple, no <ol>).
+      assert.doesNotMatch(html, /<ol[\s>]/, `${idioma}/${pagina}`);
       // Ningún asterisco de negrita ni marca {…} sin convertir.
       assert.doesNotMatch(html, /\*\*|\{(correo|discord|contacto|privacidad|terminos)\}/, `${idioma}/${pagina}`);
       // Los dos idiomas tienen las mismas secciones.

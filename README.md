@@ -28,6 +28,15 @@ Avalon abiertas que registra la comunidad.
 - El pie es ahora una plantilla común (`src/vistas/_pie.html`) para la
   portada y las páginas de soporte; sus enlaces a secciones de la portada
   llevan la ruta (`/#apoyar`) y siguen desplazando con suavidad en ella.
+- **Fondos propios** en cada página de soporte, y el color de acento sale de
+  su fondo: Contáctanos (bosque con faroles, ámbar), Privacidad (ciénaga
+  violeta, violeta rosado) y Términos (ruinas al atardecer, naranja). El
+  índice de Privacidad y Términos va sin numeración y con botones más
+  grandes (44 px de alto).
+- **Nuevo fondo del inicio**, en mejor resolución: `fondo-inicio-v2.webp`
+  (2560 px) y `fondo-inicio-v2-movil.webp` (1600 px, nítido también en
+  móviles con pantalla de alta densidad). El nombre nuevo evita que los
+  navegadores sigan mostrando el anterior guardado en caché.
 
 ### v13.8 — "Caminos avalonianos" vuelve a mostrar sus tarjetas y el borrado masivo incluye tus espacios
 

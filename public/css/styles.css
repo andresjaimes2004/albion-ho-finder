@@ -86,12 +86,12 @@ body {
   transition: opacity 0.6s ease;
 }
 
-.fondo__capa--inicio { background-image: url('../assets/fondo-inicio.webp'); background-position: 35% 30%; }
+.fondo__capa--inicio { background-image: url('../assets/fondo-inicio-v2.webp'); background-position: 35% 30%; }
 .fondo__capa--hideouts { background-image: url('../assets/fondo-hideouts.webp'); background-position: 50% 45%; }
 .fondo__capa--caminos { background-image: url('../assets/fondo-caminos.webp'); background-position: 40% 35%; }
 
 @media (max-width: 960px) {
-  .fondo__capa--inicio { background-image: url('../assets/fondo-inicio-960.webp'); }
+  .fondo__capa--inicio { background-image: url('../assets/fondo-inicio-v2-movil.webp'); }
 }
 
 /* Sin JavaScript (o antes de que cargue) se ve el fondo del inicio. */
@@ -2030,7 +2030,7 @@ button.ruta__nombre:hover { color: var(--color-oro-claro); text-decoration: unde
   background:
     radial-gradient(ellipse at 50% 0%, rgba(167, 123, 255, 0.22), transparent 60%),
     linear-gradient(180deg, rgba(12, 10, 16, 0.55), rgba(12, 10, 16, 0.9)),
-    url('../assets/fondo-inicio.webp') 35% 15% / auto 135% no-repeat,
+    url('../assets/fondo-inicio-v2.webp') 35% 15% / auto 135% no-repeat,
     var(--color-fondo);
   box-shadow: var(--sombra);
 }

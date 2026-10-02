@@ -4,14 +4,37 @@
    --acento-rgb, --duracion, --curva. Sin JavaScript.
    ============================================================================ */
 
-/* Fondo propio del apartado de soporte. Mientras no haya uno definitivo, el
-   del inicio. Para cambiarlo basta con sustituir esta imagen. */
-.fondo__capa--soporte { background-image: url('../assets/fondo-inicio.webp'); background-position: 35% 30%; }
-@media (max-width: 960px) {
-  .fondo__capa--soporte { background-image: url('../assets/fondo-inicio-960.webp'); }
-}
-body[data-vista='soporte'] { --acento-rgb: 176, 138, 255; }
+/* Cada página de soporte tiene su fondo y toma de él su color de acento
+   (etiqueta, viñetas, enlaces, tarjetas, índice y el velo de arriba):
+     - Contáctanos: bosque con faroles → ámbar de la luz de los faroles.
+     - Privacidad: ciénaga violeta → violeta rosado de las luciérnagas.
+     - Términos: ruinas al atardecer → naranja del atardecer. */
+body[data-soporte='contacto'] { --acento-rgb: 242, 178, 96; --velo-rgb: 20, 14, 8; }
+body[data-soporte='privacidad'] { --acento-rgb: 214, 136, 255; --velo-rgb: 16, 8, 24; }
+body[data-soporte='terminos'] { --acento-rgb: 246, 150, 78; --velo-rgb: 22, 10, 14; }
+
+body[data-soporte='contacto'] .fondo__capa--soporte { background-image: url('../assets/fondo-contacto.webp'); background-position: 50% 45%; }
+body[data-soporte='privacidad'] .fondo__capa--soporte { background-image: url('../assets/fondo-privacidad.webp'); background-position: 50% 60%; }
+body[data-soporte='terminos'] .fondo__capa--soporte { background-image: url('../assets/fondo-terminos.webp'); background-position: 50% 40%; }
 body[data-vista='soporte'] .fondo__capa--soporte { opacity: 1; }
+
+/* Estas imágenes son pequeñas (unos 735 px de ancho): en pantallas grandes
+   un leve desenfoque evita que se vean pixeladas, y el velo, teñido con el
+   color de cada fondo, mantiene el texto legible. */
+@media (min-width: 961px) {
+  body[data-vista='soporte'] .fondo__capa--soporte { filter: blur(1.2px) saturate(1.08); transform: scale(1.02); }
+}
+body[data-vista='soporte'] .fondo__velo {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(var(--acento-rgb), 0.16), transparent 62%),
+    linear-gradient(180deg, rgba(var(--velo-rgb), 0.3) 0%, rgba(var(--velo-rgb), 0.58) 50%, rgba(var(--velo-rgb), 0.82) 100%);
+}
+/* Las tarjetas de vidrio toman un tinte del fondo. */
+body[data-vista='soporte'] {
+  --vidrio: rgba(var(--velo-rgb), 0.6);
+  --vidrio-fuerte: rgba(var(--velo-rgb), 0.5);
+  --color-borde: rgba(var(--acento-rgb), 0.18);
+}
 
 /* Desplazamiento suave a cada sección desde el índice, sin quedar tapada
    por la cabecera fija. */
@@ -69,21 +92,57 @@ html:has(body.pagina-legal) { scroll-behavior: smooth; }
   text-transform: uppercase;
   color: var(--color-texto);
 }
-.legal__indice ol {
+/* Sin numeración: cada apartado es un botón ancho, fácil de pulsar. */
+.legal__indice ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 6px 10px;
   margin: 0;
-  padding-left: 20px;
-  columns: 2 220px;
-  column-gap: 28px;
-  color: var(--color-texto-tenue);
-  font-size: 0.9rem;
+  padding: 0;
+  list-style: none;
 }
-.legal__indice li { margin: 0 0 6px; break-inside: avoid; }
 .legal .legal__indice a:not(.boton) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 9px 14px;
+  border: 1px solid transparent;
+  border-radius: var(--radio);
   color: var(--color-texto-suave);
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.35;
   text-decoration: none;
-  transition: color var(--duracion-rapida) var(--curva);
+  transition:
+    color var(--duracion-rapida) var(--curva),
+    background-color var(--duracion-rapida) var(--curva),
+    border-color var(--duracion-rapida) var(--curva),
+    transform var(--duracion-rapida) var(--curva);
 }
-.legal .legal__indice a:not(.boton):hover { color: rgb(var(--acento-rgb)); }
+/* Marca a la izquierda que se enciende con el color del apartado. */
+.legal .legal__indice a:not(.boton)::before {
+  content: '';
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(var(--acento-rgb), 0.45);
+  transition: background-color var(--duracion-rapida) var(--curva), box-shadow var(--duracion-rapida) var(--curva);
+}
+.legal .legal__indice a:not(.boton):hover,
+.legal .legal__indice a:not(.boton):focus-visible {
+  color: var(--color-texto);
+  background-color: rgba(var(--acento-rgb), 0.12);
+  border-color: rgba(var(--acento-rgb), 0.35);
+  transform: translateX(3px);
+}
+.legal .legal__indice a:not(.boton):hover::before { background: rgb(var(--acento-rgb)); box-shadow: 0 0 8px rgba(var(--acento-rgb), 0.7); }
+.legal .legal__indice a:not(.boton):active { transform: translateX(1px); }
+@media (prefers-reduced-motion: reduce) {
+  .legal .legal__indice a:not(.boton) { transition: none; }
+  .legal .legal__indice a:not(.boton):hover { transform: none; }
+}
 
 /* ---- Secciones: tarjetas de vidrio ---- */
 .legal__seccion {
