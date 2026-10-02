@@ -4135,3 +4135,7 @@ button.conexion__nombre:hover { text-decoration: none; }
 @media (prefers-reduced-motion: reduce) {
   .ruta { transition: none; }
 }
+
+/* ---- "Editar" en el mapa raíz de un grupo de rutas: abre el conjunto desde
+        la raíz. Va en la cabecera, junto al número de rutas. ---- */
+.rutas-entrada__editar { padding: 3px 10px; font-size: 0.78rem; align-self: center; }

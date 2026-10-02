@@ -59,9 +59,10 @@ function claveGremio(texto) {
 
 
 export class PanelCaminos {
-  constructor({ abrirMapa, alActualizar = null, alEditarRuta = null }) {
+  constructor({ abrirMapa, alActualizar = null, alEditarRuta = null, alEditarConjunto = null }) {
     this.abrirMapa = abrirMapa;
     this.alEditarRuta = alEditarRuta;
+    this.alEditarConjunto = alEditarConjunto;
     // Avisa de cada resumen nuevo (el panel de registro usa sus conexiones).
     this.alActualizar = alActualizar;
 
@@ -1102,6 +1103,10 @@ export class PanelCaminos {
       const cercania = grupo[0].cercania;
       if (cercania) cabeza.append(crear('span', 'rutas-entrada__cercania', textoCercania(cercania)));
       cabeza.append(crear('span', 'rutas-entrada__cantidad', tn(grupo.length, '{n} ruta', '{n} rutas')));
+      // "Editar" en el mapa raíz: abre directamente desde la raíz el
+      // conjunto de sus rutas (las que este usuario puede editar).
+      const conjuntos = this._conjuntosEditables(grupo);
+      for (const conjunto of conjuntos) cabeza.append(this._botonEditarConjunto(conjunto, conjuntos.length > 1));
 
       // A dónde lleva cada ruta y cuánto le queda, sin desplegar.
       const destinos = crear('span', 'rutas-entrada__destinos');
@@ -1141,6 +1146,47 @@ export class PanelCaminos {
       // Además de la ruta, su conjunto: para editarlo desde la raíz.
       alEditar: this.alEditarRuta ? (r) => this.alEditarRuta(r, this.conjuntoDe(r)) : null,
     });
+  }
+
+  /**
+   * Los conjuntos (redes de rutas) que tocan un grupo de rutas y que este
+   * usuario puede editar: uno por red y sitio, sin repetir.
+   */
+  _conjuntosEditables(rutas) {
+    if (!this.alEditarConjunto || !this.usuario) return [];
+    const editable = (r) => this.usuario.id === r.reportadoPorId || this.usuario.rol === 'ADMIN';
+    const cubiertas = new Set();
+    const conjuntos = [];
+    for (const ruta of rutas) {
+      if (cubiertas.has(ruta.id) || !editable(ruta)) continue;
+      const conjunto = this.conjuntoDe(ruta);
+      for (const r of conjunto) cubiertas.add(r.id);
+      conjuntos.push(conjunto);
+    }
+    return conjuntos;
+  }
+
+  /**
+   * Botón "Editar" de un mapa raíz. Si de ese mapa salen varios conjuntos
+   * (por ejemplo, uno público y otro de un espacio), cada botón dice cuál.
+   */
+  _botonEditarConjunto(conjunto, varios) {
+    let texto = t('Editar');
+    if (varios) {
+      const espacio = conjunto[0].espacio;
+      const sitio = espacio ? `${espacio.publico ? '👥' : '🔒'} ${espacio.nombre}` : t('Públicas');
+      texto = `${t('Editar')} · ${sitio} · ${tn(conjunto.length, '{n} ruta', '{n} rutas')}`;
+    }
+    const boton = crear('button', 'boton boton--pequeno boton--sutil rutas-entrada__editar', texto);
+    boton.type = 'button';
+    boton.title = t('Editar desde la raíz todas las rutas de este conjunto');
+    boton.addEventListener('click', (evento) => {
+      // Está dentro de la cabecera plegable: no la abre ni la cierra.
+      evento.preventDefault();
+      evento.stopPropagation();
+      this.alEditarConjunto(conjunto);
+    });
+    return boton;
   }
 
   /**

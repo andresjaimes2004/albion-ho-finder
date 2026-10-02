@@ -25,6 +25,11 @@ Avalon abiertas que registra la comunidad.
 - Comprobado con capturas reales: al pegar capturas desordenadas en una
   edición, se colocan solas en la cadena (una ruta) o las rutas se vuelven a
   proponer solas (desde la raíz).
+- **"Editar" en el mapa raíz**: cada grupo de "Rutas del gremio" (el mapa del
+  que salen sus rutas, por ejemplo Sandrift Coast) tiene su botón "Editar",
+  que abre directamente el conjunto desde la raíz, sin pasar por una ruta. Solo
+  aparece si puedes editar esas rutas; si de ese mapa salen varios conjuntos
+  (uno público y otro de un espacio), hay un botón por conjunto que dice cuál.
 
 ### v13.6 — Editar rutas desde la raíz, moverlas y nombres de gremio sin filtro
 

@@ -502,6 +502,8 @@ export const EN = {
   // --- v13.7: rutas movidas a la vista ---
   'Movido a «{espacio}».': 'Moved to «{espacio}».',
   'Movido a público: ahora lo ven todos.': 'Moved to public: everyone can see it now.',
+  // --- v13.7: editar en el mapa raíz ---
+  'Editar desde la raíz todas las rutas de este conjunto': 'Edit all the routes of this set from the root',
 };
 
 const tiene = Object.prototype.hasOwnProperty;

@@ -81,6 +81,8 @@ class BuscadorUI {
       },
       // "Editar" en una ruta la abre en el panel de registro.
       alEditarRuta: (ruta, conjunto) => this.panelRegistro.editarRuta(ruta, conjunto),
+      // "Editar" en el mapa raíz de un grupo: el conjunto entero, sin pasos.
+      alEditarConjunto: (conjunto) => this.panelRegistro.editarConjunto(conjunto),
     });
 
     this.panelRegistro = new PanelRegistro({
