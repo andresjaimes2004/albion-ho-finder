@@ -28,7 +28,11 @@ Avalon abiertas que registra la comunidad.
 - **Hideouts con los colores de "Tus últimas búsquedas"**: botones, buscador,
   tarjetas de resultados, "Ver rutas", nombres enlazados, foco con teclado y la
   ventana del mapa abierta desde hideouts usan el verde azulado del apartado
-  en lugar del dorado. Caminos de Avalon conserva su dorado.
+  en lugar del dorado. Caminos de Avalon conserva su dorado. También el mapa
+  de la Zona Negra (punto y etiqueta al pasar el ratón, aro de los mapas con
+  hideouts y halo de los del gremio buscado) y las listas desplegables del
+  panel de administración y de la ventana del mapa (flecha, borde y menú de
+  opciones). Los botones de peligro se ponen rojos al pasar el ratón.
 
 ### v13.8 — "Caminos avalonianos" vuelve a mostrar sus tarjetas y el borrado masivo incluye tus espacios
 

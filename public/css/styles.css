@@ -4246,3 +4246,52 @@ body[data-vista='hideouts'] #ventana-mapa .selector-fondo__boton[aria-pressed='t
 /* Panel de administración (está en esta vista): casillas y listas. */
 #vista-hideouts :is(.casilla:hover, .admin-fila select:hover) { border-color: rgba(var(--acento-rgb), 0.5); }
 
+/* Botones de peligro ("Aplicar de todos modos"...): rojo al pasar el ratón,
+   ni dorado ni del color del apartado, para que sigan avisando. */
+:is(#vista-hideouts, body[data-vista='hideouts'] #ventana-mapa) .boton--peligro:not(:disabled):hover {
+  border-color: rgba(201, 79, 79, 0.85);
+  background-color: rgba(201, 79, 79, 0.12);
+}
+
+/* Mapa de la Zona Negra: el punto y la etiqueta al pasar el ratón o con el
+   teclado, el aro de los mapas con hideouts y el halo de los mapas del
+   gremio buscado, con el color del apartado. */
+#vista-hideouts {
+  --hideouts-claro: rgb(196, 246, 230);
+}
+#vista-hideouts .mundo__nodo--ocupado .mundo__punto { stroke: rgb(var(--acento-rgb)); }
+#vista-hideouts .mundo__halo { stroke: rgb(var(--acento-rgb)); }
+#vista-hideouts :is(.mundo__nodo:hover, .mundo__nodo:focus-visible) .mundo__punto { fill: var(--hideouts-claro); }
+#vista-hideouts :is(.mundo__nodo:hover, .mundo__nodo:focus-visible) .mundo__chip rect { stroke: var(--hideouts-claro); }
+#vista-hideouts .mundo__nodo--destacado .mundo__punto { stroke: var(--hideouts-claro); }
+body[data-vista='hideouts'] #ventana-mapa .mapa__pin--destacado .mapa__pin-cuerpo { stroke: rgb(196, 246, 230); }
+
+/* Listas desplegables de esta vista (panel de administración y ajustes de la
+   ventana del mapa): flecha, borde y menú de opciones con el color del
+   apartado en lugar del dorado. */
+:is(#vista-hideouts, body[data-vista='hideouts'] #ventana-mapa) {
+  --flecha-select: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'%2360ccb0'%20stroke-width%3D'2.4'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Cpath%20d%3D'm6%209%206%206%206-6'%2F%3E%3C%2Fsvg%3E");
+}
+:is(#vista-hideouts, body[data-vista='hideouts'] #ventana-mapa) :is(.admin-fila, .ajuste-imagen__fila, .formulario-linea) select:hover {
+  border-color: rgba(var(--acento-rgb), 0.55);
+}
+@supports (appearance: base-select) {
+  :is(#vista-hideouts, body[data-vista='hideouts'] #ventana-mapa) :is(.admin-fila, .ajuste-imagen__fila, .formulario-linea) select:open {
+    border-color: rgba(var(--acento-rgb), 0.6);
+  }
+  :is(#vista-hideouts, body[data-vista='hideouts'] #ventana-mapa) :is(.admin-fila, .ajuste-imagen__fila, .formulario-linea) select::picker(select) {
+    border-color: rgba(var(--acento-rgb), 0.35);
+  }
+  :is(#vista-hideouts, body[data-vista='hideouts'] #ventana-mapa) :is(.admin-fila, .ajuste-imagen__fila, .formulario-linea) select option:is(:hover, :focus-visible) {
+    background: rgba(var(--acento-rgb), 0.16);
+    color: rgb(var(--acento-rgb));
+  }
+  :is(#vista-hideouts, body[data-vista='hideouts'] #ventana-mapa) :is(.admin-fila, .ajuste-imagen__fila, .formulario-linea) select option:checked {
+    background: rgba(var(--acento-rgb), 0.24);
+    color: rgb(var(--acento-rgb));
+  }
+  :is(#vista-hideouts, body[data-vista='hideouts'] #ventana-mapa) :is(.admin-fila, .ajuste-imagen__fila, .formulario-linea) select option::checkmark {
+    color: rgb(var(--acento-rgb));
+  }
+}
+

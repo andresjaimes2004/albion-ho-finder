@@ -220,3 +220,24 @@ test('editar desde la raíz: el aviso y los botones de cada modo de edición', (
   assert.match(css, /\.registro--edicion \.registro__mover \{ display: inline-flex; \}/);
   assert.doesNotMatch(css, /\.registro--conjunto \.registro__mover/);
 });
+
+test('hideouts usa el color de su apartado (no el dorado) en mapa, botones, listas y panel de administración', () => {
+  const css = fs.readFileSync(path.join(__dirname, '..', 'public', 'css', 'styles.css'), 'utf8');
+  const bloque = css.slice(css.indexOf('Hideouts con los colores de "Tus últimas búsquedas"'));
+  assert.ok(bloque.length > 100, 'existe el bloque de colores de hideouts');
+  for (const selector of [
+    '.panel-busqueda__caja:focus-within',
+    '.boton:not(.boton--primario):not(.boton--peligro):not(:disabled):hover',
+    '.boton--peligro:not(:disabled):hover',
+    '.tarjeta-mapa:hover .tarjeta-mapa__ir',
+    '.mundo__nodo--ocupado .mundo__punto',
+    '.mundo__nodo--destacado .mundo__punto',
+    'select::picker(select)',
+    'select option:checked',
+    '--flecha-select',
+  ]) {
+    assert.ok(bloque.includes(selector), `falta ${selector}`);
+  }
+  // Ningún color dorado dentro del bloque de hideouts.
+  assert.doesNotMatch(bloque, /oro|201,\s*162,\s*39|232,\s*201,\s*92|e8c95c|fff4c8/i);
+});
