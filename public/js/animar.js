@@ -135,3 +135,29 @@ export function conectarDesplegable(boton, cuerpo, { clave = null, abierto = fal
     abierto: () => boton.getAttribute('aria-expanded') === 'true',
   };
 }
+
+/**
+ * Quita `el` de la página con suavidad: se desvanece y pliega su altura,
+ * así lo de alrededor sube sin saltos. Devuelve una promesa que se cumple
+ * ya quitado (para refrescar la lista después).
+ */
+export function retirarSuave(el) {
+  return new Promise((resolver) => {
+    if (!el || !el.isConnected) {
+      resolver();
+      return;
+    }
+    if (sinMovimiento() || typeof el.animate !== 'function') {
+      el.remove();
+      resolver();
+      return;
+    }
+    direccion.set(el, 'ocultar');
+    animar(el, { ...medidas(el), opacity: getComputedStyle(el).opacity }, { ...plegado(), opacity: 0 }, () => {
+      el.remove();
+      resolver();
+    });
+    // Por si la animación se cancela (otra la sustituye): no se queda colgada.
+    setTimeout(resolver, DURACION + 200);
+  });
+}

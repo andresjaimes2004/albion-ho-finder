@@ -4,7 +4,7 @@ import api from './api.js';
 import { crear } from './rutas.js';
 import { t, tn } from './i18n.js';
 import { confirmar } from './dialogos.js';
-import { mostrarSuave, ocultarSuave } from './animar.js';
+import { mostrarSuave, ocultarSuave, retirarSuave } from './animar.js';
 import { conectarSugerencias, agregarBotonBorrar } from './sugerencias.js';
 
 /**
@@ -74,6 +74,11 @@ export class PanelEspacios {
     }
     this._renderizar();
     if (this.alCambiar) this.alCambiar(this.espacios);
+  }
+
+  /** Abre el panel (sin moverse; por ejemplo, al volver de otro idioma). */
+  abrir() {
+    if (!this.abierto) this._abrir();
   }
 
   /** Abre el panel y lleva la vista hasta un espacio (desde un aviso). */
@@ -161,7 +166,12 @@ export class PanelEspacios {
         quitar.type = 'button';
         quitar.title = t('Quitar a {usuario} del espacio', { usuario: m.usuario });
         quitar.setAttribute('aria-label', quitar.title);
-        quitar.addEventListener('click', () => this._accion(() => api.espacios.quitarMiembro(espacio.id, m.id), mensaje));
+        quitar.addEventListener('click', () =>
+          this._accion(async () => {
+            await api.espacios.quitarMiembro(espacio.id, m.id);
+            await retirarSuave(item);
+          }, mensaje)
+        );
         item.append(quitar);
       }
       miembros.append(item);

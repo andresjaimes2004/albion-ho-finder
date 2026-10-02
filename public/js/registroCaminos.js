@@ -5,7 +5,7 @@ import { crearIndiceZonas, buscarZona, MAX_MINUTOS } from './capturas/lectura.js
 import { agruparEnRutas, invertirRuta, claveRuta, ordenarCadena } from './capturas/encadenar.js';
 import { t, tn } from './i18n.js';
 import { confirmar } from './dialogos.js';
-import { mostrarSuave, ocultarSuave } from './animar.js';
+import { mostrarSuave, ocultarSuave, retirarSuave } from './animar.js';
 import * as borrador from './capturas/borrador.js';
 import { crearReloj, iniciarRelojes } from './rutas.js';
 import { conectarSugerencias, agregarBotonBorrar } from './sugerencias.js';
@@ -746,9 +746,10 @@ export class PanelRegistro {
     }
     quitar.addEventListener('click', () => {
       this.filas = this.filas.filter((f) => f !== fila);
-      item.remove();
       borrador.borrar(fila.id);
       this._actualizarAcciones();
+      // La fila sale con un fundido en vez de desaparecer de golpe.
+      retirarSuave(item);
     });
 
     this.filas.push(fila);

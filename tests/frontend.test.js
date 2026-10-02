@@ -114,3 +114,43 @@ test('tandas de 9: 400 caminos son 45 tandas y la última tiene 4', async () => 
   assert.equal(tanda(9, 0, 9).paginas, 1);
   assert.equal(tanda(10, 0, 9).paginas, 2);
 });
+
+test('al cambiar de idioma el estado se guarda, se recupera una sola vez y caduca', async () => {
+  // sessionStorage y enlaces de idioma mínimos (Node no tiene navegador).
+  const almacen = new Map();
+  globalThis.sessionStorage = {
+    getItem: (k) => (almacen.has(k) ? almacen.get(k) : null),
+    setItem: (k, v) => almacen.set(k, String(v)),
+    removeItem: (k) => almacen.delete(k),
+  };
+  const enlaces = [
+    { atributos: { 'aria-current': 'true' }, oyentes: [] },
+    { atributos: {}, oyentes: [] },
+  ].map((e) => ({
+    ...e,
+    getAttribute: (n) => e.atributos[n] || null,
+    addEventListener: (_tipo, fn) => e.oyentes.push(fn),
+    clic: () => e.oyentes.forEach((fn) => fn()),
+  }));
+  globalThis.document = { querySelectorAll: () => enlaces };
+  try {
+    const { guardarAlCambiarIdioma, recuperarEstadoIdioma } = await import(pathToFileURL(path.join(CARPETA_JS, 'estadoIdioma.js')).href);
+    guardarAlCambiarIdioma(() => ({ caminos: { mapaAbierto: 'Ouyos-Aoeuam' }, scroll: 700 }));
+
+    enlaces[0].clic(); // el idioma actual: no guarda nada
+    assert.equal(recuperarEstadoIdioma(), null);
+
+    enlaces[1].clic();
+    assert.deepEqual(recuperarEstadoIdioma(), { caminos: { mapaAbierto: 'Ouyos-Aoeuam' }, scroll: 700 });
+    assert.equal(recuperarEstadoIdioma(), null, 'solo se recupera una vez');
+
+    // Caducado (más de un minuto) o dañado: se ignora.
+    sessionStorage.setItem('estado-al-cambiar-idioma', JSON.stringify({ en: Date.now() - 120_000, estado: { scroll: 1 } }));
+    assert.equal(recuperarEstadoIdioma(), null);
+    sessionStorage.setItem('estado-al-cambiar-idioma', '{no es json');
+    assert.equal(recuperarEstadoIdioma(), null);
+  } finally {
+    delete globalThis.sessionStorage;
+    delete globalThis.document;
+  }
+});

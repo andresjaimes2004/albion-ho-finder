@@ -475,6 +475,8 @@ export const EN = {
   '{desde}–{hasta} de {total}': '{desde}–{hasta} of {total}',
   // --- v13.5: tanda de un solo camino ---
   '{n} de {total}': '{n} of {total}',
+  // --- v13.5: datos oficiales ---
+  'Dungeons y recursos según los archivos del juego.': 'Dungeons and resources from the game files.',
 };
 
 const tiene = Object.prototype.hasOwnProperty;

@@ -10,6 +10,7 @@ import { PanelRegistro } from './registroCaminos.js';
 import { PanelEspacios } from './espacios.js';
 import { CentroAvisos } from './avisos.js';
 import { activarValidacion } from './validacionFormularios.js';
+import { guardarAlCambiarIdioma, recuperarEstadoIdioma } from './estadoIdioma.js';
 import { crear, crearListaConexiones, crearTarjetaRuta, iniciarRelojes } from './rutas.js';
 import { t, tn } from './i18n.js';
 import { Portada } from './portada.js';
@@ -139,6 +140,52 @@ class BuscadorUI {
     this._bindPestanas();
     this._vigilarCabecera();
     this._iniciar();
+
+    // Al cambiar de idioma la página se carga de nuevo: se guarda lo que se
+    // estaba mirando y la página del otro idioma lo deja igual.
+    guardarAlCambiarIdioma(() => this._estadoPagina());
+    const previo = recuperarEstadoIdioma();
+    if (previo) this._restaurarEstado(previo);
+  }
+
+  /** Lo que se está mirando (para conservarlo al cambiar de idioma). */
+  _estadoPagina() {
+    return {
+      scroll: Math.round(window.scrollY),
+      hideouts: {
+        termino: this.input.value,
+        mapaMundial: document.getElementById('alternar-mapa').getAttribute('aria-expanded') === 'true',
+      },
+      ventanaMapa: this.ventanaMapa.nombreAbierto(),
+      caminos: this.panelCaminos.estado(),
+      registro: Boolean(this.panelRegistro.abierto),
+      espacios: Boolean(this.panelEspacios.abierto),
+    };
+  }
+
+  /** Deja la página como estaba en el otro idioma y vuelve a la misma altura. */
+  async _restaurarEstado(estado) {
+    const pendientes = [];
+    const hideouts = estado.hideouts || {};
+    const termino = typeof hideouts.termino === 'string' ? hideouts.termino.slice(0, 60) : '';
+    if (termino) {
+      this.input.value = termino;
+      if (termino.trim().length >= 2) pendientes.push(this._ejecutarBusqueda(termino.trim()));
+    }
+    if (hideouts.mapaMundial) document.getElementById('alternar-mapa').click();
+    if (estado.registro) this.panelRegistro.abrir();
+    if (estado.espacios) this.panelEspacios.abrir();
+    const caminos = this.panelCaminos.restaurar(estado.caminos || {});
+    // Los caminos solo se cargan con su pestaña a la vista.
+    if (this.vistaActual === 'caminos') pendientes.push(caminos);
+    // Sin esperar de más si algo tarda (red lenta): como mucho 5 s.
+    await Promise.race([Promise.allSettled(pendientes), new Promise((r) => setTimeout(r, 5000))]);
+    // Tras pintar lo restaurado (y de nuevo al terminar las animaciones de
+    // apertura, que cambian la altura de la página).
+    const volver = () => window.scrollTo({ top: Number(estado.scroll) || 0, behavior: 'instant' });
+    setTimeout(volver, 0);
+    setTimeout(volver, 400);
+    if (typeof estado.ventanaMapa === 'string' && estado.ventanaMapa) this.ventanaMapa.abrir(estado.ventanaMapa);
   }
 
   /**
@@ -616,8 +663,9 @@ class BuscadorUI {
           usuario: this.usuario,
           resaltar: nombre,
           alElegirZona: (zona) => this._irACaminos(zona),
-          alBorrar: async (r) => {
+          alBorrar: async (r, retirar) => {
             await api.borrarRuta(r.id);
+            await retirar();
             this._repetirBusqueda();
           },
         })

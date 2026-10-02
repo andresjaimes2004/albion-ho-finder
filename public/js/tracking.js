@@ -5,7 +5,7 @@ import { crear, crearFuente, crearReloj, crearTarjetaRuta, textoCercania } from 
 import { t, tn, regional } from './i18n.js';
 import { confirmar } from './dialogos.js';
 import { conectarSugerencias, agregarBotonBorrar } from './sugerencias.js';
-import { mostrarSuave, ocultarSuave, conectarDesplegable } from './animar.js';
+import { mostrarSuave, ocultarSuave, conectarDesplegable, retirarSuave } from './animar.js';
 import { tanda } from './paginacion.js';
 
 /**
@@ -190,7 +190,15 @@ export class PanelCaminos {
       this._renderizarLista();
       this._renderizarRutas();
       if (this.alActualizar) this.alActualizar(this.datos);
-      if (this.mapaAbierto) this.abrirDetalle(this.mapaAbierto, { silencioso: true });
+      if (this._restauracion) {
+        // Venimos de cambiar de idioma: se reabre el camino que se miraba.
+        const { mapaAbierto, resolver } = this._restauracion;
+        this._restauracion = null;
+        if (mapaAbierto) await this.abrirDetalle(mapaAbierto, { desplazar: false });
+        resolver();
+      } else if (this.mapaAbierto) {
+        this.abrirDetalle(this.mapaAbierto, { silencioso: true });
+      }
     } catch (error) {
       if (!this.datos) {
         this.error.textContent = error.message || t('No se pudieron cargar los caminos de Avalon.');
@@ -430,14 +438,59 @@ export class PanelCaminos {
 
   // --------------------------------------------------------------- detalle --
 
-  async abrirDetalle(nombre, { silencioso = false } = {}) {
+  /**
+   * Lo que se está mirando, para conservarlo al cambiar de idioma (la
+   * página del otro idioma lo recibe en restaurar()).
+   */
+  estado() {
+    return {
+      texto: this.input.value,
+      grupo: this.filtroGrupo.value,
+      tier: this.filtroTier.value,
+      activos: this.filtroActivos.checked,
+      tandas: { resultados: this.secciones.resultados.tanda, todos: this.secciones.todos.tanda },
+      mapaAbierto: this.mapaAbierto,
+      entradasAbiertas: [...(this._entradasAbiertas || [])],
+      cerradasAbiertas: Boolean(this._cerradasAbiertas),
+    };
+  }
+
+  /**
+   * Deja la sección como estaba en el otro idioma. Devuelve una promesa que
+   * se cumple cuando ya está todo pintado (con el camino consultado
+   * abierto), para recolocar después la posición de la página.
+   */
+  restaurar(estado = {}) {
+    const texto = (v) => (typeof v === 'string' ? v.slice(0, 80) : '');
+    this.input.value = texto(estado.texto);
+    this.filtroGrupo.value = texto(estado.grupo);
+    if (this.filtroGrupo.selectedIndex < 0) this.filtroGrupo.value = '';
+    this.filtroTier.value = texto(estado.tier);
+    if (this.filtroTier.selectedIndex < 0) this.filtroTier.value = '';
+    this.filtroActivos.checked = Boolean(estado.activos);
+    const tandas = estado.tandas || {};
+    this.secciones.resultados.tanda = Number.isInteger(tandas.resultados) ? tandas.resultados : 0;
+    this.secciones.todos.tanda = Number.isInteger(tandas.todos) ? tandas.todos : 0;
+    this._entradasAbiertas = new Set((estado.entradasAbiertas || []).filter((e) => typeof e === 'string'));
+    this._cerradasAbiertas = Boolean(estado.cerradasAbiertas);
+    const mapaAbierto = typeof estado.mapaAbierto === 'string' ? estado.mapaAbierto : null;
+    return new Promise((resolver) => {
+      this._restauracion = { mapaAbierto, resolver };
+      // Si los datos ya llegaron, se aplica ahora; si no, al llegar.
+      if (this.datos) this.refrescar();
+    });
+  }
+
+  async abrirDetalle(nombre, { silencioso = false, desplazar = !silencioso } = {}) {
     if (this.controladorDetalle) this.controladorDetalle.abort();
     this.controladorDetalle = new AbortController();
     this.mapaAbierto = nombre;
 
     if (!silencioso) {
-      this.detalle.hidden = false;
       this.detalle.replaceChildren(crear('div', 'estado', t('Consultando conexiones...')));
+      mostrarSuave(this.detalle);
+    }
+    if (desplazar) {
       // La cabecera es fija y su alto cambia en móvil: se descuenta al desplazar.
       const cabecera = document.querySelector('.cabecera');
       const margen = (cabecera ? cabecera.getBoundingClientRect().height : 0) + 12;
@@ -464,8 +517,8 @@ export class PanelCaminos {
   cerrarDetalle() {
     if (this.controladorDetalle) this.controladorDetalle.abort();
     this.mapaAbierto = null;
-    this.detalle.hidden = true;
-    this.detalle.replaceChildren();
+    // Se pliega con suavidad (el contenido se sustituye al abrir otra).
+    ocultarSuave(this.detalle);
     this._actualizarBarraAdmin(null);
   }
 
@@ -516,13 +569,16 @@ export class PanelCaminos {
     if (datos.hideouts) partes.push(this._crearBloqueHideouts(mapa.nombre, datos.hideouts));
     if (rutas.length) partes.push(this._crearBloqueRutas(rutas, { resaltar: mapa.nombre }));
 
-    const cuerpo = crear('div', 'caminos-detalle__cuerpo');
+    const cuerpo = crear('div', 'caminos-detalle__cuerpo caminos-detalle__cuerpo--una');
     cuerpo.append(this._crearBloqueConexiones(conexiones));
-    if (camino) cuerpo.append(this._crearBloqueOficial(camino));
     partes.push(cuerpo);
+    // Los datos oficiales (dungeons y recursos), plegados al final: dejan
+    // el espacio a lo importante (conexiones, rutas y gremios).
+    if (camino) partes.push(this._crearDatosOficiales(camino));
 
-    this.detalle.hidden = false;
     this.detalle.replaceChildren(...partes);
+    // Si se estaba cerrando, la ficha vuelve (sin pelear con la animación).
+    if (this.mapaAbierto) mostrarSuave(this.detalle);
   }
 
   /**
@@ -559,6 +615,7 @@ export class PanelCaminos {
             borrar.disabled = true;
             try {
               await api.borrarHideoutCamino(h.id);
+              await retirarSuave(item);
               await this.refrescar();
             } catch (error) {
               borrar.disabled = false;
@@ -695,6 +752,7 @@ export class PanelCaminos {
         borrar.disabled = true;
         try {
           await api.borrarReporte(conexion.reporteId);
+          await retirarSuave(borrar.closest('li') || fuente);
           await this.refrescar();
         } catch (error) {
           borrar.disabled = false;
@@ -704,6 +762,39 @@ export class PanelCaminos {
       fuente.append(' ', borrar);
     }
     return fuente;
+  }
+
+  /**
+   * Tarjeta desplegable "Datos oficiales del camino" (como las demás
+   * secciones). Recuerda si se dejó abierta: la ficha se redibuja cada
+   * minuto y al cambiar de camino, y no se cierra sola.
+   */
+  _crearDatosOficiales(camino) {
+    const bloque = this._crearBloqueOficial(camino);
+    const tituloViejo = bloque.querySelector('h4');
+    if (tituloViejo) tituloViejo.remove();
+
+    const tarjeta = crear('section', 'registro desplegable datos-oficiales');
+    const encabezado = crear('h4', 'desplegable__encabezado');
+    const boton = crear('button', 'desplegable__cabecera');
+    boton.type = 'button';
+    boton.setAttribute('aria-controls', 'datos-oficiales-cuerpo');
+    const textos = crear('span', 'desplegable__textos');
+    textos.append(
+      crear('span', 'registro__titulo', t('Datos oficiales del camino')),
+      crear('span', 'registro__subtitulo', t('Dungeons y recursos según los archivos del juego.'))
+    );
+    const flecha = crear('span', 'desplegable__flecha');
+    flecha.setAttribute('aria-hidden', 'true');
+    boton.append(textos, flecha);
+    encabezado.append(boton);
+
+    const cuerpo = crear('div', 'registro__cuerpo');
+    cuerpo.id = 'datos-oficiales-cuerpo';
+    cuerpo.append(bloque);
+    tarjeta.append(encabezado, cuerpo);
+    conectarDesplegable(boton, cuerpo, { clave: 'datos-oficiales-abiertos', abierto: false });
+    return tarjeta;
   }
 
   _crearBloqueOficial(camino) {
@@ -1034,8 +1125,9 @@ export class PanelCaminos {
       usuario: this.usuario,
       resaltar,
       alElegirZona: (nombre) => this.abrirDetalle(nombre),
-      alBorrar: async (r) => {
+      alBorrar: async (r, retirar) => {
         await api.borrarRuta(r.id);
+        await retirar();
         await this.refrescar();
       },
       alEditar: this.alEditarRuta,

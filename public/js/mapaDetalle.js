@@ -163,6 +163,7 @@ export class VentanaMapa {
   async abrir(nombreMapa, { resaltarGremio = null } = {}) {
     // Si se pulsan varias salidas seguidas, solo cuenta la última.
     const turno = ++this.turno;
+    this.nombreActual = nombreMapa;
     const saltando = this.dialogo.open && Boolean(this.datos);
     this.resaltado = resaltarGremio;
     this.hideoutSeleccionado = null;
@@ -207,6 +208,11 @@ export class VentanaMapa {
     requestAnimationFrame(() => {
       if (turno === this.turno) this.contenido.classList.remove('ventana__contenido--cambiando');
     });
+  }
+
+  /** El mapa que se está viendo en la ventana, o null si está cerrada. */
+  nombreAbierto() {
+    return this.dialogo.open ? this.nombreActual || null : null;
   }
 
   cerrar() {
@@ -263,8 +269,9 @@ export class VentanaMapa {
           usuario: this.obtenerSesion(),
           resaltar: nombreMapa,
           alElegirZona: irA,
-          alBorrar: async (r) => {
+          alBorrar: async (r, retirar) => {
             await api.borrarRuta(r.id);
+            await retirar();
             this._cargarRutas(nombreMapa);
             this.alCambiar();
           },

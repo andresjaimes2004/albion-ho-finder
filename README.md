@@ -24,6 +24,16 @@ Avalon abiertas que registra la comunidad.
   nada al servidor; la ficha de un camino se pide al elegirlo.
 - Mensajes centrados y legibles en cualquier pantalla (por ejemplo "Ningún
   camino coincide con la búsqueda" ocupaba solo la primera columna).
+- **Cambiar de idioma conserva lo que se estaba mirando**: búsquedas,
+  filtros, tandas, secciones abiertas, el camino consultado, el mapa de la
+  Zona Negra, la ventana de un mapa y la posición de la página (antes, la
+  página del otro idioma empezaba de cero).
+- En la ficha de un camino, "Datos oficiales del camino" (dungeons y
+  recursos) es una tarjeta desplegable al final, plegada por defecto (se
+  recuerda si se deja abierta); las conexiones ocupan todo el ancho.
+- Las ✕ ya no cortan de golpe: la ficha se pliega con suavidad y lo que se
+  borra o se quita (rutas, conexiones, gremios anotados, miembros de un
+  espacio, capturas del registro) sale con un fundido.
 - **Arreglos**: la ✕ de la ficha de un camino ya no la vuelve a abrir; en
   Hideouts, "Ver mapa de la Zona Negra" se despliega justo debajo del botón.
 - **Confirmaciones en una ventana propia** (borrar el espacio, salir de él,
@@ -592,7 +602,7 @@ Toda transición nueva tiene que ser suave y mantener el estilo del sitio:
 - Lo que aparece entra con la animación `aparecer` (fundido y leve
   desplazamiento). Lo que se despliega o pliega usa `mostrarSuave`,
   `ocultarSuave` o `conectarDesplegable` (`public/js/animar.js`), nunca un
-  `hidden` a secas.
+  `hidden` a secas; lo que se borra o se quita sale con `retirarSuave`.
 - Ventanas flotantes con `.ventana`; confirmaciones con `confirmar()`
   (`public/js/dialogos.js`). Nada de `window.confirm` ni `alert`; las
   alertas de los campos las pone `validacionFormularios.js`.

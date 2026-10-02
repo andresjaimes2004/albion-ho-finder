@@ -3941,3 +3941,11 @@ input:placeholder-shown + .borrar-entrada { display: none; }
 @media (max-width: 600px) {
   .caminos-todos__cuerpo .caminos-lista { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* ---- Ficha de un camino: conexiones a todo el ancho y "Datos oficiales"
+        como tarjeta desplegable al final. ---- */
+.caminos-detalle__cuerpo--una { grid-template-columns: minmax(0, 1fr); }
+.datos-oficiales { margin: 16px 0 0; }
+.datos-oficiales .desplegable__cabecera { padding: 12px 16px; }
+.datos-oficiales > .registro__cuerpo { padding: 0 16px 14px; }
+.datos-oficiales .caminos-detalle__bloque { margin: 0; }
