@@ -41,6 +41,9 @@ Avalon abiertas que registra la comunidad.
   tarjeta lleva a la ficha del otro mapa (sin el botón "Ver mapa"; la ✕ de
   borrar sigue funcionando aparte), y en "Tus últimas búsquedas" toda la
   píldora repite la búsqueda ("Limpiar" sigue igual).
+- "Tus últimas búsquedas" se abre y se cierra pulsando cualquier parte de su
+  cabecera (no solo el título), con la flecha a la derecha y el mismo hover
+  que las demás secciones desplegables; "Limpiar" funciona aparte.
 - **Arreglos**: la ✕ de la ficha de un camino ya no la vuelve a abrir; en
   Hideouts, "Ver mapa de la Zona Negra" se despliega justo debajo del botón.
 - **Confirmaciones en una ventana propia** (borrar el espacio, salir de él,
