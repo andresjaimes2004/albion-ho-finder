@@ -3949,3 +3949,76 @@ input:placeholder-shown + .borrar-entrada { display: none; }
 .datos-oficiales .desplegable__cabecera { padding: 12px 16px; }
 .datos-oficiales > .registro__cuerpo { padding: 0 16px 14px; }
 .datos-oficiales .caminos-detalle__bloque { margin: 0; }
+
+/* ---- Tarjetas enteras accionables: "Conexiones abiertas ahora" y
+        "Tus últimas búsquedas". El botón (nombre o término) se extiende a
+        toda la tarjeta con ::after; lo demás que se pulsa (la ✕ de borrar)
+        queda por encima. ---- */
+.conexion--accionable,
+.historial__tarjeta {
+  position: relative;
+  cursor: pointer;
+  transition:
+    transform var(--duracion) var(--curva),
+    border-color var(--duracion) var(--curva),
+    box-shadow var(--duracion) var(--curva),
+    background-color var(--duracion) var(--curva);
+}
+.conexion--accionable .conexion__nombre::after,
+.historial__tarjeta .historial__item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+}
+.conexion--accionable .conexion__borrar { position: relative; z-index: 2; }
+.conexion--accionable .conexion__nombre:focus-visible,
+.historial__tarjeta .historial__item:focus-visible { outline: none; }
+
+.conexion--accionable:hover,
+.conexion--accionable:has(.conexion__nombre:focus-visible) {
+  transform: translateY(-2px);
+  border-color: rgba(var(--acento-rgb), 0.5);
+  background-color: rgba(38, 33, 48, 0.74);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.38), 0 0 14px rgba(var(--acento-rgb), 0.08);
+}
+.conexion--accionable:has(.conexion__nombre:focus-visible),
+.historial__tarjeta:has(.historial__item:focus-visible) { outline: 2px solid var(--color-oro-claro); outline-offset: 2px; }
+.conexion--accionable:active { transform: translateY(0); }
+.conexion--accionable:hover .conexion__nombre { color: rgb(var(--acento-rgb)); text-decoration: none; }
+button.conexion__nombre:hover { text-decoration: none; }
+
+/* Flecha a la derecha: indica que la tarjeta lleva a la ficha del mapa. */
+.conexion__ir {
+  margin-left: auto;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  background-color: var(--color-texto-tenue);
+  -webkit-mask: var(--icono-abajo) center / contain no-repeat;
+  mask: var(--icono-abajo) center / contain no-repeat;
+  transform: rotate(-90deg);
+  transition: transform var(--duracion) var(--curva), background-color var(--duracion-rapida) var(--curva);
+}
+.conexion--accionable:hover .conexion__ir { background-color: rgb(var(--acento-rgb)); transform: rotate(-90deg) translateY(3px); }
+
+.historial__tarjeta:hover,
+.historial__tarjeta:has(.historial__item:focus-visible) {
+  transform: translateY(-2px);
+  border-color: rgba(var(--acento-rgb), 0.55);
+  background-color: rgba(var(--acento-rgb), 0.1);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.32);
+}
+.historial__tarjeta:active { transform: translateY(0); }
+.historial__tarjeta:hover .historial__item { color: rgb(var(--acento-rgb)); }
+/* El texto ya no se mueve solo: se mueve la tarjeta entera. */
+.historial__tarjeta .historial__item:hover { transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .conexion--accionable,
+  .historial__tarjeta,
+  .conexion__ir { transition: none; }
+  .conexion--accionable:hover,
+  .historial__tarjeta:hover { transform: none; }
+}

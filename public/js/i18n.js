@@ -477,6 +477,9 @@ export const EN = {
   '{n} de {total}': '{n} of {total}',
   // --- v13.5: datos oficiales ---
   'Dungeons y recursos según los archivos del juego.': 'Dungeons and resources from the game files.',
+  // --- v13.5: tarjetas accionables ---
+  'Buscar otra vez «{termino}»': 'Search «{termino}» again',
+  'Ver la ficha de {nombre}': 'Open the details of {nombre}',
 };
 
 const tiene = Object.prototype.hasOwnProperty;

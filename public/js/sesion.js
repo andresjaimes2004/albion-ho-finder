@@ -175,16 +175,19 @@ export class PanelSesion {
     for (const entrada of historial) {
       const item = document.createElement('li');
 
+      // Toda la píldora repite la búsqueda: el botón cubre la tarjeta (CSS).
       const boton = document.createElement('button');
       boton.type = 'button';
       boton.className = 'historial__item';
       boton.textContent = entrada.termino;
+      boton.setAttribute('aria-label', t('Buscar otra vez «{termino}»', { termino: entrada.termino }));
       boton.addEventListener('click', () => this.alElegirTermino(entrada.termino));
 
       const detalle = document.createElement('span');
       detalle.className = 'historial__detalle';
       detalle.textContent = tn(entrada.totalMapas, '{n} mapa', '{n} mapas');
 
+      item.className = 'historial__tarjeta';
       item.append(boton, detalle);
       this.historialLista.appendChild(item);
     }

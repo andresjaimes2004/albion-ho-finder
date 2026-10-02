@@ -34,6 +34,10 @@ Avalon abiertas que registra la comunidad.
 - Las ✕ ya no cortan de golpe: la ficha se pliega con suavidad y lo que se
   borra o se quita (rutas, conexiones, gremios anotados, miembros de un
   espacio, capturas del registro) sale con un fundido.
+- **Tarjetas enteras accionables**: en "Conexiones abiertas ahora" toda la
+  tarjeta lleva a la ficha del otro mapa (sin el botón "Ver mapa"; la ✕ de
+  borrar sigue funcionando aparte), y en "Tus últimas búsquedas" toda la
+  píldora repite la búsqueda ("Limpiar" sigue igual).
 - **Arreglos**: la ✕ de la ficha de un camino ya no la vuelve a abrir; en
   Hideouts, "Ver mapa de la Zona Negra" se despliega justo debajo del botón.
 - **Confirmaciones en una ventana propia** (borrar el espacio, salir de él,

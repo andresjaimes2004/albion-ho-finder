@@ -710,8 +710,12 @@ export class PanelCaminos {
     const destino = crear('span', 'conexion__destino');
     const nombre = hacia.nombre || t('Mapa desconocido');
     if (hacia.nombre) {
+      // Toda la tarjeta lleva a la ficha de ese mapa: el nombre es el botón
+      // y su ::after (CSS) cubre la tarjeta entera.
+      item.classList.add('conexion--accionable');
       const enlace = crear('button', 'conexion__nombre', nombre);
       enlace.type = 'button';
+      enlace.setAttribute('aria-label', t('Ver la ficha de {nombre}', { nombre }));
       enlace.addEventListener('click', () => this.abrirDetalle(hacia.nombre));
       destino.append(enlace);
     } else {
@@ -728,13 +732,8 @@ export class PanelCaminos {
     }
 
     item.append(destino, tiempo, this._crearFuente(conexion));
-
-    if (hacia.clase === 'zonaNegra' && this.abrirMapa) {
-      const ver = crear('button', 'boton boton--pequeno boton--sutil', t('Ver mapa'));
-      ver.type = 'button';
-      ver.addEventListener('click', () => this.abrirMapa(hacia.nombre));
-      item.append(ver);
-    }
+    // Sin botón "Ver mapa": la ficha de un mapa de Zona Negra ya lo ofrece.
+    if (hacia.nombre) item.append(crear('span', 'conexion__ir'));
     return item;
   }
 
