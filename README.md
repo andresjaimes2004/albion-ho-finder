@@ -8,6 +8,27 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v14.0 — Pie con Discord y páginas de Soporte
+
+- **Discord en el pie**: un botón cuadrado con el icono (como en
+  AlbionOnlineBuilds) bajo la descripción de la marca; abre en otra pestaña
+  y se ilumina con el color de Discord. Se configura con `DISCORD_URL`
+  (invitación `discord.gg/…`, `discord.com/invite/…` o perfil
+  `discord.com/users/<id>`); sin valor válido, no aparece.
+- **Columna "Soporte"** en el pie con tres páginas nuevas, en español e
+  inglés: Contáctanos (`/contacto`, `/en/contact`), Política de privacidad
+  (`/privacidad`, `/en/privacy`) y Términos de uso (`/terminos`,
+  `/en/terms`). Tarjetas de vidrio con el color de acento, índice para ir a
+  cada sección y entrada suave en cascada; sin JavaScript. Están en el
+  sitemap con su versión en el otro idioma.
+- El texto está en `src/i18n/legal.js` (se escapa al generar el HTML) y
+  describe lo que hace el sitio de verdad: qué se guarda, cuánto tiempo,
+  cookies, terceros y derechos según la Ley 1581 de 2012. El correo de
+  contacto se configura con `CONTACTO_CORREO`; sin él, aparece "muy pronto".
+- El pie es ahora una plantilla común (`src/vistas/_pie.html`) para la
+  portada y las páginas de soporte; sus enlaces a secciones de la portada
+  llevan la ruta (`/#apoyar`) y siguen desplazando con suavidad en ella.
+
 ### v13.8 — "Caminos avalonianos" vuelve a mostrar sus tarjetas y el borrado masivo incluye tus espacios
 
 - **Corrección**: en v13.7 un método nuevo de la lista de rutas se llamó igual

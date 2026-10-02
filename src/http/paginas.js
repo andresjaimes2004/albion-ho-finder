@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { SEO, EN } = require('../i18n/pagina');
 const { PREGUNTAS } = require('../i18n/preguntas');
+const legal = require('./legal');
 
 /**
  * paginas.js
@@ -22,6 +23,10 @@ const { PREGUNTAS } = require('../i18n/preguntas');
  *    (SITIO_URL), con los enlaces hreflang entre idiomas.
  *  - Cualquier otra ruta responde un 404 real (no la página principal),
  *    para no crear contenido duplicado.
+ *  - Páginas de soporte (Contáctanos, Política de privacidad, Términos de
+ *    uso) en /contacto, /privacidad y /terminos (y /en/contact, /en/privacy,
+ *    /en/terms): plantilla src/vistas/legal.html con el contenido de
+ *    src/http/legal.js. El pie (src/vistas/_pie.html) es común a todas.
  *  - Donaciones: el enlace de Ko-fi y la llave Bre-B se configuran con
  *    DONAR_KOFI_URL y DONAR_BREB_LLAVE (y el QR, si existe
  *    public/assets/qr-breb.png). Se validan: un valor inválido o ausente
@@ -166,6 +171,28 @@ function variables(idioma) {
     verificaciones: verificaciones(),
     preguntas: htmlPreguntas(idioma),
     ...donaciones(),
+    // Pie: enlaces a las páginas de soporte del idioma y Discord.
+    urlContacto: legal.PAGINAS.contacto[idioma],
+    urlPrivacidad: legal.PAGINAS.privacidad[idioma],
+    urlTerminos: legal.PAGINAS.terminos[idioma],
+    discordPie: legal.htmlDiscordPie(),
+  };
+}
+
+/** Datos de una página de soporte (título, URLs por idioma y contenido). */
+function variablesLegales(pagina, idioma) {
+  const sitio = urlSitio();
+  const rutas = legal.PAGINAS[pagina];
+  const textos = legal.TEXTOS[idioma][pagina];
+  return {
+    titulo: escaparAtributo(`${textos.titulo} | Albion Navigator`),
+    descripcion: escaparAtributo(textos.descripcion),
+    urlCanonica: `${sitio}${rutas[idioma]}`,
+    urlEs: `${sitio}${rutas.es}`,
+    urlEn: `${sitio}${rutas.en}`,
+    rutaEs: rutas.es,
+    rutaEn: rutas.en,
+    contenidoLegal: legal.htmlContenido(pagina, idioma),
   };
 }
 
@@ -173,8 +200,10 @@ function variables(idioma) {
  * Sustituye {{texto}} y {{@variable}}. Falla si falta una traducción o
  * una variable: mejor un error al arrancar que texto sin traducir.
  */
-function renderizar(plantilla, idioma) {
-  const valores = variables(idioma);
+function renderizar(plantilla, idioma, extras = {}) {
+  const valores = { ...variables(idioma), ...extras };
+  // El pie común se genera con los mismos datos de la página.
+  if (plantilla.includes('{{@pie}}')) valores.pie = renderizar(leerVista('_pie.html'), idioma, extras);
   return plantilla.replace(/\{\{(@?)([\s\S]+?)\}\}/g, (_, esVariable, clave) => {
     if (esVariable) {
       if (!(clave in valores)) throw new Error(`Variable de plantilla desconocida: ${clave}`);
@@ -193,9 +222,13 @@ function leerVista(nombre) {
 function generarPaginas() {
   const principal = leerVista('index.html');
   const error = leerVista('404.html');
+  const plantillaLegal = leerVista('legal.html');
   const paginas = {};
   for (const idioma of IDIOMAS) {
-    paginas[idioma] = { principal: renderizar(principal, idioma), error: renderizar(error, idioma) };
+    paginas[idioma] = { principal: renderizar(principal, idioma), error: renderizar(error, idioma), legal: {} };
+    for (const pagina of Object.keys(legal.PAGINAS)) {
+      paginas[idioma].legal[pagina] = renderizar(plantillaLegal, idioma, variablesLegales(pagina, idioma));
+    }
   }
   return paginas;
 }
@@ -213,8 +246,15 @@ function sitemapXml() {
     .join('\n');
   const urls = IDIOMAS.map(
     (i) => `  <url>\n    <loc>${sitio}${INICIO[i]}</loc>\n${alternativas}\n    <changefreq>daily</changefreq>\n    <priority>${i === 'es' ? '1.0' : '0.9'}</priority>\n  </url>`
-  ).join('\n');
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls}\n</urlset>\n`;
+  );
+  // Páginas de soporte, cada una con su versión en el otro idioma.
+  for (const rutas of Object.values(legal.PAGINAS)) {
+    const alternas = IDIOMAS.map((i) => `    <xhtml:link rel="alternate" hreflang="${i}" href="${sitio}${rutas[i]}"/>`).join('\n');
+    for (const i of IDIOMAS) {
+      urls.push(`  <url>\n    <loc>${sitio}${rutas[i]}</loc>\n${alternas}\n    <changefreq>monthly</changefreq>\n    <priority>0.3</priority>\n  </url>`);
+    }
+  }
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls.join('\n')}\n</urlset>\n`;
 }
 
 function manifiesto() {
@@ -265,6 +305,8 @@ function crearPaginas() {
     res.set('Cache-Control', 'no-cache');
     if (ruta === '/') return res.send(paginas.es.principal);
     if (ruta === '/en/') return res.send(paginas.en.principal);
+    const soporte = legal.paginaDeRuta(ruta);
+    if (soporte) return res.send(paginas[soporte.idioma].legal[soporte.pagina]);
 
     const idioma = ruta.startsWith('/en/') ? 'en' : 'es';
     return res.status(404).send(paginas[idioma].error);

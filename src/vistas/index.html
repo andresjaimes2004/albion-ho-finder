@@ -555,45 +555,7 @@
     </div>
   </main>
 
-  <footer class="pie">
-    <div class="contenedor contenedor--ancho pie__rejilla">
-      <div class="pie__marca">
-        <a class="marca" href="{{@inicio}}" data-ir="inicio" aria-label="{{Albion Navigator, inicio}}">
-          <img class="marca__icono" src="/assets/marca-96.webp" alt="" width="36" height="36" loading="lazy" />
-          <span class="marca__titulo">Albion Navigator</span>
-        </a>
-        <p>{{Encuentra los hideouts de cualquier gremio en la Zona Negra y sigue las rutas de Avalon que registra la comunidad.}}</p>
-      </div>
-
-      <nav class="pie__columna" aria-label="{{Herramientas}}">
-        <h2 class="pie__titulo">{{Herramientas}}</h2>
-        <ul>
-          <li><a href="{{@inicio}}#hideouts" data-ir="hideouts">{{Buscador de hideouts}}</a></li>
-          <li><a href="{{@inicio}}#caminos" data-ir="caminos">{{Caminos de Avalon}}</a></li>
-          <li><a href="#apoyar" data-desplazar>{{Apoyar el proyecto}}</a></li>
-          <li><a href="#preguntas" data-desplazar>{{Preguntas frecuentes}}</a></li>
-        </ul>
-      </nav>
-
-      <nav class="pie__columna" aria-label="{{Recursos}}">
-        <h2 class="pie__titulo">{{Recursos}}</h2>
-        <ul>
-          <li><a href="https://albiononline.com/" target="_blank" rel="noopener noreferrer">Albion Online</a></li>
-          <li><a href="https://wiki.albiononline.com/" target="_blank" rel="noopener noreferrer">{{Wiki oficial}}</a></li>
-          <li><a href="https://github.com/ao-data/ao-bin-dumps" target="_blank" rel="noopener noreferrer">{{Datos del juego (ao-bin-dumps)}}</a></li>
-        </ul>
-      </nav>
-    </div>
-
-    <div class="contenedor contenedor--ancho pie__inferior">
-      <p>{{© 2026 Albion Navigator. Todos los derechos reservados.}}</p>
-      <p class="pie__creditos">{{Creado por <strong>TurnDark</strong>}} · <a class="pie__donar" href="#apoyar" data-desplazar><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.8 3.9 4.5 7.3 4.5c2 0 3.6 1.1 4.7 2.7 1.1-1.6 2.7-2.7 4.7-2.7 3.4 0 5.7 3.3 4.5 6.7-1.7 4.7-9.2 9.3-9.2 9.3Z" fill="currentColor"/></svg> {{Donar}}</a></p>
-    </div>
-
-    <div class="contenedor contenedor--ancho">
-      <p class="pie__aviso">{{Albion Online es una marca registrada de Sandbox Interactive GmbH. Albion Navigator es un proyecto independiente y no está afiliado, aprobado ni patrocinado por Sandbox Interactive. Datos actualizados por temporada; geografía de los mapas tomada de los dumps públicos del cliente del juego.}}</p>
-    </div>
-  </footer>
+  {{@pie}}
 
   <!-- Ventana flotante: detalle del mapa -->
   <dialog id="ventana-mapa" class="ventana" aria-label="{{Detalle del mapa}}">

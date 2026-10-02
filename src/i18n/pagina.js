@@ -52,6 +52,11 @@ const EN = {
   'Escudo de Albion Navigator sobre arte de Albion Online': 'Albion Navigator crest over Albion Online artwork',
   'Albion Navigator, inicio': 'Albion Navigator, home',
   'Hideouts · Rutas de Avalon': 'Hideouts · Avalon Routes',
+  // Pie: soporte
+  Soporte: 'Support',
+  'Contáctanos': 'Contact us',
+  'Política de privacidad': 'Privacy policy',
+  'Términos de uso': 'Terms of use',
   'Secciones': 'Sections',
   'Caminos de Avalon': 'Avalonian Roads',
   'Idioma': 'Language',
