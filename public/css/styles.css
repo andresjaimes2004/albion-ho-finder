@@ -130,7 +130,7 @@ body[data-vista='caminos'] .fondo__capa--caminos { opacity: 1; }
   -webkit-backdrop-filter: blur(10px) saturate(140%);
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: var(--capa-cabecera);
 }
 
 .cabecera__contenido {
@@ -3484,7 +3484,7 @@ html:has(dialog[open]) { overflow: hidden; }
 .caminos-detalle { position: relative; }
 .panel-busqueda:focus-within,
 .registro:focus-within,
-.caminos-detalle:focus-within { z-index: 30; }
+.caminos-detalle:focus-within { z-index: var(--capa-elevada); }
 
 /* Desplegable de sugerencias (sugerencias.js). */
 .sugerencias-ancla { position: relative; }
@@ -3500,7 +3500,8 @@ html:has(dialog[open]) { overflow: hidden; }
   margin: 0;
   padding: 6px;
   list-style: none;
-  z-index: 40;
+  /* Dentro de su panel (que sube a --capa-elevada mientras se usa). */
+  z-index: 10;
   background: rgba(20, 17, 26, 0.98);
   border: 1px solid rgba(var(--acento-rgb), 0.35);
   border-radius: var(--radio);
@@ -3560,9 +3561,6 @@ input:placeholder-shown + .borrar-entrada { display: none; }
   font: inherit;
   cursor: pointer;
 }
-.panel-historial__alternar:hover { color: var(--color-oro-claro); }
-.panel-historial__alternar:focus-visible { outline: 2px solid var(--color-oro-claro); outline-offset: 3px; border-radius: 4px; }
-.panel-historial--plegado { padding-top: 12px; padding-bottom: 12px; }
 
 /* Hideouts: el mensaje inicial, compacto y antes del historial. */
 .estado--compacto { padding: 2px 20px 16px; gap: 4px; }
@@ -3585,7 +3583,7 @@ input:placeholder-shown + .borrar-entrada { display: none; }
   position: fixed;
   right: 20px;
   bottom: 20px;
-  z-index: 1000;
+  z-index: var(--capa-avisos);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -3677,6 +3675,20 @@ input:placeholder-shown + .borrar-entrada { display: none; }
   --duracion-rapida: 0.18s;
   --duracion: 0.28s;
   --curva: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ESCALA DE CAPAS (z-index) de la página. Nada del contenido puede pasar
+     por encima de la cabecera fija: al desplazar, todo se va por debajo.
+       contenido (tarjetas, botones dentro de tarjetas) ....... 0–5
+       panel en uso (buscador con su desplegable abierto) ..... --capa-elevada
+       alerta de un campo .................................... --capa-alerta-campo
+       cabecera fija (logo, idioma, pestañas) ................ --capa-cabecera
+       notificaciones (abajo a la derecha) ................... --capa-avisos
+     Las ventanas modales (<dialog>) van en la capa superior del navegador,
+     por encima de todo. Cualquier capa nueva debe encajar en esta escala. */
+  --capa-elevada: 20;
+  --capa-alerta-campo: 30;
+  --capa-cabecera: 50;
+  --capa-avisos: 1000;
 }
 
 /* Botones: color, fondo, borde y sombra cambian con suavidad. */
@@ -3774,7 +3786,7 @@ input:placeholder-shown + .borrar-entrada { display: none; }
 /* ---- Alertas de los campos de formulario (validacionFormularios.js) ---- */
 .aviso-campo {
   position: absolute;
-  z-index: 1100;
+  z-index: var(--capa-alerta-campo);
   max-width: min(320px, calc(100vw - 32px));
   padding: 9px 12px 9px 34px;
   border: 1px solid rgba(214, 110, 110, 0.55);
@@ -4021,4 +4033,55 @@ button.conexion__nombre:hover { text-decoration: none; }
   .conexion__ir { transition: none; }
   .conexion--accionable:hover,
   .historial__tarjeta:hover { transform: none; }
+}
+
+/* ---- "Tus últimas búsquedas": sección desplegable como las de Caminos.
+        La cabecera entera (no solo el título) abre y cierra; "Limpiar" queda
+        por encima y funciona aparte. ---- */
+.panel-historial {
+  padding: 0;
+  transition:
+    transform var(--duracion) var(--curva),
+    border-color var(--duracion) var(--curva),
+    box-shadow var(--duracion) var(--curva);
+}
+.panel-historial__cabecera {
+  position: relative;
+  padding: 14px 20px;
+  border-radius: var(--radio-lg);
+  cursor: pointer;
+}
+.panel-historial__alternar { padding: 0; }
+.panel-historial__alternar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+}
+.panel-historial__alternar:focus-visible { outline: none; }
+.panel-historial__acciones { position: relative; z-index: 2; display: flex; align-items: center; gap: 10px; }
+.panel-historial__acciones .desplegable__flecha { pointer-events: none; }
+.panel-historial .historial { margin: 0; padding: 0 20px 16px; }
+.panel-historial:has(.panel-historial__alternar[aria-expanded='true']) .desplegable__flecha { transform: rotate(180deg); }
+
+.panel-historial:has(.panel-historial__alternar:hover),
+.panel-historial:has(.panel-historial__alternar:focus-visible) {
+  transform: translateY(-3px);
+  border-color: rgba(var(--acento-rgb), 0.5);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.42), 0 0 18px rgba(var(--acento-rgb), 0.1);
+}
+.panel-historial:has(.panel-historial__alternar:active) { transform: translateY(-1px); }
+.panel-historial:has(.panel-historial__alternar:focus-visible) { outline: 2px solid var(--color-oro-claro); outline-offset: 2px; }
+.panel-historial:has(.panel-historial__alternar:hover) h2 { color: rgb(var(--acento-rgb)); }
+.panel-historial:has(.panel-historial__alternar:hover) .desplegable__flecha {
+  border-color: rgba(var(--acento-rgb), 0.6);
+  background-color: rgba(var(--acento-rgb), 0.12);
+}
+.panel-historial h2 { transition: color var(--duracion-rapida) var(--curva); }
+
+@media (prefers-reduced-motion: reduce) {
+  .panel-historial,
+  .panel-historial h2 { transition: none; }
+  .panel-historial:has(.panel-historial__alternar:hover) { transform: none; }
 }

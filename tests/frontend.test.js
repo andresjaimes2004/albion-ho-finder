@@ -154,3 +154,21 @@ test('al cambiar de idioma el estado se guarda, se recupera una sola vez y caduc
     delete globalThis.document;
   }
 });
+
+test('nada del contenido puede quedar por encima de la cabecera fija (escala de capas)', () => {
+  const css = fs.readFileSync(path.join(__dirname, '..', 'public', 'css', 'styles.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const capa = (nombre) => Number((css.match(new RegExp(`--${nombre}:\\s*(\\d+)`)) || [])[1]);
+  const cabecera = capa('capa-cabecera');
+  assert.ok(cabecera > 0, 'la escala define --capa-cabecera');
+  assert.match(css, /\.cabecera\s*\{[^}]*z-index:\s*var\(--capa-cabecera\)/, 'la cabecera usa su capa');
+  // Lo que se eleva mientras se usa (paneles, alerta de un campo) queda debajo.
+  assert.ok(capa('capa-elevada') < cabecera);
+  assert.ok(capa('capa-alerta-campo') < cabecera);
+  assert.ok(capa('capa-avisos') > cabecera, 'las notificaciones (abajo) sí van encima');
+  // Ningún z-index numérico del contenido llega a la cabecera; los paneles
+  // en uso solo suben con la variable.
+  const numericos = [...css.matchAll(/([^{}]+)\{[^{}]*?z-index:\s*(-?\d+)/g)].map((m) => ({ selector: m[1].trim(), valor: Number(m[2]) }));
+  const altos = numericos.filter((z) => z.valor >= cabecera);
+  assert.deepEqual(altos, []);
+  assert.doesNotMatch(css, /:focus-within\s*\{[^}]*z-index:\s*\d/, 'los paneles en uso suben con --capa-elevada');
+});

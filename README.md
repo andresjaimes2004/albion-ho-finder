@@ -34,10 +34,16 @@ Avalon abiertas que registra la comunidad.
 - Las ✕ ya no cortan de golpe: la ficha se pliega con suavidad y lo que se
   borra o se quita (rutas, conexiones, gremios anotados, miembros de un
   espacio, capturas del registro) sale con un fundido.
+- **Arreglo**: al buscar o filtrar y desplazar la página, el buscador (y su
+  desplegable) pasaba por encima de la cabecera fija. Ahora todo el
+  contenido queda por debajo (escala de capas en el CSS).
 - **Tarjetas enteras accionables**: en "Conexiones abiertas ahora" toda la
   tarjeta lleva a la ficha del otro mapa (sin el botón "Ver mapa"; la ✕ de
   borrar sigue funcionando aparte), y en "Tus últimas búsquedas" toda la
   píldora repite la búsqueda ("Limpiar" sigue igual).
+- "Tus últimas búsquedas" se abre y se cierra pulsando cualquier parte de su
+  cabecera (no solo el título), con la flecha a la derecha y el mismo hover
+  que las demás secciones desplegables; "Limpiar" funciona aparte.
 - **Arreglos**: la ✕ de la ficha de un camino ya no la vuelve a abrir; en
   Hideouts, "Ver mapa de la Zona Negra" se despliega justo debajo del botón.
 - **Confirmaciones en una ventana propia** (borrar el espacio, salir de él,
@@ -613,6 +619,10 @@ Toda transición nueva tiene que ser suave y mantener el estilo del sitio:
 - Nada de animaciones de más de 0,4 s (salvo la decoración de la portada) ni
   en listas que se redibujan a cada refresco (parpadean).
 - Siempre con su versión para `prefers-reduced-motion` (sin movimiento).
+- **Capas (z-index)**: nada del contenido puede pasar por encima de la
+  cabecera fija. Se usa la escala `--capa-elevada` (panel en uso) <
+  `--capa-alerta-campo` < `--capa-cabecera` < `--capa-avisos`; una prueba
+  automática falla si algún z-index del contenido llega a la cabecera.
 - `tests/frontend.test.js` comprueba que cada id que usa el JavaScript existe
   en la página y que no vuelven los diálogos ni las listas nativas.
 

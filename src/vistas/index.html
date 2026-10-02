@@ -275,11 +275,16 @@
     </div>
 
     <section id="historial" class="panel-historial" hidden>
+      <!-- Toda la franja de la cabecera abre y cierra la sección (el botón del
+           título la cubre entera); "Limpiar" queda por encima y va aparte. -->
       <div class="panel-historial__cabecera">
         <h2>
-          <button id="historial-alternar" type="button" class="panel-historial__alternar con-icono icono-abajo" aria-expanded="true" aria-controls="historial-lista">{{Tus últimas búsquedas}}</button>
+          <button id="historial-alternar" type="button" class="panel-historial__alternar" aria-expanded="true" aria-controls="historial-lista">{{Tus últimas búsquedas}}</button>
         </h2>
-        <button id="historial-limpiar" type="button" class="boton boton--pequeno boton--sutil con-icono icono-papelera">{{Limpiar}}</button>
+        <div class="panel-historial__acciones">
+          <button id="historial-limpiar" type="button" class="boton boton--pequeno boton--sutil con-icono icono-papelera">{{Limpiar}}</button>
+          <span class="desplegable__flecha" aria-hidden="true"></span>
+        </div>
       </div>
       <ul id="historial-lista" class="historial"></ul>
     </section>
