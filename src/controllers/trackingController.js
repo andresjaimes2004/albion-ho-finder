@@ -99,7 +99,10 @@ const eliminar = manejar((req, res) => {
 
 const editarRuta = manejar((req, res) => {
   const cuerpo = req.body || {};
-  const ruta = reportes.editarRuta(req.usuario, entero(req.params.id, 'id', { min: 1 }), cuerpo.conexiones);
+  // "espacio" (opcional): mover la ruta a público (null) o a un espacio
+  // propio; sin él, se queda donde estaba.
+  const opciones = 'espacio' in cuerpo ? { espacioDestino: espacios.espacioParaRegistrar(req.usuario, cuerpo.espacio) } : {};
+  const ruta = reportes.editarRuta(req.usuario, entero(req.params.id, 'id', { min: 1 }), cuerpo.conexiones, opciones);
   res.json({ ok: true, ruta });
 });
 

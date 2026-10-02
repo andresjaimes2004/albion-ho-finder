@@ -100,8 +100,9 @@ export const api = {
   anotarHideoutCamino: (camino, gremio) =>
     peticion('/api/tracking/hideouts', { metodo: 'POST', datos: { camino, gremio } }),
   borrarHideoutCamino: (id) => peticion(`/api/tracking/hideouts/${id}`, { metodo: 'DELETE' }),
-  editarRuta: (id, conexiones) =>
-    peticion(`/api/tracking/rutas/${id}`, { metodo: 'PUT', datos: { conexiones } }),
+  // `espacio`: undefined = donde estaba; null = público; un id = ese espacio.
+  editarRuta: (id, conexiones, espacio) =>
+    peticion(`/api/tracking/rutas/${id}`, { metodo: 'PUT', datos: espacio === undefined ? { conexiones } : { conexiones, espacio } }),
   rutasDeMapas: (nombres, senal) =>
     peticion(`/api/tracking/rutas?mapas=${encodeURIComponent(nombres.join(','))}`, { senal }),
 

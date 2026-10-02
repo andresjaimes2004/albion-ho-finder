@@ -480,6 +480,9 @@ export const EN = {
   // --- v13.5: tarjetas accionables ---
   'Buscar otra vez «{termino}»': 'Search «{termino}» again',
   'Ver la ficha de {nombre}': 'Open the details of {nombre}',
+  // --- v13.6: mover rutas ---
+  'Ruta actualizada y movida a público: ahora la ven todos.': 'Route updated and moved to public: everyone can see it now.',
+  'Ruta actualizada y movida a «{espacio}».': 'Route updated and moved to «{espacio}».',
 };
 
 const tiene = Object.prototype.hasOwnProperty;

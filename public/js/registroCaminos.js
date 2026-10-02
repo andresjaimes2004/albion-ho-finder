@@ -113,10 +113,13 @@ export class PanelRegistro {
     this.destinoCaja = document.getElementById('registro-destino-caja');
     this.destino = document.getElementById('registro-destino');
     this.destino.addEventListener('change', () => {
-      try {
-        localStorage.setItem('registro-espacio', this.destino.value);
-      } catch (error) {
-        // Sin almacenamiento: vale hasta recargar.
+      // Al editar una ruta, el destino es solo de esa ruta: no se recuerda.
+      if (!this.edicion) {
+        try {
+          localStorage.setItem('registro-espacio', this.destino.value);
+        } catch (error) {
+          // Sin almacenamiento: vale hasta recargar.
+        }
       }
       this._actualizarAcciones();
     });
@@ -179,7 +182,9 @@ export class PanelRegistro {
     } catch (error) {
       // Sin almacenamiento: público.
     }
-    const actual = this.destino.value || recordado;
+    // La primera vez, el último destino elegido; después, el que está puesto.
+    const actual = this._destinoIniciado ? this.destino.value : recordado;
+    this._destinoIniciado = true;
     const opciones = espacios.map((e) => {
       const opcion = document.createElement('option');
       opcion.value = String(e.id);
@@ -188,9 +193,32 @@ export class PanelRegistro {
     });
     this.destino.replaceChildren(this.destino.options[0], ...opciones);
     this.destino.value = espacios.some((e) => String(e.id) === actual) ? actual : '';
-    this.destinoCaja.hidden = !espacios.length;
     this.espaciosDisponibles = espacios;
+    this._mostrarDestino();
     if (this.filas.length) this._actualizarAcciones();
+  }
+
+  /**
+   * "Guardar en" se ve si hay dónde elegir: con espacios propios. Al editar
+   * una ruta, además, si su destino actual está entre las opciones (si la
+   * ruta es de un espacio ajeno, por ejemplo uno abierto, se queda donde
+   * está). Aparece y desaparece con suavidad.
+   */
+  _mostrarDestino() {
+    const espacios = this.espaciosDisponibles || [];
+    let visible = espacios.length > 0;
+    if (this.edicion) {
+      const actual = this.edicion.ruta.espacio ? this.edicion.ruta.espacio.id : null;
+      visible = visible && (actual === null || espacios.some((e) => e.id === actual));
+    }
+    if (visible) mostrarSuave(this.destinoCaja);
+    else ocultarSuave(this.destinoCaja);
+  }
+
+  /** Destino para guardar la edición: undefined si no se puede elegir (se queda donde está). */
+  _destinoEdicion() {
+    if (this.destinoCaja.hidden) return undefined;
+    return this._espacioDestino();
   }
 
   /** Id del espacio elegido en "Guardar en", o null (público). */
@@ -232,7 +260,11 @@ export class PanelRegistro {
       // Sin zonas se edita igual; se validarán al escribir.
     }
 
-    this.edicion = { ruta, previas: this.filas, preferencias: new Map(this.preferencias) };
+    this.edicion = { ruta, previas: this.filas, preferencias: new Map(this.preferencias), destinoPrevio: this.destino.value };
+    // "Guardar en" empieza en el destino actual de la ruta; cambiarlo la mueve.
+    const espacioRuta = ruta.espacio ? String(ruta.espacio.id) : '';
+    this.destino.value = [...this.destino.options].some((o) => o.value === espacioRuta) ? espacioRuta : '';
+    this._mostrarDestino();
     for (const fila of this.filas) fila.item.remove();
     this.filas = [];
     this.preferencias.clear();
@@ -267,6 +299,8 @@ export class PanelRegistro {
     const edicion = this.edicion;
     if (!edicion) return;
     this.edicion = null;
+    this.destino.value = [...this.destino.options].some((o) => o.value === edicion.destinoPrevio) ? edicion.destinoPrevio : '';
+    this._mostrarDestino();
     this.avisoEdicion.hidden = true;
     this.cuerpo.closest('.registro').classList.remove('registro--edicion');
     this.lista.replaceChildren();
@@ -1036,10 +1070,17 @@ export class PanelRegistro {
     this.guardar.disabled = true;
     this.estado.textContent = t('Guardando…');
     try {
+      const destino = this._destinoEdicion();
+      const antes = ruta.espacio ? ruta.espacio.id : null;
       if (borrar) await api.borrarRuta(ruta.id);
-      else await api.editarRuta(ruta.id, this.filas.map((f) => f.datos()));
+      else await api.editarRuta(ruta.id, this.filas.map((f) => f.datos()), destino);
       this._salirDeEdicion();
-      this.estado.textContent = borrar ? t('Ruta borrada.') : t('Ruta actualizada. ¡Gracias!');
+      const movida = !borrar && destino !== undefined && destino !== antes;
+      const espacio = movida && destino !== null ? (this.espaciosDisponibles || []).find((e) => e.id === destino) : null;
+      if (borrar) this.estado.textContent = t('Ruta borrada.');
+      else if (!movida) this.estado.textContent = t('Ruta actualizada. ¡Gracias!');
+      else if (espacio) this.estado.textContent = t('Ruta actualizada y movida a «{espacio}».', { espacio: espacio.nombre });
+      else this.estado.textContent = t('Ruta actualizada y movida a público: ahora la ven todos.');
       if (this.alGuardar) this.alGuardar();
     } catch (error) {
       this.estado.textContent = error.message || t('No se pudo guardar.');

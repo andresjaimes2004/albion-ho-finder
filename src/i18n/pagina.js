@@ -80,6 +80,7 @@ const EN = {
   'Invertir sentido': 'Reverse direction',
   'Proponer también las rutas entre destinos (todas las combinaciones)': 'Also propose routes between destinations (all combinations)',
   'Guardar en': 'Save to',
+  'Al editar, cambiarlo mueve la ruta (no se duplica).': 'When editing, changing it moves the route (it is not duplicated).',
   'Resultados de la búsqueda': 'Search results',
   'Rutas abiertas registradas por la comunidad, por portal de ciudad.': 'Open routes registered by the community, by city portal.',
   'Caminos avalonianos': 'Avalonian roads',

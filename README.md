@@ -8,6 +8,24 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v13.6 — Mover rutas al editarlas y nombres de gremio sin filtro
+
+- **Editar una ruta permite cambiar dónde se guarda**: "Guardar en" aparece
+  también al editar, con el destino actual de la ruta; cambiarlo la mueve
+  (de público a un espacio privado o al revés, o entre espacios propios) sin
+  duplicarla: es la misma ruta, sus tramos pasan al nuevo destino y las
+  conexiones antiguas que ya no use nadie se borran. Hay que ser miembro del
+  espacio de destino, y si allí ya existe una ruta con el mismo recorrido no
+  se mueve.
+- **"Guardar en"** con el menú desplegable propio de los filtros (panel
+  oscuro, resaltado del apartado, apertura con fundido), enmarcado como los
+  demás controles y apareciendo con suavidad.
+- **Gremios de caminos de hideouts sin filtro de palabras**: si el juego
+  permite el nombre del gremio, la web también (antes, algunos gremios
+  reales no se podían anotar ni pasar al Excel). Se sigue comprobando el
+  formato; el filtro de insultos queda solo para nombres de cuenta y de
+  espacio.
+
 ### v13.5 — Caminos de Avalon reorganizado, confirmaciones y alertas propias
 
 - **Caminos de Avalon reorganizado**: la ficha del camino consultado y los

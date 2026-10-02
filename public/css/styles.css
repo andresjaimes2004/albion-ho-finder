@@ -2884,7 +2884,7 @@ html:has(dialog[open]) { overflow: hidden; }
    translúcido, resaltado dorado y apertura con fundido. En el resto de
    navegadores se mantiene la lista nativa. */
 @supports (appearance: base-select) {
-  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila) select {
+  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila, .registro__destino) select {
     appearance: base-select;
     display: inline-flex;
     align-items: center;
@@ -2894,18 +2894,18 @@ html:has(dialog[open]) { overflow: hidden; }
   }
 
   /* Flecha dorada propia, que gira al abrir. */
-  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila) select::picker-icon {
+  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila, .registro__destino) select::picker-icon {
     content: '';
     width: 14px;
     height: 14px;
     background: var(--flecha-select) center / contain no-repeat;
     transition: rotate 0.25s ease;
   }
-  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila) select:open::picker-icon { rotate: 180deg; }
-  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila) select:open { border-color: rgba(201, 162, 39, 0.6); }
+  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila, .registro__destino) select:open::picker-icon { rotate: 180deg; }
+  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila, .registro__destino) select:open { border-color: rgba(201, 162, 39, 0.6); }
 
   /* Panel de opciones */
-  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila) select::picker(select) {
+  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila, .registro__destino) select::picker(select) {
     appearance: base-select;
     margin-block: 6px;
     padding: 6px;
@@ -2924,19 +2924,19 @@ html:has(dialog[open]) { overflow: hidden; }
       overlay 0.2s ease allow-discrete,
       display 0.2s ease allow-discrete;
   }
-  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila) select:open::picker(select) {
+  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila, .registro__destino) select:open::picker(select) {
     opacity: 1;
     translate: 0 0;
   }
   @starting-style {
-    :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila) select:open::picker(select) {
+    :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila, .registro__destino) select:open::picker(select) {
       opacity: 0;
       translate: 0 -6px;
     }
   }
 
   /* Opciones: resaltado dorado en vez de azul. */
-  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila) select option {
+  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila, .registro__destino) select option {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -2948,17 +2948,17 @@ html:has(dialog[open]) { overflow: hidden; }
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease;
   }
-  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila) select option:hover,
-  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila) select option:focus-visible {
+  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila, .registro__destino) select option:hover,
+  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila, .registro__destino) select option:focus-visible {
     background: rgba(201, 162, 39, 0.16);
     color: var(--color-oro-claro);
     outline: none;
   }
-  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila) select option:checked {
+  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila, .registro__destino) select option:checked {
     background: rgba(201, 162, 39, 0.24);
     color: var(--color-oro-claro);
   }
-  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila) select option::checkmark { color: var(--color-oro-claro); }
+  :is(.caminos-filtros, .formulario-linea, .admin-fila, .ajuste-imagen__fila, .registro__destino) select option::checkmark { color: var(--color-oro-claro); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -3428,7 +3428,6 @@ html:has(dialog[open]) { overflow: hidden; }
 /* "Guardar en" del panel de registro (no se cambia al editar una ruta). */
 .registro__destino { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin: 4px 0 10px; font-size: 0.86rem; }
 .registro__destino select { max-width: 100%; }
-.registro--edicion .registro__destino { display: none; }
 
 /* Insignia del espacio en rutas y conexiones. */
 .insignia-espacio {
@@ -3472,8 +3471,6 @@ html:has(dialog[open]) { overflow: hidden; }
    ============================================================================ */
 
 /* "Guardar en" del registro: misma píldora que los filtros de caminos. */
-.registro__destino { gap: 8px 12px; }
-.registro__destino > span { font-weight: 600; color: var(--color-texto-suave); }
 .registro__destino select { min-width: 200px; }
 .registro__destino select:focus-visible { outline: 2px solid var(--color-oro-claro); outline-offset: 2px; }
 
@@ -4084,4 +4081,41 @@ button.conexion__nombre:hover { text-decoration: none; }
   .panel-historial,
   .panel-historial h2 { transition: none; }
   .panel-historial:has(.panel-historial__alternar:hover) { transform: none; }
+}
+
+/* ---- "Guardar en": un control enmarcado como los demás del apartado, con
+        el menú propio de los filtros (ver v10) y transiciones suaves. Al
+        editar una ruta muestra que cambiarlo la mueve. ---- */
+.registro__destino {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 6px 0 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  background: var(--vidrio-fuerte);
+  font-size: 0.88rem;
+  transition:
+    border-color var(--duracion-rapida) var(--curva),
+    background-color var(--duracion-rapida) var(--curva),
+    box-shadow var(--duracion-rapida) var(--curva);
+}
+.registro__destino:hover,
+.registro__destino:focus-within {
+  border-color: rgba(var(--acento-rgb), 0.45);
+  background-color: rgba(var(--acento-rgb), 0.05);
+}
+.registro__destino-etiqueta { font-weight: 600; color: var(--color-texto-suave); }
+.registro__destino select { transition: border-color var(--duracion-rapida) var(--curva), background-color var(--duracion-rapida) var(--curva); }
+.registro__destino-ayuda { display: none; flex-basis: 100%; font-size: 0.78rem; color: var(--color-texto-tenue); }
+.registro--edicion .registro__destino { border-color: rgba(var(--acento-rgb), 0.35); }
+.registro--edicion .registro__destino-ayuda { display: block; }
+@media (max-width: 600px) {
+  .registro__destino select { flex: 1 1 100%; min-width: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .registro__destino,
+  .registro__destino select { transition: none; }
 }

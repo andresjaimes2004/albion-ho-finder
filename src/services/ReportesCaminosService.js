@@ -250,10 +250,20 @@ class ReportesCaminosService {
    * las mismas zonas se actualizan; las que la ruta deja de usar se borran
    * si ninguna otra ruta las usa. La ruta conserva su autor.
    */
-  editarRuta(usuario, id, lista) {
+  /**
+   * `espacioDestino`: dónde guardar la ruta editada. undefined = donde
+   * estaba; null = pública; un id = ese espacio (hay que ser miembro). La
+   * ruta se mueve, no se duplica: es la misma (mismo id), sus tramos pasan
+   * al nuevo destino y las conexiones antiguas que ya no use nadie se borran.
+   */
+  editarRuta(usuario, id, lista, { espacioDestino } = {}) {
     const ruta = this.rutas.obtener(id);
     if (!ruta || !this._visible(usuario.id, ruta.espacioId)) throw errorPublico('Esa ruta no existe.', 404);
-    const espacioId = ruta.espacioId ?? null;
+    const espacioId = espacioDestino === undefined ? ruta.espacioId ?? null : espacioDestino;
+    // Defensa en profundidad: el controlador ya lo comprobó.
+    if (espacioId !== null && !this.espacios.esMiembro(espacioId, usuario.id)) {
+      throw errorPublico('Ese espacio no existe o no eres miembro.', 404);
+    }
     if (ruta.usuarioId !== usuario.id && usuario.rol !== 'ADMIN') {
       throw errorPublico('Solo quien registró la ruta o un administrador puede editarla.', 403);
     }
@@ -279,7 +289,7 @@ class ReportesCaminosService {
         const existente = this.repositorio.buscarVigenteEntre(origen, destino, ahoraIso, espacioId);
         return existente ? this.repositorio.actualizar(existente.id, datos).id : this.repositorio.crear(datos).id;
       });
-      this.rutas.actualizarRecorrido(id, { zonas, conexionIds });
+      this.rutas.actualizarRecorrido(id, { zonas, conexionIds, espacioId });
       for (const anterior of ruta.conexionIds) {
         if (!conexionIds.includes(anterior) && !this.rutas.usaConexion(anterior)) this.repositorio.eliminar(anterior);
       }
