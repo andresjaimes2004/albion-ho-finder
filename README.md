@@ -8,6 +8,14 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v13.8 — "Caminos avalonianos" vuelve a mostrar sus tarjetas
+
+- **Corrección**: en v13.7 un método nuevo de la lista de rutas se llamó igual
+  que el que dibuja las tarjetas de los caminos (`_crearTarjeta`) y lo tapaba:
+  la sección "Caminos avalonianos" quedaba vacía. Se renombró.
+- Prueba nueva: ninguna clase del JavaScript puede definir dos veces el mismo
+  método (el segundo taparía al primero sin dar ningún error).
+
 ### v13.7 — Las rutas movidas al editarlas se ven en su apartado
 
 - **Corrección**: al editar desde la raíz y cambiar "Guardar en", el conjunto
