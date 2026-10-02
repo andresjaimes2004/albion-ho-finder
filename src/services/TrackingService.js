@@ -252,17 +252,21 @@ class TrackingService {
    *  - 'activas': las rutas abiertas (no toca las cerradas hace poco).
    *  - 'zona':    las rutas que pasan por esa zona (mapa o camino).
    *  - 'portal':  las rutas cuyo portal de ciudad más cercano es ese.
-   * Solo afecta a lo público (y a los espacios que permiten que los demás
-   * vean sus conexiones): lo de los espacios privados es de sus miembros.
-   * `visor` es el de un visitante sin sesión (EspaciosService.visor(null)).
+   * Solo afecta a lo que ve el administrador (`visor`): lo público, los
+   * espacios abiertos y los espacios de los que es miembro, como en su
+   * lista de rutas. Los espacios privados ajenos no se tocan.
+   * `espacio` acota más, como el filtro de la lista: undefined = todo lo
+   * que ve, null = solo lo público, un id = solo ese espacio.
    */
-  borrarRutas({ alcance, valor = null, visor = VISOR_PUBLICO }) {
+  borrarRutas({ alcance, valor = null, visor = VISOR_PUBLICO, espacio = undefined }) {
     const ahora = this.ahora();
-    const conexionesVisibles = this.reportes.listarDesde('').filter((r) => visor.puedeVer(r.espacioId ?? null));
+    const enAlcance = (espacioId = null) =>
+      visor.puedeVer(espacioId) && (espacio === undefined || (espacioId ?? null) === espacio);
+    const conexionesVisibles = this.reportes.listarDesde('').filter((r) => enAlcance(r.espacioId ?? null));
     const cierres = new Map(conexionesVisibles.map((r) => [r.id, Date.parse(r.cierraEn)]));
     const orientadas = this.rutasRepo
       .listarCompletas()
-      .filter((ruta) => visor.puedeVer(ruta.espacioId ?? null))
+      .filter((ruta) => enAlcance(ruta.espacioId ?? null))
       .map((ruta) => this._orientar(ruta));
     let elegidas;
     if (alcance === 'todas') {

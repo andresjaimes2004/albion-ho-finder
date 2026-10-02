@@ -504,6 +504,13 @@ export const EN = {
   'Movido a público: ahora lo ven todos.': 'Moved to public: everyone can see it now.',
   // --- v13.7: editar en el mapa raíz ---
   'Editar desde la raíz todas las rutas de este conjunto': 'Edit all the routes of this set from the root',
+  // --- v13.8: borrado masivo por espacio ---
+  'Incluye las públicas y las de tus espacios.': 'Includes public ones and those in your spaces.',
+  'Solo las públicas.': 'Only public ones.',
+  'Solo las del espacio «{espacio}».': 'Only those in the space «{espacio}».',
+  'Se borrará {n} ruta.': '{n} route will be deleted.',
+  'Se borrarán {n} rutas.': '{n} routes will be deleted.',
+  'Ese espacio no existe.': 'That space does not exist.',
 };
 
 const tiene = Object.prototype.hasOwnProperty;

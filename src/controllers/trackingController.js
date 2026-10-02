@@ -31,8 +31,9 @@ const { manejar } = require('./utilidades');
  * PUT    /api/tracking/conjuntos     → editar desde la raíz un conjunto de
  *                                      rutas de la misma red (autor o admin)
  * DELETE /api/tracking/rutas/:id     → borrar una ruta (autor o admin)
- * DELETE /api/tracking/rutas?alcance=todas|activas|zona|portal&valor=X
- *                                    → borrado masivo (solo admin)
+ * DELETE /api/tracking/rutas?alcance=todas|activas|zona|portal&valor=X&espacio=publicas|id
+ *                                    → borrado masivo (solo admin) de lo que
+ *                                      ve en su lista (o de un espacio)
  *
  * Las consultas solo devuelven lo que quien pregunta puede ver: lo
  * público, lo de sus espacios privados y lo de espacios abiertos.
@@ -138,13 +139,23 @@ const auditoria = new AuditoriaRepository();
 const borrarRutasEnBloque = manejar((req, res) => {
   const alcance = texto(req.query.alcance, 'alcance', { min: 4, max: 10 });
   const valor = texto(req.query.valor, 'valor', { min: 2, max: 80, obligatorio: false });
-  // Solo lo público: los espacios privados no se tocan.
-  const resultado = servicio.borrarRutas({ alcance, valor, visor: espacios.visor(null) });
+  // Lo que el administrador ve en su lista (público, espacios abiertos y
+  // los suyos); los espacios privados ajenos no se tocan. "espacio" acota
+  // como el filtro de la lista: "publicas" o el id de un espacio visible.
+  const visor = espacios.visor(req.usuario);
+  let espacio;
+  if (req.query.espacio === 'publicas') {
+    espacio = null;
+  } else if (req.query.espacio !== undefined && req.query.espacio !== '') {
+    espacio = entero(req.query.espacio, 'espacio', { min: 1 });
+    if (!visor.puedeVer(espacio)) throw new ErrorValidacion('Ese espacio no existe.');
+  }
+  const resultado = servicio.borrarRutas({ alcance, valor, visor, espacio });
   auditoria.registrar({
     usuarioId: req.usuario.id,
     accion: 'BORRAR_RUTAS',
     entidad: 'rutas',
-    detalle: { alcance, valor, ...resultado },
+    detalle: { alcance, valor, espacio: espacio === undefined ? 'todos' : espacio, ...resultado },
   });
   res.json({ ok: true, ...resultado });
 });

@@ -8,6 +8,22 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v13.8 — "Caminos avalonianos" vuelve a mostrar sus tarjetas y el borrado masivo incluye tus espacios
+
+- **Corrección**: en v13.7 un método nuevo de la lista de rutas se llamó igual
+  que el que dibuja las tarjetas de los caminos (`_crearTarjeta`) y lo tapaba:
+  la sección "Caminos avalonianos" quedaba vacía. Se renombró.
+- Prueba nueva: ninguna clase del JavaScript puede definir dos veces el mismo
+  método (el segundo taparía al primero sin dar ningún error).
+- **Corrección del borrado masivo** ("Administrar rutas"): "Borrar todas" y
+  "Borrar las abiertas" solo borraban lo público, aunque el administrador viera
+  en su lista rutas de sus espacios privados; esas seguían ahí y parecía que
+  no funcionaba. Ahora borran lo que el administrador ve en la lista, según el
+  filtro de espacio elegido ("Todos los espacios", "Públicas" o uno). Los
+  espacios privados de los que no es miembro siguen sin tocarse. La
+  confirmación dice dónde se borra y cuántas rutas, y queda auditado con el
+  espacio.
+
 ### v13.7 — Las rutas movidas al editarlas se ven en su apartado
 
 - **Corrección**: al editar desde la raíz y cambiar "Guardar en", el conjunto

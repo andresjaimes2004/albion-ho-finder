@@ -189,6 +189,24 @@ test('cada texto de t() y tn() en el JavaScript tiene su traducción al inglés'
   assert.deepEqual(faltan, []);
 });
 
+test('ninguna clase del JavaScript define dos veces el mismo método (el segundo taparía al primero)', () => {
+  const repetidos = [];
+  for (const { nombre, codigo } of archivosJs()) {
+    // Cada clase por separado: de "class X" hasta la siguiente o el final.
+    const clases = codigo.split(/^(?:export\s+)?class\s+/m).slice(1);
+    for (const cuerpo of clases) {
+      const clase = cuerpo.match(/^\w+/)[0];
+      const vistos = new Set();
+      for (const m of cuerpo.matchAll(/^ {2}(?:async |static |get |set )?([A-Za-z_$][\w$]*)\s*\([^)]*\)\s*\{\s*$/gm)) {
+        if (['if', 'for', 'while', 'switch', 'catch'].includes(m[1])) continue;
+        if (vistos.has(m[1])) repetidos.push(`${nombre}: ${clase}.${m[1]}`);
+        vistos.add(m[1]);
+      }
+    }
+  }
+  assert.deepEqual(repetidos, []);
+});
+
 test('editar desde la raíz: el aviso y los botones de cada modo de edición', () => {
   const css = fs.readFileSync(path.join(__dirname, '..', 'public', 'css', 'styles.css'), 'utf8');
   const html = fs.readFileSync(path.join(__dirname, '..', 'src', 'vistas', 'index.html'), 'utf8');

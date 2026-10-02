@@ -943,7 +943,7 @@ export class PanelCaminos {
     }
     bloque.append(filtro);
     if (espacios.size) bloque.append(this._crearFiltroEspacios(espacios, espacioElegido, todasAbiertas));
-    if (esAdmin) bloque.append(this._crearHerramientasAdmin(elegido));
+    if (esAdmin) bloque.append(this._crearHerramientasAdmin(elegido, espacioElegido, espacios, todasAbiertas, todasCerradas));
     if (!rutas.length && !cerradas.length) {
       const enEspacio = espacioElegido && espacioElegido !== 'publicas' ? espacios.get(espacioElegido) : null;
       bloque.append(
@@ -977,20 +977,42 @@ export class PanelCaminos {
 
   /**
    * Borrado masivo de rutas, solo para administradores (el servidor lo
-   * vuelve a comprobar). Cada acción pide confirmación.
+   * vuelve a comprobar). Borra lo que se ve en la lista según el filtro de
+   * espacio elegido (todos, públicas o uno), y cada acción pide confirmación
+   * diciendo dónde y cuántas rutas.
    */
-  _crearHerramientasAdmin(portalElegido) {
+  _crearHerramientasAdmin(portalElegido, espacioElegido = null, espacios = new Map(), abiertas = [], cerradas = []) {
     const caja = crear('div', 'rutas-admin');
     caja.append(crear('span', 'rutas-admin__titulo', t('Administrar rutas:')));
     const mensaje = crear('span', 'rutas-admin__mensaje');
     mensaje.setAttribute('aria-live', 'polite');
 
+    // Dónde se borra: lo mismo que muestra el filtro de espacio.
+    const enEspacio = (r) =>
+      espacioElegido === null || (espacioElegido === 'publicas' ? !r.espacio : Boolean(r.espacio) && String(r.espacio.id) === espacioElegido);
+    const espacio = espacioElegido && espacioElegido !== 'publicas' ? espacios.get(espacioElegido) : null;
+    let donde = t('Incluye las públicas y las de tus espacios.');
+    if (espacioElegido === 'publicas') donde = t('Solo las públicas.');
+    else if (espacio) donde = t('Solo las del espacio «{espacio}».', { espacio: espacio.nombre });
+    const cuantas = (alcance, valor) => {
+      let lista = alcance === 'activas' ? abiertas : [...abiertas, ...cerradas];
+      if (alcance === 'portal') lista = lista.filter((r) => r.cercania && r.cercania.portal === valor);
+      if (alcance === 'zona') lista = lista.filter((r) => r.zonas.some((z) => z.nombre === valor));
+      return lista.filter(enEspacio).length;
+    };
+
     const borrar = async (alcance, valor, pregunta, boton) => {
-      const ok = await confirmar({ titulo: t('¿Borrar rutas?'), mensaje: pregunta, aceptar: t('Borrar'), peligro: true });
+      const n = cuantas(alcance, valor);
+      const ok = await confirmar({
+        titulo: t('¿Borrar rutas?'),
+        mensaje: `${pregunta} ${donde} ${tn(n, 'Se borrará {n} ruta.', 'Se borrarán {n} rutas.')}`,
+        aceptar: t('Borrar'),
+        peligro: true,
+      });
       if (!ok) return;
       boton.disabled = true;
       try {
-        const r = await api.borrarRutas(alcance, valor);
+        const r = await api.borrarRutas(alcance, valor, espacioElegido);
         // Se muestra en la barra que se pinta al refrescar.
         // Se ve unos segundos aunque la barra se vuelva a pintar.
         this._mensajeAdmin = { texto: t('Borradas: {rutas} rutas y {conexiones} conexiones.', r), hasta: Date.now() + 10_000 };
@@ -1127,13 +1149,13 @@ export class PanelCaminos {
   }
 
   _tarjetaRuta(ruta, resaltar = null) {
-    const tarjeta = this._crearTarjeta(ruta, resaltar);
+    const tarjeta = this._tarjetaRutaBase(ruta, resaltar);
     const recien = this._resaltadas;
     if (recien && recien.ids.has(ruta.id) && Date.now() < recien.hasta) tarjeta.classList.add('ruta--recien');
     return tarjeta;
   }
 
-  _crearTarjeta(ruta, resaltar) {
+  _tarjetaRutaBase(ruta, resaltar) {
     return crearTarjetaRuta(ruta, {
       usuario: this.usuario,
       resaltar,
