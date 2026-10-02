@@ -5,6 +5,7 @@ const path = require('path');
 const { SEO, EN } = require('../i18n/pagina');
 const { PREGUNTAS } = require('../i18n/preguntas');
 const legal = require('./legal');
+const enlaces = require('../config/enlacesPublicos');
 
 /**
  * paginas.js
@@ -37,23 +38,16 @@ const legal = require('./legal');
 const IDIOMAS = ['es', 'en'];
 const INICIO = { es: '/', en: '/en/' };
 const CARPETA_VISTAS = path.join(__dirname, '..', 'vistas');
-const QR_BREB = path.join(__dirname, '..', '..', 'public', 'assets', 'qr-breb.png');
-
-const PATRON_KOFI = /^https:\/\/ko-fi\.com\/[A-Za-z0-9_]{2,40}\/?$/;
-// Llave alfanumérica (@nombre), celular o correo: nada que pueda romper el HTML.
-const PATRON_LLAVE = /^[@A-Za-z0-9._+-]{3,60}$/;
-
+/** Donaciones (DONAR_KOFI_URL, DONAR_BREB_LLAVE): validadas en config/enlacesPublicos.js. */
 function donaciones() {
-  const kofi = (process.env.DONAR_KOFI_URL || '').trim();
-  const llave = (process.env.DONAR_BREB_LLAVE || '').trim();
-  const kofiValido = PATRON_KOFI.test(kofi);
-  const llaveValida = PATRON_LLAVE.test(llave);
+  const kofi = enlaces.kofi();
+  const llave = enlaces.llaveBreb();
   return {
-    kofiHref: kofiValido ? kofi : '#apoyar',
-    kofiClase: kofiValido ? '' : ' donar--pendiente',
-    brebLlave: llaveValida ? llave : '—',
-    brebClase: llaveValida ? '' : ' donar--pendiente',
-    brebQr: llaveValida && fs.existsSync(QR_BREB)
+    kofiHref: kofi || '#apoyar',
+    kofiClase: kofi ? '' : ' donar--pendiente',
+    brebLlave: llave || '—',
+    brebClase: llave ? '' : ' donar--pendiente',
+    brebQr: llave && enlaces.hayQrBreb()
       ? '<img class="donar__qr" src="/assets/qr-breb.png" alt="QR Bre-B" width="180" height="180" loading="lazy" />'
       : '',
   };
@@ -175,7 +169,7 @@ function variables(idioma) {
     urlContacto: legal.PAGINAS.contacto[idioma],
     urlPrivacidad: legal.PAGINAS.privacidad[idioma],
     urlTerminos: legal.PAGINAS.terminos[idioma],
-    discordPie: legal.htmlDiscordPie(),
+    discordPie: legal.htmlDiscordPie(idioma),
   };
 }
 

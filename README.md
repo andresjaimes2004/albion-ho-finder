@@ -12,9 +12,9 @@ Avalon abiertas que registra la comunidad.
 
 - **Discord en el pie**: un botón cuadrado con el icono (como en
   AlbionOnlineBuilds) bajo la descripción de la marca; abre en otra pestaña
-  y se ilumina con el color de Discord. Se configura con `DISCORD_URL`
-  (invitación `discord.gg/…`, `discord.com/invite/…` o perfil
-  `discord.com/users/<id>`); sin valor válido, no aparece.
+  y se ilumina con el color de Discord. Lleva al grupo de Discord de la
+  comunidad: se configura con `DISCORD_URL` (invitación `discord.gg/…` o
+  `discord.com/invite/…`); sin valor válido, no aparece.
 - **Columna "Soporte"** en el pie con tres páginas nuevas, en español e
   inglés: Contáctanos (`/contacto`, `/en/contact`), Política de privacidad
   (`/privacidad`, `/en/privacy`) y Términos de uso (`/terminos`,
@@ -33,6 +33,13 @@ Avalon abiertas que registra la comunidad.
   violeta, violeta rosado) y Términos (ruinas al atardecer, naranja). El
   índice de Privacidad y Términos va sin numeración y con botones más
   grandes (44 px de alto).
+- **Configuración del servidor** (`.env`): `DISCORD_URL`, `CONTACTO_CORREO`,
+  `DONAR_KOFI_URL` y `DONAR_BREB_LLAVE` se validan y normalizan en
+  `src/config/enlacesPublicos.js` (se aceptan las formas habituales de
+  copiarlos: con o sin `https://`, `www.`, barra final, llave con
+  espacios). Si una variable aparece varias veces en el `.env`, gana la
+  última. `npm run config:verificar` muestra cuáles quedarán activas sin
+  imprimir el resto del `.env`.
 - **Nuevo fondo del inicio**, en mejor resolución: `fondo-inicio-v2.webp`
   (2560 px) y `fondo-inicio-v2-movil.webp` (1600 px, nítido también en
   móviles con pantalla de alta densidad). El nombre nuevo evita que los

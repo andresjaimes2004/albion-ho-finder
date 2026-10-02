@@ -104,12 +104,13 @@ test('la portada también lleva el pie con Soporte y el sitemap incluye las pág
   }
 });
 
-test('el correo y el enlace de Discord se validan: lo inválido queda como "muy pronto" y no se publica', () => {
+test('el correo y la invitación al grupo de Discord se validan: lo inválido queda como "muy pronto" y no se publica', () => {
   const casos = [
     [{ DISCORD_URL: 'https://discord.gg/AbC123', CONTACTO_CORREO: 'soporte@albionnavigator.com' }, true, true],
     [{ DISCORD_URL: 'https://discord.com/invite/abc-123', CONTACTO_CORREO: 'a.b+c@sub.dominio.co' }, true, true],
-    [{ DISCORD_URL: 'https://discord.com/users/123456789012345678', CONTACTO_CORREO: '' }, true, false],
-    [{ DISCORD_URL: 'http://discord.gg/abc', CONTACTO_CORREO: 'sin-arroba' }, false, false],
+    // Un perfil personal ya no vale: el enlace es al grupo de la comunidad.
+    [{ DISCORD_URL: 'https://discord.com/users/123456789012345678', CONTACTO_CORREO: '' }, false, false],
+    [{ DISCORD_URL: 'http://discord.gg/abc', CONTACTO_CORREO: 'sin-arroba' }, true, false],
     [{ DISCORD_URL: 'https://discord.gg.evil.com/abc', CONTACTO_CORREO: 'x@y.z"><script>' }, false, false],
     [{ DISCORD_URL: 'javascript:alert(1)', CONTACTO_CORREO: 'a@b.com?cc=otro@c.com' }, false, false],
   ];
@@ -125,15 +126,18 @@ test('con contacto configurado: enlaces correctos y seguros; sin él, "muy pront
   const contacto = legal.htmlContenido('contacto', 'es', config);
   assert.match(contacto, /href="mailto:soporte@albionnavigator\.com"/);
   assert.match(contacto, /href="https:\/\/discord\.gg\/AbC123" target="_blank" rel="noopener noreferrer"/);
-  assert.match(legal.htmlDiscordPie(config), /aria-label="Discord"/);
-  assert.match(legal.htmlDiscordPie(config), /rel="noopener noreferrer"/);
+  assert.match(legal.htmlDiscordPie('es', config), /aria-label="Únete a nuestro grupo de Discord"/);
+  assert.match(legal.htmlDiscordPie('en', config), /aria-label="Join our Discord community"/);
+  assert.match(legal.htmlDiscordPie('es', config), /rel="noopener noreferrer"/);
+  assert.match(contacto, /Grupo de Discord/);
+  assert.match(contacto, />Unirme al grupo</);
 
   const vacio = { discord: null, correo: null };
   const sinConfig = legal.htmlContenido('contacto', 'es', vacio);
   assert.doesNotMatch(sinConfig, /mailto:/);
   assert.doesNotMatch(sinConfig, /discord\.gg/);
   assert.match(sinConfig, /muy pronto/);
-  assert.equal(legal.htmlDiscordPie(vacio), '');
+  assert.equal(legal.htmlDiscordPie('es', vacio), '');
   // En la política, el correo de los derechos también queda pendiente.
   assert.match(legal.htmlContenido('privacidad', 'en', vacio), /coming soon/);
 });

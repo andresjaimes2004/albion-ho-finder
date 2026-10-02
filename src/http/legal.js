@@ -1,6 +1,7 @@
 'use strict';
 
 const TEXTOS = require('../i18n/legal');
+const enlaces = require('../config/enlacesPublicos');
 
 /**
  * legal.js
@@ -9,10 +10,10 @@ const TEXTOS = require('../i18n/legal');
  * uso): sus direcciones en cada idioma, la configuración de contacto y el
  * HTML de su contenido, generado desde src/i18n/legal.js.
  *
- *  - El correo de contacto y el enlace de Discord se configuran con
- *    CONTACTO_CORREO y DISCORD_URL. Se validan: un valor inválido o
- *    ausente se trata como "muy pronto" (y el icono de Discord del pie no
- *    aparece) en vez de publicar algo raro.
+ *  - El correo de contacto y la invitación al grupo de Discord se
+ *    configuran con CONTACTO_CORREO y DISCORD_URL (validados en
+ *    config/enlacesPublicos.js): sin un valor válido, el correo sale como
+ *    "muy pronto" y el icono de Discord del pie no aparece.
  *  - Todo el texto se escapa; solo se añaden etiquetas propias (negrita y
  *    enlaces a páginas del sitio, al correo o a Discord).
  * ----------------------------------------------------------------------
@@ -24,18 +25,8 @@ const PAGINAS = {
   terminos: { es: '/terminos', en: '/en/terms' },
 };
 
-// Invitación a un servidor (discord.gg/…, discord.com/invite/…) o un perfil (discord.com/users/<id>).
-const PATRON_DISCORD = /^https:\/\/(discord\.gg\/[A-Za-z0-9-]{2,32}|(www\.)?discord\.com\/(invite\/[A-Za-z0-9-]{2,32}|users\/\d{5,25}))\/?$/;
-// Un correo corriente: sin espacios, comillas ni nada que pueda romper el HTML.
-const PATRON_CORREO = /^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]{1,190}\.[A-Za-z]{2,24}$/;
-
 function contacto() {
-  const discord = (process.env.DISCORD_URL || '').trim();
-  const correo = (process.env.CONTACTO_CORREO || '').trim();
-  return {
-    discord: PATRON_DISCORD.test(discord) ? discord : null,
-    correo: PATRON_CORREO.test(correo) ? correo : null,
-  };
+  return { discord: enlaces.discord(), correo: enlaces.correo() };
 }
 
 function escaparHtml(texto) {
@@ -87,7 +78,7 @@ function accionTarjeta(accion, idioma, config) {
     return `<a class="boton boton--primario legal__accion" href="mailto:${escaparHtml(config.correo)}">${escaparHtml(config.correo)}</a>`;
   }
   if (accion === 'discord' && config.discord) {
-    const texto = idioma === 'es' ? 'Unirme al Discord' : 'Join the Discord';
+    const texto = idioma === 'es' ? 'Unirme al grupo' : 'Join the community';
     return enlaceExterno(config.discord, escaparHtml(texto), 'boton boton--primario legal__accion');
   }
   return `<span class="legal__accion legal__accion--pendiente">${escaparHtml(comun.pendiente)}</span>`;
@@ -142,11 +133,12 @@ function htmlContenido(pagina, idioma, config = contacto()) {
     </article>`;
 }
 
-/** Icono de Discord para el pie (vacío si no hay enlace configurado). */
-function htmlDiscordPie(config = contacto()) {
+/** Icono del grupo de Discord para el pie (vacío si no hay invitación configurada). */
+function htmlDiscordPie(idioma = 'es', config = contacto()) {
   if (!config.discord) return '';
+  const etiqueta = idioma === 'es' ? 'Únete a nuestro grupo de Discord' : 'Join our Discord community';
   return `<div class="pie__redes">
-          <a class="pie__red" href="${escaparHtml(config.discord)}" target="_blank" rel="noopener noreferrer" aria-label="Discord" title="Discord">${icono('discord', 20)}</a>
+          <a class="pie__red" href="${escaparHtml(config.discord)}" target="_blank" rel="noopener noreferrer" aria-label="${etiqueta}" title="${etiqueta}">${icono('discord', 20)}</a>
         </div>`;
 }
 
