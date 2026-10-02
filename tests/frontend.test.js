@@ -172,3 +172,33 @@ test('nada del contenido puede quedar por encima de la cabecera fija (escala de 
   assert.deepEqual(altos, []);
   assert.doesNotMatch(css, /:focus-within\s*\{[^}]*z-index:\s*\d/, 'los paneles en uso suben con --capa-elevada');
 });
+
+test('cada texto de t() y tn() en el JavaScript tiene su traducción al inglés', () => {
+  const diccionario = fs.readFileSync(path.join(CARPETA_JS, 'i18n.js'), 'utf8');
+  const tiene = (clave) =>
+    diccionario.includes(`'${clave}':`) || diccionario.includes(`${JSON.stringify(clave.replace(/\\'/g, "'"))}:`);
+  const faltan = [];
+  for (const { nombre, codigo } of archivosJs()) {
+    if (nombre.endsWith('i18n.js')) continue;
+    const claves = [
+      ...[...codigo.matchAll(/\bt\(\s*'((?:[^'\\]|\\.)*)'/g)].map((m) => m[1]),
+      ...[...codigo.matchAll(/\btn\([^,]+,\s*'((?:[^'\\]|\\.)*)',\s*'((?:[^'\\]|\\.)*)'/g)].flatMap((m) => [m[1], m[2]]),
+    ];
+    for (const clave of claves) if (!tiene(clave)) faltan.push(`${nombre}: ${clave}`);
+  }
+  assert.deepEqual(faltan, []);
+});
+
+test('editar desde la raíz: el aviso y los botones de cada modo de edición', () => {
+  const css = fs.readFileSync(path.join(__dirname, '..', 'public', 'css', 'styles.css'), 'utf8');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'src', 'vistas', 'index.html'), 'utf8');
+  for (const id of ['registro-edicion-raiz', 'registro-edicion-conjunto', 'registro-edicion-invertir']) {
+    assert.match(html, new RegExp(`id="${id}"`));
+  }
+  // El aviso del conjunto solo en su modo; en él no hay ↑ ↓, invertir ni "desde la raíz".
+  assert.match(css, /\.registro__edicion-conjunto \{ display: none; \}/);
+  assert.match(css, /\.registro--conjunto \.registro__edicion-conjunto \{ display: block; \}/);
+  assert.match(css, /\.registro--conjunto :is\(\.registro__edicion-ruta, #registro-edicion-raiz, #registro-edicion-invertir\) \{ display: none; \}/);
+  assert.match(css, /\.registro--edicion \.registro__mover \{ display: inline-flex; \}/);
+  assert.doesNotMatch(css, /\.registro--conjunto \.registro__mover/);
+});

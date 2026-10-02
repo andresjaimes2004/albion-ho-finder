@@ -311,3 +311,42 @@ test('las sugerencias de cuentas son solo las que ese usuario agregó antes', ()
   s.eliminar(creadora, uno.id);
   assert.deepEqual(s.contactos(creadora).sort(), ['amigo', 'otro1']);
 });
+
+test('editar una ruta puede moverla entre público y un espacio sin duplicarla', async () => {
+  limpiar();
+  const s = espacios();
+  const { creadora, amigo, extrano } = usuarios;
+  const espacio = s.crear(creadora, { nombre: 'Gank Squad' });
+  s.agregarMiembro(creadora, espacio.id, 'amigo');
+  const publica = reportes().registrar(creadora.id, RUTA, [[0, 1]]).rutas[0];
+  const db = require('../src/config/database').getConnection();
+  const cuantas = () => db.prepare('SELECT COUNT(*) AS n FROM rutas_reportadas').get().n;
+  const conexionesPublicas = () => db.prepare('SELECT COUNT(*) AS n FROM conexiones_reportadas WHERE espacio_id IS NULL').get().n;
+
+  // Pública → espacio privado: la misma ruta (mismo id), ahora solo para miembros.
+  const movida = reportes().editarRuta(creadora, publica.id, RUTA, { espacioDestino: espacio.id });
+  assert.equal(movida.id, publica.id);
+  assert.equal(movida.espacioId, espacio.id);
+  assert.equal(cuantas(), 1, 'no se duplica');
+  assert.equal(conexionesPublicas(), 0, 'sus tramos públicos ya no se usan y se borran');
+  assert.equal((await seguimiento().resumen(s.visor(extrano))).rutas.length, 0);
+  assert.equal((await seguimiento().resumen(s.visor(amigo))).rutas.length, 1);
+
+  // Sin indicar destino, se queda donde está.
+  assert.equal(reportes().editarRuta(creadora, publica.id, RUTA).espacioId, espacio.id);
+
+  // Y de vuelta a público.
+  const devuelta = reportes().editarRuta(creadora, publica.id, RUTA, { espacioDestino: null });
+  assert.equal(devuelta.espacioId, null);
+  assert.equal(cuantas(), 1);
+  assert.equal((await seguimiento().resumen(s.visor(extrano))).rutas.length, 1);
+
+  // A un espacio del que no se es miembro: no.
+  const ajeno = s.crear(extrano, { nombre: 'Ajeno' });
+  assert.throws(() => reportes().editarRuta(creadora, publica.id, RUTA, { espacioDestino: ajeno.id }), (e) => e.estado === 404);
+  assert.throws(() => s.espacioParaRegistrar(creadora, ajeno.id), (e) => e.estado === 404);
+
+  // Si en el destino ya hay una ruta con el mismo recorrido, no se mueve (sería un duplicado).
+  reportes().registrar(creadora.id, RUTA, [[0, 1]], { espacioId: espacio.id });
+  assert.throws(() => reportes().editarRuta(creadora, publica.id, RUTA, { espacioDestino: espacio.id }), /mismo recorrido/);
+});

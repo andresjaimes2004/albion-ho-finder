@@ -312,8 +312,7 @@ class SincronizacionExcelService {
       for (const nombre of fila.gremios) {
         let gremio;
         try {
-          // Del Excel (lo mantiene el equipo): sin el filtro de insultos.
-          gremio = this.caminos.validarGremio(nombre, { revisarOfensivo: false });
+          gremio = this.caminos.validarGremio(nombre);
         } catch (error) {
           gremiosInvalidos.push(`${camino.nombre}: ${nombre}`);
           continue;

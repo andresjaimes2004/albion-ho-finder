@@ -28,6 +28,8 @@ const { manejar } = require('./utilidades');
  * POST   /api/tracking/hideouts      → anotar un gremio (con sesión)
  * DELETE /api/tracking/hideouts/:id  → borrar la anotación (autor o admin)
  * PUT    /api/tracking/rutas/:id     → editar una ruta (autor o admin)
+ * PUT    /api/tracking/conjuntos     → editar desde la raíz un conjunto de
+ *                                      rutas de la misma red (autor o admin)
  * DELETE /api/tracking/rutas/:id     → borrar una ruta (autor o admin)
  * DELETE /api/tracking/rutas?alcance=todas|activas|zona|portal&valor=X
  *                                    → borrado masivo (solo admin)
@@ -99,8 +101,19 @@ const eliminar = manejar((req, res) => {
 
 const editarRuta = manejar((req, res) => {
   const cuerpo = req.body || {};
-  const ruta = reportes.editarRuta(req.usuario, entero(req.params.id, 'id', { min: 1 }), cuerpo.conexiones);
+  // "espacio" (opcional): mover la ruta a público (null) o a un espacio
+  // propio; sin él, se queda donde estaba.
+  const opciones = 'espacio' in cuerpo ? { espacioDestino: espacios.espacioParaRegistrar(req.usuario, cuerpo.espacio) } : {};
+  const ruta = reportes.editarRuta(req.usuario, entero(req.params.id, 'id', { min: 1 }), cuerpo.conexiones, opciones);
   res.json({ ok: true, ruta });
+});
+
+/** Editar "desde la raíz" un conjunto de rutas (las de una misma red). */
+const editarConjunto = manejar((req, res) => {
+  const cuerpo = req.body || {};
+  const opciones = 'espacio' in cuerpo ? { espacioDestino: espacios.espacioParaRegistrar(req.usuario, cuerpo.espacio) } : {};
+  const resultado = reportes.reemplazarConjunto(req.usuario, cuerpo.rutaIds, cuerpo.conexiones, cuerpo.rutas || [], opciones);
+  res.json({ ok: true, ...resultado });
 });
 
 const listarHideoutsCamino = manejar((req, res) => {
@@ -149,6 +162,7 @@ module.exports = {
   registrar,
   eliminar,
   editarRuta,
+  editarConjunto,
   eliminarRuta,
   borrarRutasEnBloque,
   listarHideoutsCamino,

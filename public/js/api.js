@@ -100,8 +100,16 @@ export const api = {
   anotarHideoutCamino: (camino, gremio) =>
     peticion('/api/tracking/hideouts', { metodo: 'POST', datos: { camino, gremio } }),
   borrarHideoutCamino: (id) => peticion(`/api/tracking/hideouts/${id}`, { metodo: 'DELETE' }),
-  editarRuta: (id, conexiones) =>
-    peticion(`/api/tracking/rutas/${id}`, { metodo: 'PUT', datos: { conexiones } }),
+  // Editar desde la raíz un conjunto de rutas: todas sus conexiones y las
+  // rutas propuestas (como al registrar). `espacio` como en editarRuta.
+  editarConjunto: (rutaIds, conexiones, rutas, espacio) =>
+    peticion('/api/tracking/conjuntos', {
+      metodo: 'PUT',
+      datos: espacio === undefined ? { rutaIds, conexiones, rutas } : { rutaIds, conexiones, rutas, espacio },
+    }),
+  // `espacio`: undefined = donde estaba; null = público; un id = ese espacio.
+  editarRuta: (id, conexiones, espacio) =>
+    peticion(`/api/tracking/rutas/${id}`, { metodo: 'PUT', datos: espacio === undefined ? { conexiones } : { conexiones, espacio } }),
   rutasDeMapas: (nombres, senal) =>
     peticion(`/api/tracking/rutas?mapas=${encodeURIComponent(nombres.join(','))}`, { senal }),
 

@@ -47,16 +47,19 @@ class RutaReportadaRepository extends BaseRepository {
     return this.obtener(id);
   }
 
-  /** Cambia el recorrido de una ruta (edición): zonas y tramos, sin tocar su autor. */
-  actualizarRecorrido(id, { zonas, conexionIds }) {
+  /**
+   * Cambia el recorrido de una ruta (edición): zonas, tramos y dónde se
+   * guarda (null = pública), sin tocar su autor.
+   */
+  actualizarRecorrido(id, { zonas, conexionIds, espacioId = null }) {
     this.db.prepare('DELETE FROM rutas_tramos WHERE ruta_id = $id').run({ $id: id });
     const tramo = this.db.prepare(
       'INSERT INTO rutas_tramos (ruta_id, orden, conexion_id) VALUES ($ruta, $orden, $conexion)'
     );
     conexionIds.forEach((conexionId, orden) => tramo.run({ $ruta: id, $orden: orden, $conexion: conexionId }));
     this.db
-      .prepare('UPDATE rutas_reportadas SET zonas = $zonas, total_tramos = $total WHERE id = $id')
-      .run({ $id: id, $zonas: JSON.stringify(zonas), $total: conexionIds.length });
+      .prepare('UPDATE rutas_reportadas SET zonas = $zonas, total_tramos = $total, espacio_id = $espacio WHERE id = $id')
+      .run({ $id: id, $zonas: JSON.stringify(zonas), $total: conexionIds.length, $espacio: espacioId });
     return this.obtener(id);
   }
 
