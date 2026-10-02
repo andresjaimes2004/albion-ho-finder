@@ -773,3 +773,56 @@ test('espacios privados por HTTP: exigen sesión y CSRF, y lo privado no sale en
   assert.equal(agregada.estado, 201);
   assert.equal((await vista(intrusa)).length, 1, 'ya es miembro');
 });
+
+test('el borrado masivo del administrador borra lo que ve (también sus espacios) y respeta los ajenos', async () => {
+  const auth = new AuthService();
+  const conSesion = (usuario, { registrar = true } = {}) => {
+    if (registrar) auth.registrar({ usuario, clave: 'ClaveSegura99' });
+    const sesion = auth.iniciarSesion({ usuario, clave: 'ClaveSegura99', huella: 'pruebas' });
+    const c = crearCliente();
+    c.cookies.set('ho_sesion', sesion.token);
+    c.cookies.set('ho_csrf', sesion.csrf);
+    return c;
+  };
+  const jefe = conSesion('jefe', { registrar: false });
+  const otra = conSesion('otraguild');
+
+  const RUTA = {
+    conexiones: [
+      { origen: 'Deepwood Copse', destino: 'Ouyos-Aoeuam', minutos: 120 },
+      { origen: 'Ouyos-Aoeuam', destino: 'Martlock', minutos: 90 },
+    ],
+    rutas: [[0, 1]],
+  };
+  const espacioJefe = (await jefe.escribir('/api/espacios', { metodo: 'POST', datos: { nombre: 'Jefatura' } })).json.espacio.id;
+  const espacioAjeno = (await otra.escribir('/api/espacios', { metodo: 'POST', datos: { nombre: 'Ajeno' } })).json.espacio.id;
+  for (const [cliente, espacio] of [[otra, null], [jefe, espacioJefe], [otra, espacioAjeno]]) {
+    const r = await cliente.escribir('/api/tracking/reportes', { metodo: 'POST', datos: { ...RUTA, espacio } });
+    assert.equal(r.estado, 201);
+  }
+  const rutas = async (c) => (await c.peticion('/api/tracking')).json.rutas;
+  const enSitio = (lista, nombre) => lista.filter((r) => (r.espacio ? r.espacio.nombre : 'publica') === nombre).length;
+
+  // Solo administradores, y con token CSRF.
+  assert.equal((await otra.escribir('/api/tracking/rutas?alcance=todas', { metodo: 'DELETE' })).estado, 403);
+  assert.equal((await jefe.peticion('/api/tracking/rutas?alcance=todas', { metodo: 'DELETE' })).estado, 403);
+  // Un espacio que no ve: no se puede elegir (ni se sabe si existe).
+  assert.equal((await jefe.escribir(`/api/tracking/rutas?alcance=todas&espacio=${espacioAjeno}`, { metodo: 'DELETE' })).estado, 400);
+
+  // "Públicas": no toca su espacio.
+  const publicas = await jefe.escribir('/api/tracking/rutas?alcance=todas&espacio=publicas', { metodo: 'DELETE' });
+  assert.equal(publicas.estado, 200);
+  assert.ok(publicas.json.rutas >= 1);
+  assert.equal(enSitio(await rutas(jefe), 'publica'), 0);
+  assert.equal(enSitio(await rutas(jefe), 'Jefatura'), 1);
+
+  // Todo lo que ve: ahora también las de su espacio. El espacio ajeno sigue intacto.
+  const todas = await jefe.escribir('/api/tracking/rutas?alcance=todas', { metodo: 'DELETE' });
+  assert.equal(todas.estado, 200);
+  assert.equal(todas.json.rutas, 1);
+  assert.equal((await rutas(jefe)).length, 0);
+  assert.equal(enSitio(await rutas(otra), 'Ajeno'), 1, 'lo privado ajeno no se toca');
+
+  const auditoria = await jefe.peticion('/api/admin/auditoria');
+  assert.equal(auditoria.json.auditoria[0].accion, 'BORRAR_RUTAS');
+});
