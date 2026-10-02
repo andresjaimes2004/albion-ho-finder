@@ -4124,3 +4124,14 @@ button.conexion__nombre:hover { text-decoration: none; }
   .registro__destino,
   .registro__destino select { transition: none; }
 }
+
+/* ---- Ruta recién editada: se resalta un momento en "Rutas del gremio"
+        (también si se movió a otro espacio) y se apaga con suavidad. ---- */
+.ruta { transition: box-shadow var(--duracion) var(--curva), border-color var(--duracion) var(--curva); }
+.ruta.ruta--recien {
+  border-color: rgba(var(--acento-rgb), 0.7);
+  box-shadow: 0 0 0 2px rgba(var(--acento-rgb), 0.45), 0 0 18px rgba(var(--acento-rgb), 0.25);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ruta { transition: none; }
+}

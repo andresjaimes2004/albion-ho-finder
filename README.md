@@ -8,6 +8,24 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v13.7 — Las rutas movidas al editarlas se ven en su apartado
+
+- **Corrección**: al editar desde la raíz y cambiar "Guardar en", el conjunto
+  se encadenaba también con las conexiones guardadas del destino; se mezclaba
+  con otras rutas del espacio y la ruta editada dejaba de existir tal cual (sus
+  conexiones seguían, por eso se veía al buscar el mapa). Ahora el conjunto
+  solo usa sus propias filas.
+- Al mover un conjunto, sus rutas pasan antes al destino y **conservan su id**
+  (antes se borraban y se creaban de nuevo); si allí ya hay una con el mismo
+  recorrido, se usa esa, sin duplicados.
+- Tras guardar una edición, "Rutas del gremio" **muestra la ruta en su
+  apartado**: si el filtro de espacio (o de portal) la ocultaba, pasa al
+  espacio o a "Públicas" donde quedó, abre su grupo y la resalta un momento
+  (el resaltado aguanta los refrescos de la lista).
+- Comprobado con capturas reales: al pegar capturas desordenadas en una
+  edición, se colocan solas en la cadena (una ruta) o las rutas se vuelven a
+  proponer solas (desde la raíz).
+
 ### v13.6 — Editar rutas desde la raíz, moverlas y nombres de gremio sin filtro
 
 - **Editar desde la raíz**: al editar una ruta, el botón "Editar desde la

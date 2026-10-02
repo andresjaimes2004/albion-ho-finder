@@ -63,6 +63,11 @@ class RutaReportadaRepository extends BaseRepository {
     return this.obtener(id);
   }
 
+  /** Pasa la ruta a otro sitio (null = público) sin tocar su recorrido. */
+  moverAEspacio(id, espacioId = null) {
+    this.db.prepare('UPDATE rutas_reportadas SET espacio_id = $espacio WHERE id = $id').run({ $id: id, $espacio: espacioId });
+  }
+
   obtener(id) {
     const fila = this.db
       .prepare(

@@ -309,6 +309,16 @@ class ReportesCaminosService {
     }
     const guardar = this._prepararRegistro(usuario.id, lista, rutas, { espacioId, autorId });
     return this.transaccion(() => {
+      // Al mover el conjunto, sus rutas pasan antes al destino: así las que
+      // mantienen su recorrido conservan su id (no se borran y se crean de
+      // nuevo). Si allí ya hay una con el mismo recorrido, se usa esa.
+      if (espacioId !== espacioOriginal) {
+        for (const ruta of viejas) {
+          const ocupada =
+            this.rutas.buscarPorZonas(ruta.zonas, espacioId) || this.rutas.buscarPorZonas([...ruta.zonas].reverse(), espacioId);
+          if (!ocupada) this.rutas.moverAEspacio(ruta.id, espacioId);
+        }
+      }
       const resultado = guardar();
       const borradas = borrarSobrantes(new Set(resultado.rutas.map((r) => r.id)));
       return { ...resultado, borradas };

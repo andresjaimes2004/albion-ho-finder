@@ -84,7 +84,12 @@ class BuscadorUI {
     });
 
     this.panelRegistro = new PanelRegistro({
-      alGuardar: () => this.panelCaminos.refrescar(),
+      // Tras editar una ruta (o un conjunto), la lista la muestra en su
+      // apartado, aunque se haya movido a otro espacio.
+      alGuardar: async (guardadas) => {
+        await this.panelCaminos.refrescar();
+        if (guardadas) this.panelCaminos.mostrarRutas(guardadas);
+      },
     });
 
     // Espacios privados: alimentan el "Guardar en" del registro y, al

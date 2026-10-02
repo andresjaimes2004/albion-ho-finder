@@ -29,6 +29,8 @@ const INTERVALO_REFRESCO_MS = 60_000;
 // Resultados de la búsqueda y "Caminos avalonianos": de 9 en 9 (3 × 3), en
 // tandas circulares.
 const POR_TANDA = 9;
+// Cuánto se resalta una ruta recién editada en "Rutas del gremio".
+const RESALTE_MS = 3200;
 const CURVA = 'cubic-bezier(0.4, 0, 0.2, 1)';
 
 const RECURSOS = {
@@ -112,7 +114,7 @@ export class PanelCaminos {
         boton.addEventListener('click', () => this._cambiarTanda(nombre, Number(boton.dataset.paso)));
       }
     }
-    conectarDesplegable(document.getElementById('rutas-alternar'), document.getElementById('caminos-rutas'), {
+    this.rutasDesplegable = conectarDesplegable(document.getElementById('rutas-alternar'), document.getElementById('caminos-rutas'), {
       clave: 'rutas-abiertas',
       abierto: true,
     });
@@ -1120,6 +1122,13 @@ export class PanelCaminos {
   }
 
   _tarjetaRuta(ruta, resaltar = null) {
+    const tarjeta = this._crearTarjeta(ruta, resaltar);
+    const recien = this._resaltadas;
+    if (recien && recien.ids.has(ruta.id) && Date.now() < recien.hasta) tarjeta.classList.add('ruta--recien');
+    return tarjeta;
+  }
+
+  _crearTarjeta(ruta, resaltar) {
     return crearTarjetaRuta(ruta, {
       usuario: this.usuario,
       resaltar,
@@ -1140,6 +1149,62 @@ export class PanelCaminos {
    * mismo espacio) y que este usuario puede editar. Es lo que se edita
    * "desde la raíz", como cuando se registraron juntas.
    */
+  /**
+   * Muestra en "Rutas del gremio" las rutas recién editadas: si el filtro
+   * de espacio o de portal las ocultaba (por ejemplo, se movieron de
+   * público a un espacio), pasa al apartado donde quedaron; abre su grupo
+   * y la lista, y las resalta un momento.
+   */
+  mostrarRutas({ rutaIds = [], espacioId = null } = {}) {
+    const ids = new Set(rutaIds);
+    const abiertas = ((this.datos && this.datos.rutas) || []).filter((r) => ids.has(r.id));
+    const cerradas = ((this.datos && this.datos.rutasCerradas) || []).filter((r) => ids.has(r.id));
+    const rutas = [...abiertas, ...cerradas];
+    if (!rutas.length) return;
+
+    const recordar = (clave, valor) => {
+      try {
+        if (valor === null) localStorage.removeItem(clave);
+        else localStorage.setItem(clave, valor);
+      } catch (error) {
+        // Sin almacenamiento: vale hasta recargar.
+      }
+    };
+    const enEspacio = (r) => (r.espacio ? String(r.espacio.id) : 'publicas');
+    const elegido = this._espacioElegido || null;
+    if (elegido !== null && !rutas.every((r) => enEspacio(r) === elegido)) {
+      // Su apartado: el espacio (o "Públicas") donde quedaron todas; si
+      // quedaron en varios, todos.
+      const destino = espacioId === null ? 'publicas' : String(espacioId);
+      this._espacioElegido = rutas.every((r) => enEspacio(r) === destino) ? destino : null;
+      recordar('rutas-espacio', this._espacioElegido);
+    }
+    const portal = this._portalElegido || null;
+    if (portal !== null && !rutas.every((r) => (r.cercania ? r.cercania.portal : '') === portal)) {
+      this._portalElegido = null;
+      recordar('rutas-portal', null);
+    }
+    if (!this._entradasAbiertas) this._entradasAbiertas = new Set();
+    for (const r of abiertas) this._entradasAbiertas.add(r.zonas[0].nombre);
+    if (cerradas.length) this._cerradasAbiertas = true;
+    if (this.rutasDesplegable) this.rutasDesplegable.abrir();
+
+    // El resaltado sobrevive a los refrescos de la lista (al mover una ruta
+    // a un espacio, el aviso a sus miembros vuelve a pedir las rutas).
+    this._resaltadas = { ids, hasta: Date.now() + RESALTE_MS };
+    this._renderizarRutas();
+    // Tras abrir la lista (que se despliega con animación), se lleva a la vista.
+    setTimeout(() => {
+      const tarjeta = document.querySelector(`#caminos-rutas .ruta[data-ruta="${Number(rutas[0].id)}"]`);
+      if (tarjeta) tarjeta.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 350);
+    clearTimeout(this._finResalte);
+    this._finResalte = setTimeout(() => {
+      this._resaltadas = null;
+      for (const tarjeta of document.querySelectorAll('#caminos-rutas .ruta--recien')) tarjeta.classList.remove('ruta--recien');
+    }, RESALTE_MS);
+  }
+
   /** Una ruta de las que se ven ahora (abierta o cerrada hace poco), por su id. */
   rutaPorId(id) {
     const todas = [...((this.datos && this.datos.rutas) || []), ...((this.datos && this.datos.rutasCerradas) || [])];

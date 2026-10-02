@@ -111,6 +111,7 @@ export function crearTarjetaRuta(ruta, { usuario = null, resaltar = null, alEleg
   // desconectado) y se ve hasta `borraEn`.
   const cerrada = Boolean(ruta.borraEn);
   const tarjeta = crear('article', cerrada ? 'ruta ruta--cerrada' : 'ruta');
+  tarjeta.dataset.ruta = String(ruta.id);
 
   const cabecera = crear('div', 'ruta__cabecera');
   const tramos = ruta.tramos.length;

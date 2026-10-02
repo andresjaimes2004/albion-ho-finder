@@ -350,3 +350,55 @@ test('editar una ruta puede moverla entre público y un espacio sin duplicarla',
   reportes().registrar(creadora.id, RUTA, [[0, 1]], { espacioId: espacio.id });
   assert.throws(() => reportes().editarRuta(creadora, publica.id, RUTA, { espacioDestino: espacio.id }), /mismo recorrido/);
 });
+
+test('mover un conjunto editado desde la raíz conserva sus rutas y no toca las del destino', async () => {
+  limpiar();
+  const s = espacios();
+  const { creadora, amigo } = usuarios;
+  const espacio = s.crear(creadora, { nombre: 'Gank Squad' });
+  s.agregarMiembro(creadora, espacio.id, 'amigo');
+  const db = require('../src/config/database').getConnection();
+  const rutasEn = (espacioId) =>
+    db.prepare('SELECT id FROM rutas_reportadas WHERE espacio_id IS $e ORDER BY id').all({ $e: espacioId }).map((r) => r.id);
+  const conexionesEn = (espacioId) =>
+    db.prepare('SELECT COUNT(*) AS n FROM conexiones_reportadas WHERE espacio_id IS $e').get({ $e: espacioId }).n;
+
+  const CONJUNTO = [
+    { origen: 'Deepwood Copse', destino: 'Ouyos-Aoeuam', minutos: 120 },
+    { origen: 'Ouyos-Aoeuam', destino: 'Martlock', minutos: 90 },
+  ];
+  const publica = reportes().registrar(creadora.id, CONJUNTO, [[0, 1]]).rutas[0];
+  // En el espacio ya hay otra ruta que pasa por las mismas zonas.
+  const delEspacio = reportes().registrar(
+    amigo.id,
+    [
+      { origen: 'Deepwood Copse', destino: 'Cases-Ugumlos', minutos: 200 },
+      { origen: 'Cases-Ugumlos', destino: 'Ouyos-Aoeuam', minutos: 150 },
+    ],
+    [[0, 1]],
+    { espacioId: espacio.id }
+  ).rutas[0];
+  const tramosAntes = db.prepare('SELECT conexion_id FROM rutas_tramos WHERE ruta_id = $r ORDER BY orden').all({ $r: delEspacio.id });
+
+  // Pública → espacio: la misma ruta (mismo id), sin borrar ni crear otra.
+  const r = reportes().reemplazarConjunto(creadora, [publica.id], CONJUNTO, [[0, 1]], { espacioDestino: espacio.id });
+  assert.deepEqual(r.rutas.map((x) => x.id), [publica.id]);
+  assert.equal(r.borradas, 0);
+  assert.deepEqual(rutasEn(null), []);
+  assert.deepEqual(rutasEn(espacio.id), [publica.id, delEspacio.id].sort((a, b) => a - b));
+  assert.equal(conexionesEn(null), 0, 'sus conexiones públicas ya no se usan y se borran');
+  // La ruta que ya estaba en el espacio sigue igual.
+  assert.deepEqual(db.prepare('SELECT conexion_id FROM rutas_tramos WHERE ruta_id = $r ORDER BY orden').all({ $r: delEspacio.id }), tramosAntes);
+  const vista = await seguimiento().resumen(s.visor(amigo));
+  assert.equal(vista.rutas.length, 2);
+  assert.ok(vista.rutas.some((x) => x.id === publica.id && x.espacio && x.espacio.id === espacio.id));
+
+  // De vuelta a público, donde ya hay una ruta con el mismo recorrido: se usa
+  // esa y no queda ningún duplicado.
+  const copia = reportes().registrar(creadora.id, CONJUNTO, [[0, 1]]).rutas[0];
+  const vuelta = reportes().reemplazarConjunto(creadora, [publica.id], CONJUNTO, [[0, 1]], { espacioDestino: null });
+  assert.deepEqual(vuelta.rutas.map((x) => x.id), [copia.id]);
+  assert.equal(vuelta.borradas, 1);
+  assert.deepEqual(rutasEn(null), [copia.id]);
+  assert.deepEqual(rutasEn(espacio.id), [delEspacio.id]);
+});
