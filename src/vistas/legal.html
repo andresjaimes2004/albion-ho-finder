@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="{{@idioma}}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{@titulo}}</title>
+  <meta name="description" content="{{@descripcion}}" />
+  <meta name="robots" content="index, follow" />
+  {{@verificaciones}}
+  <link rel="canonical" href="{{@urlCanonica}}" />
+  <link rel="alternate" hreflang="es" href="{{@urlEs}}" />
+  <link rel="alternate" hreflang="en" href="{{@urlEn}}" />
+  <link rel="alternate" hreflang="x-default" href="{{@urlEn}}" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Albion Navigator" />
+  <meta property="og:title" content="{{@titulo}}" />
+  <meta property="og:description" content="{{@descripcion}}" />
+  <meta property="og:url" content="{{@urlCanonica}}" />
+  <meta property="og:locale" content="{{@locale}}" />
+  <meta property="og:image" content="{{@urlImagen}}" />
+
+  <link rel="icon" href="/assets/favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <meta name="theme-color" content="#0c0a10" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css" />
+  <link rel="stylesheet" href="/css/legal.css" />
+</head>
+<body class="pagina-legal" data-vista="soporte" data-soporte="{{@paginaSoporte}}">
+  <!-- Fondo fijo, como en el resto del sitio. -->
+  <div class="fondo" aria-hidden="true">
+    <div class="fondo__capa fondo__capa--soporte"></div>
+    <div class="fondo__velo"></div>
+  </div>
+
+  <header class="cabecera">
+    <div class="contenedor contenedor--ancho cabecera__contenido">
+      <a class="marca" href="{{@inicio}}" aria-label="{{Albion Navigator, inicio}}">
+        <img class="marca__icono" src="/assets/marca-96.webp" alt="" width="40" height="40" />
+        <span class="marca__texto">
+          <span class="marca__titulo">Albion Navigator</span>
+          <span class="marca__subtitulo">{{Hideouts · Rutas de Avalon}}</span>
+        </span>
+      </a>
+
+      <nav class="pestanas" aria-label="{{Secciones}}">
+        <a class="pestanas__boton" href="{{@inicio}}#hideouts">
+          <svg class="pestanas__icono" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.5" stroke="currentColor" stroke-width="2"/></svg>
+          Hideouts
+        </a>
+        <a class="pestanas__boton" href="{{@inicio}}#caminos">
+          <svg class="pestanas__icono" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="6" cy="18" r="2.5" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="6" r="2.5" stroke="currentColor" stroke-width="2"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          {{Caminos de Avalon}}
+        </a>
+      </nav>
+
+      <div class="cabecera__derecha">
+        <nav class="idioma" aria-label="{{Idioma}}">
+          <a class="idioma__opcion" href="{{@rutaEs}}" hreflang="es" lang="es" {{@actualEs}}>ES</a>
+          <a class="idioma__opcion" href="{{@rutaEn}}" hreflang="en" lang="en" {{@actualEn}}>EN</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="contenedor principal principal--legal">
+    {{@contenidoLegal}}
+  </main>
+
+  {{@pie}}
+</body>
+</html>

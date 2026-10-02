@@ -8,6 +8,43 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v14.0 — Pie con Discord y páginas de Soporte
+
+- **Discord en el pie**: un botón cuadrado con el icono (como en
+  AlbionOnlineBuilds) bajo la descripción de la marca; abre en otra pestaña
+  y se ilumina con el color de Discord. Lleva al grupo de Discord de la
+  comunidad: se configura con `DISCORD_URL` (invitación `discord.gg/…` o
+  `discord.com/invite/…`); sin valor válido, no aparece.
+- **Columna "Soporte"** en el pie con tres páginas nuevas, en español e
+  inglés: Contáctanos (`/contacto`, `/en/contact`), Política de privacidad
+  (`/privacidad`, `/en/privacy`) y Términos de uso (`/terminos`,
+  `/en/terms`). Tarjetas de vidrio con el color de acento, índice para ir a
+  cada sección y entrada suave en cascada; sin JavaScript. Están en el
+  sitemap con su versión en el otro idioma.
+- El texto está en `src/i18n/legal.js` (se escapa al generar el HTML) y
+  describe lo que hace el sitio de verdad: qué se guarda, cuánto tiempo,
+  cookies, terceros y derechos según la Ley 1581 de 2012. El correo de
+  contacto se configura con `CONTACTO_CORREO`; sin él, aparece "muy pronto".
+- El pie es ahora una plantilla común (`src/vistas/_pie.html`) para la
+  portada y las páginas de soporte; sus enlaces a secciones de la portada
+  llevan la ruta (`/#apoyar`) y siguen desplazando con suavidad en ella.
+- **Fondos propios** en cada página de soporte, y el color de acento sale de
+  su fondo: Contáctanos (bosque con faroles, ámbar), Privacidad (ciénaga
+  violeta, violeta rosado) y Términos (ruinas al atardecer, naranja). El
+  índice de Privacidad y Términos va sin numeración y con botones más
+  grandes (44 px de alto).
+- **Configuración del servidor** (`.env`): `DISCORD_URL`, `CONTACTO_CORREO`,
+  `DONAR_KOFI_URL` y `DONAR_BREB_LLAVE` se validan y normalizan en
+  `src/config/enlacesPublicos.js` (se aceptan las formas habituales de
+  copiarlos: con o sin `https://`, `www.`, barra final, llave con
+  espacios). Si una variable aparece varias veces en el `.env`, gana la
+  última. `npm run config:verificar` muestra cuáles quedarán activas sin
+  imprimir el resto del `.env`.
+- **Nuevo fondo del inicio**, en mejor resolución: `fondo-inicio-v2.webp`
+  (2560 px) y `fondo-inicio-v2-movil.webp` (1600 px, nítido también en
+  móviles con pantalla de alta densidad). El nombre nuevo evita que los
+  navegadores sigan mostrando el anterior guardado en caché.
+
 ### v13.8 — "Caminos avalonianos" vuelve a mostrar sus tarjetas y el borrado masivo incluye tus espacios
 
 - **Corrección**: en v13.7 un método nuevo de la lista de rutas se llamó igual

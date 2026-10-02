@@ -18,7 +18,8 @@
     "db:generar-geo": "node scripts/generarGeoDesdeDumps.js",
     "db:generar-caminos": "node scripts/generarCaminosDesdeDumps.js",
     "db:generar-zonas": "node scripts/generarZonasDesdeDumps.js",
-    "admin:promover": "node scripts/hacerAdmin.js"
+    "admin:promover": "node scripts/hacerAdmin.js",
+    "config:verificar": "node scripts/verificarConfig.js"
   },
   "dependencies": {},
   "license": "MIT"
