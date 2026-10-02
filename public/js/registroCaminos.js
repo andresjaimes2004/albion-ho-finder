@@ -292,8 +292,6 @@ export class PanelRegistro {
       });
     }
     if (filas) this._filasEscritas(filas, ahora);
-    // Esas conexiones ya están como filas: no se ofrecen además como guardadas.
-    this.edicion.idsConexiones = vistas;
     this.conjuntoEdicion.textContent = tn(conjunto.length, '({n} ruta)', '({n} rutas)');
     this._terminarDeEmpezarEdicion();
   }
@@ -923,9 +921,12 @@ export class PanelRegistro {
     // Solo se encadena con conexiones guardadas del mismo destino (público
     // o el mismo espacio): el servidor no deja mezclarlas.
     const destino = this._espacioDestino();
-    const delConjunto = (this.edicion && this.edicion.idsConexiones) || new Set();
-    this.guardadasEnRutas = nuevas
-      ? this.guardadas.filter((g) => g.cierraEn > limite && g.espacioId === destino && !delConjunto.has(g.id))
+    // Editando un conjunto desde la raíz, sus rutas salen solo de sus filas:
+    // encadenarlas con conexiones guardadas de fuera lo mezclaría con otras
+    // rutas (por ejemplo, las del espacio al que se mueve) y la ruta editada
+    // dejaría de existir tal cual.
+    this.guardadasEnRutas = nuevas && !this.edicion
+      ? this.guardadas.filter((g) => g.cierraEn > limite && g.espacioId === destino)
       : [];
     for (const g of this.guardadasEnRutas) tramos.push({ origen: g.origen, destino: g.destino });
 
@@ -1198,7 +1199,8 @@ export class PanelRegistro {
       else if (!movida) this.estado.textContent = t('Ruta actualizada. ¡Gracias!');
       else if (espacio) this.estado.textContent = t('Ruta actualizada y movida a «{espacio}».', { espacio: espacio.nombre });
       else this.estado.textContent = t('Ruta actualizada y movida a público: ahora la ven todos.');
-      if (this.alGuardar) this.alGuardar();
+      // La lista de rutas la muestra (y la resalta) en su apartado.
+      if (this.alGuardar) this.alGuardar(borrar ? null : { rutaIds: [ruta.id], espacioId: destino === undefined ? antes : destino });
     } catch (error) {
       this.estado.textContent = error.message || t('No se pudo guardar.');
       this._actualizarAcciones();
@@ -1235,6 +1237,8 @@ export class PanelRegistro {
     const rutas = listas.length ? this._rutasParaEnviar(listas) : [];
     const caminos = new Set(this.rutasDetectadas.filter((r) => !r.separada).flatMap((r) => this._caminosHideout(r.zonas)));
     const destino = this._destinoEdicion();
+    const antes = this.edicion.ruta.espacio ? this.edicion.ruta.espacio.id : null;
+    const espacioFinal = destino === undefined ? antes : destino;
     this.guardar.disabled = true;
     this.estado.textContent = t('Guardando…');
     try {
@@ -1248,11 +1252,17 @@ export class PanelRegistro {
         if (r.borradas) partes.push(tn(r.borradas, '{n} ruta quitada', '{n} rutas quitadas'));
         if (gremios.anotados) partes.push(tn(gremios.anotados, '{n} gremio anotado', '{n} gremios anotados'));
         this.estado.textContent = t('Conjunto actualizado: {resumen}. ¡Gracias!', { resumen: partes.join(t(' y ')) });
+        if (espacioFinal !== antes) {
+          const espacio = espacioFinal !== null ? (this.espaciosDisponibles || []).find((e) => e.id === espacioFinal) : null;
+          this.estado.textContent += ` ${
+            espacio ? t('Movido a «{espacio}».', { espacio: espacio.nombre }) : t('Movido a público: ahora lo ven todos.')
+          }`;
+        }
         if (gremios.errores.length) {
           this.estado.textContent += ` ${t('Gremios sin anotar: {errores}', { errores: gremios.errores.join('; ') })}`;
         }
       }
-      if (this.alGuardar) this.alGuardar();
+      if (this.alGuardar) this.alGuardar(listas.length ? { rutaIds: r.rutas.map((x) => x.id), espacioId: espacioFinal } : null);
     } catch (error) {
       this.estado.textContent = error.message || t('No se pudo guardar.');
       this._actualizarAcciones();

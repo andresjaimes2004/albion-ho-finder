@@ -499,6 +499,11 @@ export const EN = {
   'El conjunto de rutas no es válido.': 'The set of routes is not valid.',
   'Las rutas del conjunto tienen que estar en el mismo sitio (público o el mismo espacio).': 'The routes in the set must be in the same place (public or the same space).',
   'Solo quien registró las rutas o un administrador puede editarlas.': 'Only whoever registered the routes or an administrator can edit them.',
+  // --- v13.7: rutas movidas a la vista ---
+  'Movido a «{espacio}».': 'Moved to «{espacio}».',
+  'Movido a público: ahora lo ven todos.': 'Moved to public: everyone can see it now.',
+  // --- v13.7: editar en el mapa raíz ---
+  'Editar desde la raíz todas las rutas de este conjunto': 'Edit all the routes of this set from the root',
 };
 
 const tiene = Object.prototype.hasOwnProperty;

@@ -29,6 +29,8 @@ const INTERVALO_REFRESCO_MS = 60_000;
 // Resultados de la búsqueda y "Caminos avalonianos": de 9 en 9 (3 × 3), en
 // tandas circulares.
 const POR_TANDA = 9;
+// Cuánto se resalta una ruta recién editada en "Rutas del gremio".
+const RESALTE_MS = 3200;
 const CURVA = 'cubic-bezier(0.4, 0, 0.2, 1)';
 
 const RECURSOS = {
@@ -57,9 +59,10 @@ function claveGremio(texto) {
 
 
 export class PanelCaminos {
-  constructor({ abrirMapa, alActualizar = null, alEditarRuta = null }) {
+  constructor({ abrirMapa, alActualizar = null, alEditarRuta = null, alEditarConjunto = null }) {
     this.abrirMapa = abrirMapa;
     this.alEditarRuta = alEditarRuta;
+    this.alEditarConjunto = alEditarConjunto;
     // Avisa de cada resumen nuevo (el panel de registro usa sus conexiones).
     this.alActualizar = alActualizar;
 
@@ -112,7 +115,7 @@ export class PanelCaminos {
         boton.addEventListener('click', () => this._cambiarTanda(nombre, Number(boton.dataset.paso)));
       }
     }
-    conectarDesplegable(document.getElementById('rutas-alternar'), document.getElementById('caminos-rutas'), {
+    this.rutasDesplegable = conectarDesplegable(document.getElementById('rutas-alternar'), document.getElementById('caminos-rutas'), {
       clave: 'rutas-abiertas',
       abierto: true,
     });
@@ -1100,6 +1103,10 @@ export class PanelCaminos {
       const cercania = grupo[0].cercania;
       if (cercania) cabeza.append(crear('span', 'rutas-entrada__cercania', textoCercania(cercania)));
       cabeza.append(crear('span', 'rutas-entrada__cantidad', tn(grupo.length, '{n} ruta', '{n} rutas')));
+      // "Editar" en el mapa raíz: abre directamente desde la raíz el
+      // conjunto de sus rutas (las que este usuario puede editar).
+      const conjuntos = this._conjuntosEditables(grupo);
+      for (const conjunto of conjuntos) cabeza.append(this._botonEditarConjunto(conjunto, conjuntos.length > 1));
 
       // A dónde lleva cada ruta y cuánto le queda, sin desplegar.
       const destinos = crear('span', 'rutas-entrada__destinos');
@@ -1120,6 +1127,13 @@ export class PanelCaminos {
   }
 
   _tarjetaRuta(ruta, resaltar = null) {
+    const tarjeta = this._crearTarjeta(ruta, resaltar);
+    const recien = this._resaltadas;
+    if (recien && recien.ids.has(ruta.id) && Date.now() < recien.hasta) tarjeta.classList.add('ruta--recien');
+    return tarjeta;
+  }
+
+  _crearTarjeta(ruta, resaltar) {
     return crearTarjetaRuta(ruta, {
       usuario: this.usuario,
       resaltar,
@@ -1135,11 +1149,108 @@ export class PanelCaminos {
   }
 
   /**
+   * Los conjuntos (redes de rutas) que tocan un grupo de rutas y que este
+   * usuario puede editar: uno por red y sitio, sin repetir.
+   */
+  _conjuntosEditables(rutas) {
+    if (!this.alEditarConjunto || !this.usuario) return [];
+    const editable = (r) => this.usuario.id === r.reportadoPorId || this.usuario.rol === 'ADMIN';
+    const cubiertas = new Set();
+    const conjuntos = [];
+    for (const ruta of rutas) {
+      if (cubiertas.has(ruta.id) || !editable(ruta)) continue;
+      const conjunto = this.conjuntoDe(ruta);
+      for (const r of conjunto) cubiertas.add(r.id);
+      conjuntos.push(conjunto);
+    }
+    return conjuntos;
+  }
+
+  /**
+   * Botón "Editar" de un mapa raíz. Si de ese mapa salen varios conjuntos
+   * (por ejemplo, uno público y otro de un espacio), cada botón dice cuál.
+   */
+  _botonEditarConjunto(conjunto, varios) {
+    let texto = t('Editar');
+    if (varios) {
+      const espacio = conjunto[0].espacio;
+      const sitio = espacio ? `${espacio.publico ? '👥' : '🔒'} ${espacio.nombre}` : t('Públicas');
+      texto = `${t('Editar')} · ${sitio} · ${tn(conjunto.length, '{n} ruta', '{n} rutas')}`;
+    }
+    const boton = crear('button', 'boton boton--pequeno boton--sutil rutas-entrada__editar', texto);
+    boton.type = 'button';
+    boton.title = t('Editar desde la raíz todas las rutas de este conjunto');
+    boton.addEventListener('click', (evento) => {
+      // Está dentro de la cabecera plegable: no la abre ni la cierra.
+      evento.preventDefault();
+      evento.stopPropagation();
+      this.alEditarConjunto(conjunto);
+    });
+    return boton;
+  }
+
+  /**
    * El conjunto de una ruta: las rutas de su misma red (comparten alguna
    * conexión, directa o indirectamente), del mismo sitio (público o el
    * mismo espacio) y que este usuario puede editar. Es lo que se edita
    * "desde la raíz", como cuando se registraron juntas.
    */
+  /**
+   * Muestra en "Rutas del gremio" las rutas recién editadas: si el filtro
+   * de espacio o de portal las ocultaba (por ejemplo, se movieron de
+   * público a un espacio), pasa al apartado donde quedaron; abre su grupo
+   * y la lista, y las resalta un momento.
+   */
+  mostrarRutas({ rutaIds = [], espacioId = null } = {}) {
+    const ids = new Set(rutaIds);
+    const abiertas = ((this.datos && this.datos.rutas) || []).filter((r) => ids.has(r.id));
+    const cerradas = ((this.datos && this.datos.rutasCerradas) || []).filter((r) => ids.has(r.id));
+    const rutas = [...abiertas, ...cerradas];
+    if (!rutas.length) return;
+
+    const recordar = (clave, valor) => {
+      try {
+        if (valor === null) localStorage.removeItem(clave);
+        else localStorage.setItem(clave, valor);
+      } catch (error) {
+        // Sin almacenamiento: vale hasta recargar.
+      }
+    };
+    const enEspacio = (r) => (r.espacio ? String(r.espacio.id) : 'publicas');
+    const elegido = this._espacioElegido || null;
+    if (elegido !== null && !rutas.every((r) => enEspacio(r) === elegido)) {
+      // Su apartado: el espacio (o "Públicas") donde quedaron todas; si
+      // quedaron en varios, todos.
+      const destino = espacioId === null ? 'publicas' : String(espacioId);
+      this._espacioElegido = rutas.every((r) => enEspacio(r) === destino) ? destino : null;
+      recordar('rutas-espacio', this._espacioElegido);
+    }
+    const portal = this._portalElegido || null;
+    if (portal !== null && !rutas.every((r) => (r.cercania ? r.cercania.portal : '') === portal)) {
+      this._portalElegido = null;
+      recordar('rutas-portal', null);
+    }
+    if (!this._entradasAbiertas) this._entradasAbiertas = new Set();
+    for (const r of abiertas) this._entradasAbiertas.add(r.zonas[0].nombre);
+    if (cerradas.length) this._cerradasAbiertas = true;
+    if (this.rutasDesplegable) this.rutasDesplegable.abrir();
+
+    // El resaltado sobrevive a los refrescos de la lista (al mover una ruta
+    // a un espacio, el aviso a sus miembros vuelve a pedir las rutas).
+    this._resaltadas = { ids, hasta: Date.now() + RESALTE_MS };
+    this._renderizarRutas();
+    // Tras abrir la lista (que se despliega con animación), se lleva a la vista.
+    setTimeout(() => {
+      const tarjeta = document.querySelector(`#caminos-rutas .ruta[data-ruta="${Number(rutas[0].id)}"]`);
+      if (tarjeta) tarjeta.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 350);
+    clearTimeout(this._finResalte);
+    this._finResalte = setTimeout(() => {
+      this._resaltadas = null;
+      for (const tarjeta of document.querySelectorAll('#caminos-rutas .ruta--recien')) tarjeta.classList.remove('ruta--recien');
+    }, RESALTE_MS);
+  }
+
   /** Una ruta de las que se ven ahora (abierta o cerrada hace poco), por su id. */
   rutaPorId(id) {
     const todas = [...((this.datos && this.datos.rutas) || []), ...((this.datos && this.datos.rutasCerradas) || [])];

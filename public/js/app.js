@@ -81,10 +81,17 @@ class BuscadorUI {
       },
       // "Editar" en una ruta la abre en el panel de registro.
       alEditarRuta: (ruta, conjunto) => this.panelRegistro.editarRuta(ruta, conjunto),
+      // "Editar" en el mapa raíz de un grupo: el conjunto entero, sin pasos.
+      alEditarConjunto: (conjunto) => this.panelRegistro.editarConjunto(conjunto),
     });
 
     this.panelRegistro = new PanelRegistro({
-      alGuardar: () => this.panelCaminos.refrescar(),
+      // Tras editar una ruta (o un conjunto), la lista la muestra en su
+      // apartado, aunque se haya movido a otro espacio.
+      alGuardar: async (guardadas) => {
+        await this.panelCaminos.refrescar();
+        if (guardadas) this.panelCaminos.mostrarRutas(guardadas);
+      },
     });
 
     // Espacios privados: alimentan el "Guardar en" del registro y, al
