@@ -448,6 +448,38 @@ export const EN = {
   'Gremio con hideout': 'Guild with a hideout',
   'Todavía no hay rutas abiertas en «{espacio}». Regístralas eligiendo este espacio en «Guardar en».': 'There are no open routes in «{espacio}» yet. Register them by choosing this space in «Save to».',
   'Lista de avisos no válida.': 'Invalid notification list.',
+  // --- v13.5: confirmaciones y alertas de campos ---
+  'Aplicar de todos modos': 'Apply anyway',
+  '¿Aplicar el Excel de todos modos?': 'Apply the Excel sheet anyway?',
+  'Aceptar': 'OK',
+  'Cancelar': 'Cancel',
+  '¿Seguro?': 'Are you sure?',
+  'Dejarás de ver sus rutas. Para volver, quien lo creó tendrá que agregarte otra vez.': 'You will stop seeing its routes. To come back, its creator will have to add you again.',
+  'Se borran también todas sus rutas y conexiones, y sus miembros dejarán de verlas.': 'All its routes and connections are deleted too, and its members will stop seeing them.',
+  '¿Borrar el espacio {nombre}?': 'Delete the space {nombre}?',
+  '¿Salir del espacio {nombre}?': 'Leave the space {nombre}?',
+  'El mapa vuelve a mostrarse con su dibujo por defecto.': 'The map goes back to its default drawing.',
+  'Se quita de este mapa. Si el Excel lo sigue teniendo, volverá en la próxima sincronización.': 'It is removed from this map. If the Excel sheet still has it, it will come back on the next sync.',
+  'Quitaste todas sus conexiones: al guardar, la ruta se borra.': 'You removed all its connections: saving deletes the route.',
+  '¿Borrar rutas?': 'Delete routes?',
+  'Completa este campo.': 'Please fill in this field.',
+  'El formato no es válido.': 'The format is not valid.',
+  'El valor máximo es {n}.': 'The maximum value is {n}.',
+  'El valor mínimo es {n}.': 'The minimum value is {n}.',
+  'Escribe al menos {n} caracteres (ahora hay {actual}).': 'Type at least {n} characters (there are {actual} now).',
+  'Escribe como mucho {n} caracteres.': 'Type at most {n} characters.',
+  'Escribe un número válido.': 'Type a valid number.',
+  'Marca esta casilla para continuar.': 'Tick this box to continue.',
+  'Revisa este campo.': 'Please check this field.',
+  // --- v13.5: tandas de caminos ---
+  '{desde}–{hasta} de {total}': '{desde}–{hasta} of {total}',
+  // --- v13.5: tanda de un solo camino ---
+  '{n} de {total}': '{n} of {total}',
+  // --- v13.5: datos oficiales ---
+  'Dungeons y recursos según los archivos del juego.': 'Dungeons and resources from the game files.',
+  // --- v13.5: tarjetas accionables ---
+  'Buscar otra vez «{termino}»': 'Search «{termino}» again',
+  'Ver la ficha de {nombre}': 'Open the details of {nombre}',
 };
 
 const tiene = Object.prototype.hasOwnProperty;

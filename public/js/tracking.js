@@ -3,7 +3,10 @@
 import api from './api.js';
 import { crear, crearFuente, crearReloj, crearTarjetaRuta, textoCercania } from './rutas.js';
 import { t, tn, regional } from './i18n.js';
+import { confirmar } from './dialogos.js';
 import { conectarSugerencias, agregarBotonBorrar } from './sugerencias.js';
+import { mostrarSuave, ocultarSuave, conectarDesplegable, retirarSuave } from './animar.js';
+import { tanda } from './paginacion.js';
 
 /**
  * tracking.js
@@ -23,7 +26,10 @@ import { conectarSugerencias, agregarBotonBorrar } from './sugerencias.js';
  */
 
 const INTERVALO_REFRESCO_MS = 60_000;
-const POR_PAGINA = 60;
+// Resultados de la búsqueda y "Caminos avalonianos": de 9 en 9 (3 × 3), en
+// tandas circulares.
+const POR_TANDA = 9;
+const CURVA = 'cubic-bezier(0.4, 0, 0.2, 1)';
 
 const RECURSOS = {
   ORE: t('Mineral'),
@@ -60,7 +66,16 @@ export class PanelCaminos {
     this.input = document.getElementById('input-camino');
     // Sugerencias propias (caminos, mapas y gremios de caminos de hideouts)
     // y ✕ para borrar lo escrito.
-    this.sugerencias = conectarSugerencias(this.input, { opciones: () => this._opcionesSugeridas() });
+    // Elegir una sugerencia que es un camino o mapa abre su ficha (solo al
+    // elegirla: el evento "change" del campo también salta al perder el foco,
+    // por ejemplo al pulsar la ✕ de la ficha, y la volvía a abrir).
+    this.sugerencias = conectarSugerencias(this.input, {
+      opciones: () => this._opcionesSugeridas(),
+      alElegir: (valor) => {
+        const entrada = this._buscarEntrada(valor);
+        if (entrada) this.abrirDetalle(entrada.nombre);
+      },
+    });
     agregarBotonBorrar(this.input);
     this.filtroGrupo = document.getElementById('caminos-grupo');
     this.filtroTier = document.getElementById('caminos-tier');
@@ -70,11 +85,39 @@ export class PanelCaminos {
     this.error = document.getElementById('caminos-error');
     this.resumen = document.getElementById('caminos-resumen');
     this.lista = document.getElementById('caminos-lista');
-    this.botonMas = document.getElementById('caminos-mas');
     this.detalle = document.getElementById('caminos-detalle');
+    // Resultados de la búsqueda (bajo el buscador) y tarjeta desplegable con
+    // todos los caminos (cuando no se busca nada).
+    this.resultados = document.getElementById('caminos-resultados');
+    this.todos = document.getElementById('caminos-todos');
+    this.todosCuerpo = document.getElementById('caminos-todos-cuerpo');
+    this.todosCantidad = document.getElementById('todos-cantidad');
+    this.rutasTarjeta = document.getElementById('caminos-rutas-tarjeta');
+    this.rutasCantidad = document.getElementById('rutas-cantidad');
+    // Las dos secciones fijas con tandas de 9: cada una recuerda la suya.
+    this.secciones = {
+      resultados: {
+        seccion: this.resultados,
+        cuerpo: document.getElementById('caminos-resultados-cuerpo'),
+        cantidad: document.getElementById('resultados-cantidad'),
+      },
+      todos: { seccion: this.todos, cuerpo: this.todosCuerpo, cantidad: this.todosCantidad },
+    };
+    for (const [nombre, seccion] of Object.entries(this.secciones)) {
+      seccion.tanda = 0;
+      seccion.paginadores = [...seccion.seccion.querySelectorAll('.paginador')];
+      seccion.posiciones = [...seccion.seccion.querySelectorAll('.paginador__posicion')];
+      seccion.botones = [...seccion.seccion.querySelectorAll('.paginador__boton')];
+      for (const boton of seccion.botones) {
+        boton.addEventListener('click', () => this._cambiarTanda(nombre, Number(boton.dataset.paso)));
+      }
+    }
+    conectarDesplegable(document.getElementById('rutas-alternar'), document.getElementById('caminos-rutas'), {
+      clave: 'rutas-abiertas',
+      abierto: true,
+    });
 
     this.datos = null;
-    this.visibles = POR_PAGINA;
     this.mapaAbierto = null;
     this.controladorDetalle = null;
     this.temporizadorRefresco = null;
@@ -89,11 +132,6 @@ export class PanelCaminos {
       clearTimeout(espera);
       espera = setTimeout(() => this._reiniciarLista(), 200);
     });
-    // Elegir una sugerencia exacta abre el detalle directamente.
-    this.input.addEventListener('change', () => {
-      const entrada = this._buscarEntrada(this.input.value);
-      if (entrada) this.abrirDetalle(entrada.nombre);
-    });
     this.input.addEventListener('keydown', (evento) => {
       if (evento.key !== 'Enter') return;
       const primera = this._entradasFiltradas()[0];
@@ -103,11 +141,6 @@ export class PanelCaminos {
     for (const filtro of [this.filtroGrupo, this.filtroTier, this.filtroActivos]) {
       filtro.addEventListener('change', () => this._reiniciarLista());
     }
-
-    this.botonMas.addEventListener('click', () => {
-      this.visibles += POR_PAGINA;
-      this._renderizarLista();
-    });
 
     document.addEventListener('visibilitychange', () => {
       if (this.activo && !document.hidden) this.refrescar();
@@ -157,7 +190,15 @@ export class PanelCaminos {
       this._renderizarLista();
       this._renderizarRutas();
       if (this.alActualizar) this.alActualizar(this.datos);
-      if (this.mapaAbierto) this.abrirDetalle(this.mapaAbierto, { silencioso: true });
+      if (this._restauracion) {
+        // Venimos de cambiar de idioma: se reabre el camino que se miraba.
+        const { mapaAbierto, resolver } = this._restauracion;
+        this._restauracion = null;
+        if (mapaAbierto) await this.abrirDetalle(mapaAbierto, { desplazar: false });
+        resolver();
+      } else if (this.mapaAbierto) {
+        this.abrirDetalle(this.mapaAbierto, { silencioso: true });
+      }
     } catch (error) {
       if (!this.datos) {
         this.error.textContent = error.message || t('No se pudieron cargar los caminos de Avalon.');
@@ -266,15 +307,50 @@ export class PanelCaminos {
     return this._cacheOpciones;
   }
 
+  /** Búsqueda o filtros nuevos: los resultados vuelven a su primera tanda. */
   _reiniciarLista() {
-    this.visibles = POR_PAGINA;
+    this.secciones.resultados.tanda = 0;
     this._renderizarLista();
   }
 
-  _renderizarLista() {
+  /** ¿Hay algo escrito o algún filtro puesto? */
+  _busquedaActiva() {
+    return Boolean(
+      normalizar(this.input.value) || this.filtroGrupo.value || this.filtroTier.value || this.filtroActivos.checked
+    );
+  }
+
+  /**
+   * Siguiente o anterior tanda de 9 caminos. Da la vuelta: desde la última
+   * se pasa a la primera y desde la primera a la última.
+   */
+  _cambiarTanda(nombre, paso) {
+    const seccion = this.secciones[nombre];
+    seccion.tanda += paso;
+    this._renderizarLista({ direccion: paso });
+    // Si la sección queda por encima de la pantalla, se vuelve a su inicio.
+    if (seccion.seccion.getBoundingClientRect().top < 0) seccion.seccion.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  _renderizarLista({ direccion = 0 } = {}) {
     if (!this.datos) return;
     const filtradas = this._entradasFiltradas();
     const conConexiones = filtradas.filter((e) => e.conexiones > 0).length;
+
+    // Con una búsqueda o un filtro, los resultados van justo bajo el
+    // buscador; sin nada, la lista vive en la sección "Caminos avalonianos".
+    // Las dos son secciones fijas con tandas de 9.
+    const activa = this._busquedaActiva();
+    const seccion = activa ? this.secciones.resultados : this.secciones.todos;
+    if (this.lista.parentElement !== seccion.cuerpo) seccion.cuerpo.append(this.resumen, this.lista);
+    if (activa) {
+      mostrarSuave(this.resultados);
+      ocultarSuave(this.todos);
+    } else {
+      ocultarSuave(this.resultados);
+      mostrarSuave(this.todos);
+    }
+    seccion.cantidad.textContent = `(${filtradas.length})`;
 
     this.resumen.hidden = false;
     this.resumen.replaceChildren(
@@ -282,11 +358,32 @@ export class PanelCaminos {
       this._crearDato(conConexiones, t('con conexiones abiertas'))
     );
 
-    this.lista.replaceChildren(...filtradas.slice(0, this.visibles).map((e) => this._crearTarjeta(e)));
+    // La tanda de 9 que toca; las flechas solo si hay más de una tanda.
+    const { pagina, paginas, desde, hasta } = tanda(filtradas.length, seccion.tanda, POR_TANDA);
+    seccion.tanda = pagina;
+    const visibles = filtradas.slice(desde, hasta);
+    let texto = '';
+    if (hasta - desde === 1) texto = t('{n} de {total}', { n: hasta, total: filtradas.length });
+    else if (filtradas.length) texto = t('{desde}–{hasta} de {total}', { desde: desde + 1, hasta, total: filtradas.length });
+    for (const posicion of seccion.posiciones) posicion.textContent = texto;
+    for (const paginador of seccion.paginadores) paginador.hidden = paginas <= 1;
+
+    this.lista.replaceChildren(...visibles.map((e) => this._crearTarjeta(e)));
     if (!filtradas.length) {
       this.lista.appendChild(crear('p', 'estado estado--advertencia', t('Ningún camino coincide con la búsqueda.')));
     }
-    this.botonMas.hidden = filtradas.length <= this.visibles;
+    // Al cambiar de tanda, la nueva entra deslizándose desde el lado al que se va.
+    if (direccion && typeof this.lista.animate === 'function' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      // Pulsando seguido, cada tanda sustituye a la animación anterior.
+      for (const previa of this.lista.getAnimations()) previa.cancel();
+      this.lista.animate(
+        [
+          { opacity: 0, transform: `translateX(${direccion > 0 ? 32 : -32}px)` },
+          { opacity: 1, transform: 'none' },
+        ],
+        { duration: 280, easing: CURVA }
+      );
+    }
   }
 
   _crearDato(numero, texto) {
@@ -341,14 +438,59 @@ export class PanelCaminos {
 
   // --------------------------------------------------------------- detalle --
 
-  async abrirDetalle(nombre, { silencioso = false } = {}) {
+  /**
+   * Lo que se está mirando, para conservarlo al cambiar de idioma (la
+   * página del otro idioma lo recibe en restaurar()).
+   */
+  estado() {
+    return {
+      texto: this.input.value,
+      grupo: this.filtroGrupo.value,
+      tier: this.filtroTier.value,
+      activos: this.filtroActivos.checked,
+      tandas: { resultados: this.secciones.resultados.tanda, todos: this.secciones.todos.tanda },
+      mapaAbierto: this.mapaAbierto,
+      entradasAbiertas: [...(this._entradasAbiertas || [])],
+      cerradasAbiertas: Boolean(this._cerradasAbiertas),
+    };
+  }
+
+  /**
+   * Deja la sección como estaba en el otro idioma. Devuelve una promesa que
+   * se cumple cuando ya está todo pintado (con el camino consultado
+   * abierto), para recolocar después la posición de la página.
+   */
+  restaurar(estado = {}) {
+    const texto = (v) => (typeof v === 'string' ? v.slice(0, 80) : '');
+    this.input.value = texto(estado.texto);
+    this.filtroGrupo.value = texto(estado.grupo);
+    if (this.filtroGrupo.selectedIndex < 0) this.filtroGrupo.value = '';
+    this.filtroTier.value = texto(estado.tier);
+    if (this.filtroTier.selectedIndex < 0) this.filtroTier.value = '';
+    this.filtroActivos.checked = Boolean(estado.activos);
+    const tandas = estado.tandas || {};
+    this.secciones.resultados.tanda = Number.isInteger(tandas.resultados) ? tandas.resultados : 0;
+    this.secciones.todos.tanda = Number.isInteger(tandas.todos) ? tandas.todos : 0;
+    this._entradasAbiertas = new Set((estado.entradasAbiertas || []).filter((e) => typeof e === 'string'));
+    this._cerradasAbiertas = Boolean(estado.cerradasAbiertas);
+    const mapaAbierto = typeof estado.mapaAbierto === 'string' ? estado.mapaAbierto : null;
+    return new Promise((resolver) => {
+      this._restauracion = { mapaAbierto, resolver };
+      // Si los datos ya llegaron, se aplica ahora; si no, al llegar.
+      if (this.datos) this.refrescar();
+    });
+  }
+
+  async abrirDetalle(nombre, { silencioso = false, desplazar = !silencioso } = {}) {
     if (this.controladorDetalle) this.controladorDetalle.abort();
     this.controladorDetalle = new AbortController();
     this.mapaAbierto = nombre;
 
     if (!silencioso) {
-      this.detalle.hidden = false;
       this.detalle.replaceChildren(crear('div', 'estado', t('Consultando conexiones...')));
+      mostrarSuave(this.detalle);
+    }
+    if (desplazar) {
       // La cabecera es fija y su alto cambia en móvil: se descuenta al desplazar.
       const cabecera = document.querySelector('.cabecera');
       const margen = (cabecera ? cabecera.getBoundingClientRect().height : 0) + 12;
@@ -375,8 +517,8 @@ export class PanelCaminos {
   cerrarDetalle() {
     if (this.controladorDetalle) this.controladorDetalle.abort();
     this.mapaAbierto = null;
-    this.detalle.hidden = true;
-    this.detalle.replaceChildren();
+    // Se pliega con suavidad (el contenido se sustituye al abrir otra).
+    ocultarSuave(this.detalle);
     this._actualizarBarraAdmin(null);
   }
 
@@ -427,13 +569,16 @@ export class PanelCaminos {
     if (datos.hideouts) partes.push(this._crearBloqueHideouts(mapa.nombre, datos.hideouts));
     if (rutas.length) partes.push(this._crearBloqueRutas(rutas, { resaltar: mapa.nombre }));
 
-    const cuerpo = crear('div', 'caminos-detalle__cuerpo');
+    const cuerpo = crear('div', 'caminos-detalle__cuerpo caminos-detalle__cuerpo--una');
     cuerpo.append(this._crearBloqueConexiones(conexiones));
-    if (camino) cuerpo.append(this._crearBloqueOficial(camino));
     partes.push(cuerpo);
+    // Los datos oficiales (dungeons y recursos), plegados al final: dejan
+    // el espacio a lo importante (conexiones, rutas y gremios).
+    if (camino) partes.push(this._crearDatosOficiales(camino));
 
-    this.detalle.hidden = false;
     this.detalle.replaceChildren(...partes);
+    // Si se estaba cerrando, la ficha vuelve (sin pelear con la animación).
+    if (this.mapaAbierto) mostrarSuave(this.detalle);
   }
 
   /**
@@ -470,6 +615,7 @@ export class PanelCaminos {
             borrar.disabled = true;
             try {
               await api.borrarHideoutCamino(h.id);
+              await retirarSuave(item);
               await this.refrescar();
             } catch (error) {
               borrar.disabled = false;
@@ -564,8 +710,12 @@ export class PanelCaminos {
     const destino = crear('span', 'conexion__destino');
     const nombre = hacia.nombre || t('Mapa desconocido');
     if (hacia.nombre) {
+      // Toda la tarjeta lleva a la ficha de ese mapa: el nombre es el botón
+      // y su ::after (CSS) cubre la tarjeta entera.
+      item.classList.add('conexion--accionable');
       const enlace = crear('button', 'conexion__nombre', nombre);
       enlace.type = 'button';
+      enlace.setAttribute('aria-label', t('Ver la ficha de {nombre}', { nombre }));
       enlace.addEventListener('click', () => this.abrirDetalle(hacia.nombre));
       destino.append(enlace);
     } else {
@@ -582,13 +732,8 @@ export class PanelCaminos {
     }
 
     item.append(destino, tiempo, this._crearFuente(conexion));
-
-    if (hacia.clase === 'zonaNegra' && this.abrirMapa) {
-      const ver = crear('button', 'boton boton--pequeno boton--sutil', t('Ver mapa'));
-      ver.type = 'button';
-      ver.addEventListener('click', () => this.abrirMapa(hacia.nombre));
-      item.append(ver);
-    }
+    // Sin botón "Ver mapa": la ficha de un mapa de Zona Negra ya lo ofrece.
+    if (hacia.nombre) item.append(crear('span', 'conexion__ir'));
     return item;
   }
 
@@ -606,6 +751,7 @@ export class PanelCaminos {
         borrar.disabled = true;
         try {
           await api.borrarReporte(conexion.reporteId);
+          await retirarSuave(borrar.closest('li') || fuente);
           await this.refrescar();
         } catch (error) {
           borrar.disabled = false;
@@ -615,6 +761,39 @@ export class PanelCaminos {
       fuente.append(' ', borrar);
     }
     return fuente;
+  }
+
+  /**
+   * Tarjeta desplegable "Datos oficiales del camino" (como las demás
+   * secciones). Recuerda si se dejó abierta: la ficha se redibuja cada
+   * minuto y al cambiar de camino, y no se cierra sola.
+   */
+  _crearDatosOficiales(camino) {
+    const bloque = this._crearBloqueOficial(camino);
+    const tituloViejo = bloque.querySelector('h4');
+    if (tituloViejo) tituloViejo.remove();
+
+    const tarjeta = crear('section', 'registro desplegable datos-oficiales');
+    const encabezado = crear('h4', 'desplegable__encabezado');
+    const boton = crear('button', 'desplegable__cabecera');
+    boton.type = 'button';
+    boton.setAttribute('aria-controls', 'datos-oficiales-cuerpo');
+    const textos = crear('span', 'desplegable__textos');
+    textos.append(
+      crear('span', 'registro__titulo', t('Datos oficiales del camino')),
+      crear('span', 'registro__subtitulo', t('Dungeons y recursos según los archivos del juego.'))
+    );
+    const flecha = crear('span', 'desplegable__flecha');
+    flecha.setAttribute('aria-hidden', 'true');
+    boton.append(textos, flecha);
+    encabezado.append(boton);
+
+    const cuerpo = crear('div', 'registro__cuerpo');
+    cuerpo.id = 'datos-oficiales-cuerpo';
+    cuerpo.append(bloque);
+    tarjeta.append(encabezado, cuerpo);
+    conectarDesplegable(boton, cuerpo, { clave: 'datos-oficiales-abiertos', abierto: false });
+    return tarjeta;
   }
 
   _crearBloqueOficial(camino) {
@@ -685,8 +864,10 @@ export class PanelCaminos {
 
     // Un administrador ve siempre el bloque, con su barra de borrado (y el
     // resultado de la última acción) aunque ya no quede ninguna ruta.
-    contenedor.hidden = !todasAbiertas.length && !todasCerradas.length && !esAdmin && !espacios.size;
-    if (contenedor.hidden) {
+    // La tarjeta "Rutas del gremio" (su cuerpo se pliega aparte).
+    this.rutasTarjeta.hidden = !todasAbiertas.length && !todasCerradas.length && !esAdmin && !espacios.size;
+    this.rutasCantidad.textContent = `(${todasAbiertas.length})`;
+    if (this.rutasTarjeta.hidden) {
       contenedor.replaceChildren();
       return;
     }
@@ -718,7 +899,6 @@ export class PanelCaminos {
     const elegido = this._portalElegido !== null && orden.includes(this._portalElegido) ? this._portalElegido : null;
 
     const bloque = crear('div', 'caminos-detalle__bloque bloque-rutas');
-    bloque.append(crear('h4', null, `${t('Rutas del gremio')} (${rutas.length})`));
 
     // Filtro por portal.
     const filtro = crear('div', 'rutas-portales');
@@ -803,7 +983,8 @@ export class PanelCaminos {
     mensaje.setAttribute('aria-live', 'polite');
 
     const borrar = async (alcance, valor, pregunta, boton) => {
-      if (!window.confirm(pregunta)) return;
+      const ok = await confirmar({ titulo: t('¿Borrar rutas?'), mensaje: pregunta, aceptar: t('Borrar'), peligro: true });
+      if (!ok) return;
       boton.disabled = true;
       try {
         const r = await api.borrarRutas(alcance, valor);
@@ -943,8 +1124,9 @@ export class PanelCaminos {
       usuario: this.usuario,
       resaltar,
       alElegirZona: (nombre) => this.abrirDetalle(nombre),
-      alBorrar: async (r) => {
+      alBorrar: async (r, retirar) => {
         await api.borrarRuta(r.id);
+        await retirar();
         await this.refrescar();
       },
       alEditar: this.alEditarRuta,

@@ -12,6 +12,7 @@ import {
 import api from './api.js';
 import { crear as crearHtml, crearListaConexiones, crearTarjetaRuta } from './rutas.js';
 import { t, tn } from './i18n.js';
+import { confirmar } from './dialogos.js';
 
 /**
  * mapaDetalle.js
@@ -162,6 +163,7 @@ export class VentanaMapa {
   async abrir(nombreMapa, { resaltarGremio = null } = {}) {
     // Si se pulsan varias salidas seguidas, solo cuenta la última.
     const turno = ++this.turno;
+    this.nombreActual = nombreMapa;
     const saltando = this.dialogo.open && Boolean(this.datos);
     this.resaltado = resaltarGremio;
     this.hideoutSeleccionado = null;
@@ -206,6 +208,11 @@ export class VentanaMapa {
     requestAnimationFrame(() => {
       if (turno === this.turno) this.contenido.classList.remove('ventana__contenido--cambiando');
     });
+  }
+
+  /** El mapa que se está viendo en la ventana, o null si está cerrada. */
+  nombreAbierto() {
+    return this.dialogo.open ? this.nombreActual || null : null;
   }
 
   cerrar() {
@@ -262,8 +269,9 @@ export class VentanaMapa {
           usuario: this.obtenerSesion(),
           resaltar: nombreMapa,
           alElegirZona: irA,
-          alBorrar: async (r) => {
+          alBorrar: async (r, retirar) => {
             await api.borrarRuta(r.id);
+            await retirar();
             this._cargarRutas(nombreMapa);
             this.alCambiar();
           },
@@ -835,7 +843,13 @@ export class VentanaMapa {
     eliminar.textContent = t('Eliminar');
     eliminar.addEventListener('click', async (evento) => {
       evento.stopPropagation();
-      if (!window.confirm(t('¿Eliminar el hideout de "{gremio}"?', { gremio: hideout.gremio }))) return;
+      const ok = await confirmar({
+        titulo: t('¿Eliminar el hideout de "{gremio}"?', { gremio: hideout.gremio }),
+        mensaje: t('Se quita de este mapa. Si el Excel lo sigue teniendo, volverá en la próxima sincronización.'),
+        aceptar: t('Eliminar'),
+        peligro: true,
+      });
+      if (!ok) return;
       await this._ejecutar(() => api.admin.eliminarHideout(hideout.id));
     });
     acciones.appendChild(eliminar);
@@ -1074,7 +1088,13 @@ export class VentanaMapa {
     quitar.className = 'boton boton--pequeno boton--peligro';
     quitar.textContent = t('Quitar imagen');
     quitar.addEventListener('click', async () => {
-      if (!window.confirm(t('¿Quitar la imagen de fondo de este mapa?'))) return;
+      const ok = await confirmar({
+        titulo: t('¿Quitar la imagen de fondo de este mapa?'),
+        mensaje: t('El mapa vuelve a mostrarse con su dibujo por defecto.'),
+        aceptar: t('Quitar imagen'),
+        peligro: true,
+      });
+      if (!ok) return;
       await this._ejecutar(() => api.admin.borrarImagenMapa(this.datos.mapa.id), { conservarFondo: false });
     });
 

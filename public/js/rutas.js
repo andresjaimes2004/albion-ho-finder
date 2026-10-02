@@ -16,6 +16,7 @@
  */
 
 import { t, tn, regional } from './i18n.js';
+import { retirarSuave } from './animar.js';
 
 export function crear(etiqueta, clase, texto) {
   const el = document.createElement(etiqueta);
@@ -101,7 +102,8 @@ export function crearFuente(item) {
  *   - usuario: sesión actual (para mostrar el botón de borrar)
  *   - resaltar: nombre de zona a destacar (p. ej. el mapa del hideout)
  *   - alElegirZona(nombre): al tocar una zona
- *   - alBorrar(ruta): al borrar (autor o admin)
+ *   - alBorrar(ruta, retirar): al borrar (autor o admin); `retirar()` quita
+ *     la tarjeta con suavidad (se espera antes de refrescar)
  *   - alEditar(ruta): al pulsar "Editar" (autor o admin)
  */
 export function crearTarjetaRuta(ruta, { usuario = null, resaltar = null, alElegirZona = null, alBorrar = null, alEditar = null } = {}) {
@@ -135,7 +137,8 @@ export function crearTarjetaRuta(ruta, { usuario = null, resaltar = null, alEleg
     borrar.addEventListener('click', async () => {
       borrar.disabled = true;
       try {
-        await alBorrar(ruta);
+        // La tarjeta sale con un fundido antes de que se refresque la lista.
+        await alBorrar(ruta, () => retirarSuave(tarjeta));
       } catch (error) {
         borrar.disabled = false;
         borrar.title = error.message || t('No se pudo borrar.');

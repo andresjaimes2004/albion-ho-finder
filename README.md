@@ -8,6 +8,48 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v13.5 — Caminos de Avalon reorganizado, confirmaciones y alertas propias
+
+- **Caminos de Avalon reorganizado**: la ficha del camino consultado y los
+  resultados de la búsqueda aparecen justo debajo del buscador; después,
+  "Registrar conexiones", "Espacios privados", "Rutas del gremio" y una
+  sección fija "Caminos avalonianos" que muestra los caminos de 9 en 9 (3 × 3),
+  con flechas ‹ › para pasar de tanda (circulares: desde la última se vuelve
+  a la primera y al revés) y transición horizontal. Los resultados de una
+  búsqueda o un filtro usan el mismo formato fijo de 9 en 9 (antes, una lista
+  larga con "Mostrar más"). Registro, espacios y rutas
+  son tarjetas que se abren pulsando cualquier parte de su cabecera.
+- Una sugerencia se elige al completar el clic (antes, al apretar el botón
+  del ratón). Mientras se escribe solo se filtra la lista, sin consultar
+  nada al servidor; la ficha de un camino se pide al elegirlo.
+- Mensajes centrados y legibles en cualquier pantalla (por ejemplo "Ningún
+  camino coincide con la búsqueda" ocupaba solo la primera columna).
+- **Cambiar de idioma conserva lo que se estaba mirando**: búsquedas,
+  filtros, tandas, secciones abiertas, el camino consultado, el mapa de la
+  Zona Negra, la ventana de un mapa y la posición de la página (antes, la
+  página del otro idioma empezaba de cero).
+- En la ficha de un camino, "Datos oficiales del camino" (dungeons y
+  recursos) es una tarjeta desplegable al final, plegada por defecto (se
+  recuerda si se deja abierta); las conexiones ocupan todo el ancho.
+- Las ✕ ya no cortan de golpe: la ficha se pliega con suavidad y lo que se
+  borra o se quita (rutas, conexiones, gremios anotados, miembros de un
+  espacio, capturas del registro) sale con un fundido.
+- **Tarjetas enteras accionables**: en "Conexiones abiertas ahora" toda la
+  tarjeta lleva a la ficha del otro mapa (sin el botón "Ver mapa"; la ✕ de
+  borrar sigue funcionando aparte), y en "Tus últimas búsquedas" toda la
+  píldora repite la búsqueda ("Limpiar" sigue igual).
+- **Arreglos**: la ✕ de la ficha de un camino ya no la vuelve a abrir; en
+  Hideouts, "Ver mapa de la Zona Negra" se despliega justo debajo del botón.
+- **Confirmaciones en una ventana propia** (borrar el espacio, salir de él,
+  borrar rutas, eliminar un hideout, quitar una imagen, forzar el Excel),
+  con el color del apartado, en lugar de la del navegador.
+- **Alertas de los campos con el estilo del sitio** ("Completa este campo",
+  "Escribe al menos N caracteres"...), en el idioma de la página.
+- **Transiciones revisadas**: botones, apariciones (fichas, estados,
+  sugerencias, filas del registro), grupos de rutas que se despliegan y el
+  historial plegable, todo con la misma curva y duraciones. Ver "Guía de
+  estilo: transiciones".
+
 ### v13.4 — Espacios en vivo, sugerencias propias y pulido visual
 
 - **Espacios en vivo, sin recargar**: al agregarte a un espacio, quitarte,
@@ -554,6 +596,26 @@ administrador puede subirla por mapa.
   `apple-touch-icon.png` como respaldo para navegadores sin soporte de
   favicon SVG).
 
+## Guía de estilo: transiciones
+
+Toda transición nueva tiene que ser suave y mantener el estilo del sitio:
+
+- Hover, foco y cambios de color: `--duracion-rapida` (0,18 s); aparecer y
+  desplegar: `--duracion` (0,28 s); siempre con la curva `--curva`
+  (variables en `public/css/styles.css`, bloque v13.5).
+- Lo que aparece entra con la animación `aparecer` (fundido y leve
+  desplazamiento). Lo que se despliega o pliega usa `mostrarSuave`,
+  `ocultarSuave` o `conectarDesplegable` (`public/js/animar.js`), nunca un
+  `hidden` a secas; lo que se borra o se quita sale con `retirarSuave`.
+- Ventanas flotantes con `.ventana`; confirmaciones con `confirmar()`
+  (`public/js/dialogos.js`). Nada de `window.confirm` ni `alert`; las
+  alertas de los campos las pone `validacionFormularios.js`.
+- Nada de animaciones de más de 0,4 s (salvo la decoración de la portada) ni
+  en listas que se redibujan a cada refresco (parpadean).
+- Siempre con su versión para `prefers-reduced-motion` (sin movimiento).
+- `tests/frontend.test.js` comprueba que cada id que usa el JavaScript existe
+  en la página y que no vuelven los diálogos ni las listas nativas.
+
 ## Arquitectura
 
 Stack simple y de bajo mantenimiento, pensado para desplegarse en cualquier
@@ -681,6 +743,22 @@ npm start            # http://localhost:3000 — siembra la BD automáticamente
 ```
 
 No hace falta `npm install`: la aplicación no tiene dependencias.
+
+### Datos de ejemplo (solo en local)
+
+Para ver el sitio con contenido: dos cuentas de prueba (`demo_lider` y
+`demo_amigo`), rutas públicas, un espacio privado con su ruta, gremios en un
+camino de hideouts y un aviso pendiente.
+
+```bash
+node herramientas/demo/sembrarDemo.js           # crea (o recrea) la demo
+node herramientas/demo/sembrarDemo.js --borrar  # la quita sin tocar nada más
+```
+
+Las claves de las cuentas de prueba se generan al azar y quedan en
+`herramientas/demo/credenciales-demo.local.txt` (ignorado por git). No se
+ejecuta con `NODE_ENV=production`. Las rutas duran unas horas, como las
+reales: si caducan, se vuelve a ejecutar.
 
 ### Cuenta de administrador
 

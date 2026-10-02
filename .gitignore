@@ -19,3 +19,6 @@ herramientas/banco-lector/lineas-tiempo.json
 herramientas/banco-lector/recortes/
 herramientas/banco-lector/.cache/
 herramientas/banco-lector/package-lock.json
+
+# Demo local: claves de las cuentas de prueba
+herramientas/demo/*.local.txt
