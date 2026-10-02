@@ -88,6 +88,8 @@ export class PanelAdmin {
     try {
       const r = await api.admin.sincronizar(forzar);
       this._pintarSincronizacion(r.sincronizacion);
+      // El resto de la página (sugerencias, búsqueda, caminos) se actualiza.
+      window.dispatchEvent(new CustomEvent('albion:datos-sincronizados'));
       await this.refrescar();
     } catch (error) {
       try {

@@ -29,6 +29,8 @@ const INTERVALO_REFRESCO_MS = 60_000;
 // Resultados de la búsqueda y "Caminos avalonianos": de 9 en 9 (3 × 3), en
 // tandas circulares.
 const POR_TANDA = 9;
+// Al enfocar el buscador, datos con más de esto se vuelven a pedir.
+const VIGENCIA_SUGERENCIAS_MS = 15_000;
 // Cuánto se resalta una ruta recién editada en "Rutas del gremio".
 const RESALTE_MS = 3200;
 const CURVA = 'cubic-bezier(0.4, 0, 0.2, 1)';
@@ -131,6 +133,11 @@ export class PanelCaminos {
 
   _bindEventos() {
     let espera = null;
+    // Al ir a buscar, si los datos tienen más de un rato se piden de nuevo:
+    // las sugerencias (caminos y gremios con hideout) quedan al día.
+    this.input.addEventListener('focus', () => {
+      if (this.datos && Date.now() - (this._datosEn || 0) > VIGENCIA_SUGERENCIAS_MS) this.refrescar();
+    });
     this.input.addEventListener('input', () => {
       clearTimeout(espera);
       espera = setTimeout(() => this._reiniciarLista(), 200);
@@ -187,6 +194,7 @@ export class PanelCaminos {
   async refrescar() {
     try {
       this.datos = await api.tracking();
+      this._datosEn = Date.now();
       this.error.hidden = true;
       this._renderizarEstado();
       this._renderizarSugerencias();
@@ -557,7 +565,8 @@ export class PanelCaminos {
     const insignias = [];
     const tier = camino ? camino.tier : mapa.tier;
     if (tier) insignias.push(`T${tier}`);
-    if (camino) insignias.push(t(camino.etiqueta), camino.id);
+    // Solo tier y tipo: el código interno del juego (TNL-…) no le dice nada a quien juega.
+    if (camino) insignias.push(t(camino.etiqueta));
     else if (mapa.clase === 'zonaNegra') insignias.push(t('Mapa de Zona Negra'));
 
     const partes = [this._crearCabeceraDetalle(mapa.nombre, insignias)];

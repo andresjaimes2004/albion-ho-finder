@@ -3,6 +3,7 @@
 const BuscadorService = require('../services/BuscadorService');
 const HideoutsCaminoService = require('../services/HideoutsCaminoService');
 const BusquedaRepository = require('../repositories/BusquedaRepository');
+const crypto = require('crypto');
 const { manejar } = require('./utilidades');
 
 const servicio = new BuscadorService({ hideoutsCamino: new HideoutsCaminoService() });
@@ -27,10 +28,23 @@ const buscarGremio = manejar((req, res) => {
   return res.status(200).json(resultado);
 });
 
-/** GET /api/buscar/sugerencias — nombres para autocompletar el buscador. */
+/**
+ * GET /api/buscar/sugerencias — nombres para autocompletar el buscador.
+ * Siempre al día (un gremio nuevo del Excel aparece en cuanto se
+ * sincroniza): el navegador vuelve a preguntar cada vez y, si nada cambió,
+ * recibe un 304 vacío gracias al ETag, así que repetirlo no cuesta.
+ */
 const sugerencias = manejar((req, res) => {
-  res.set('Cache-Control', 'public, max-age=300');
-  res.json(servicio.sugerencias());
+  const datos = servicio.sugerencias();
+  const etiqueta = `"${crypto.createHash('sha1').update(JSON.stringify(datos)).digest('base64url')}"`;
+  res.set('Cache-Control', 'no-cache');
+  res.set('ETag', etiqueta);
+  if (req.headers['if-none-match'] === etiqueta) {
+    res.writeHead(304, res.cabeceras);
+    res.end();
+    return;
+  }
+  res.json(datos);
 });
 
 /** GET /api/historial — últimas búsquedas del usuario autenticado. */
