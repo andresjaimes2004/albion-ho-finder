@@ -1127,13 +1127,13 @@ export class PanelCaminos {
   }
 
   _tarjetaRuta(ruta, resaltar = null) {
-    const tarjeta = this._crearTarjeta(ruta, resaltar);
+    const tarjeta = this._tarjetaRutaBase(ruta, resaltar);
     const recien = this._resaltadas;
     if (recien && recien.ids.has(ruta.id) && Date.now() < recien.hasta) tarjeta.classList.add('ruta--recien');
     return tarjeta;
   }
 
-  _crearTarjeta(ruta, resaltar) {
+  _tarjetaRutaBase(ruta, resaltar) {
     return crearTarjetaRuta(ruta, {
       usuario: this.usuario,
       resaltar,
