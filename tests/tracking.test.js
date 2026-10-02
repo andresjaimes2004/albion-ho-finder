@@ -586,3 +586,56 @@ test('borrado masivo de rutas: por zona, por portal, las activas o todas', async
   assert.equal(todas.rutas, 0);
   assert.equal(todas.conexiones, 1, 'también las sueltas');
 });
+
+test('editar desde la raíz: agregar la conexión que faltaba regenera las rutas sin duplicar', () => {
+  limpiarReportes();
+  const s = servicioReportes();
+  const db = require('../src/config/database').getConnection();
+  const cuenta = (tabla) => db.prepare(`SELECT COUNT(*) AS n FROM ${tabla}`).get().n;
+  const A = { origen: 'Deepwood Copse', destino: 'Ouyos-Aoeuam', minutos: 120 };
+  const B = { origen: 'Ouyos-Aoeuam', destino: 'Martlock', minutos: 90 };
+  const C = { origen: 'Ouyos-Aoeuam', destino: 'Cases-Ugumlos', minutos: 60 };
+  const D = { origen: 'Cases-Ugumlos', destino: 'Lymhurst', minutos: 200 };
+
+  // Se guardó la red sin las dos conexiones del ramal hacia Lymhurst.
+  const original = s.registrar(autor.id, [A, B], [[0, 1]]).rutas[0];
+
+  // Desde la raíz: todas las conexiones (con las que faltaban) y las rutas propuestas.
+  const r = s.reemplazarConjunto(autor, [original.id], [A, B, C, D], [[0, 1], [0, 2, 3]]);
+  assert.equal(r.rutas.length, 2);
+  assert.equal(r.rutas[0].id, original.id, 'la ruta que ya existía se conserva');
+  assert.equal(r.borradas, 0);
+  assert.equal(cuenta('rutas_reportadas'), 2);
+  assert.equal(cuenta('conexiones_reportadas'), 4, 'sin conexiones duplicadas');
+
+  // Quitar el ramal de Martlock: esa ruta y su conexión desaparecen.
+  const ids = r.rutas.map((x) => x.id);
+  const sinMartlock = s.reemplazarConjunto(autor, ids, [A, C, D], [[0, 1, 2]]);
+  assert.equal(sinMartlock.borradas, 1);
+  assert.equal(sinMartlock.rutas[0].id, ids[1], 'la ruta a Lymhurst sigue siendo la misma');
+  assert.equal(cuenta('rutas_reportadas'), 1);
+  assert.equal(cuenta('conexiones_reportadas'), 3, 'la conexión que ya nadie usa se borra');
+
+  // Sin conexiones: se borra el conjunto entero.
+  s.reemplazarConjunto(autor, [ids[1]], [], []);
+  assert.equal(cuenta('rutas_reportadas'), 0);
+  assert.equal(cuenta('conexiones_reportadas'), 0);
+});
+
+test('editar desde la raíz: permisos, autor y conjuntos mezclados', () => {
+  limpiarReportes();
+  const s = servicioReportes();
+  const A = { origen: 'Deepwood Copse', destino: 'Ouyos-Aoeuam', minutos: 120 };
+  const B = { origen: 'Ouyos-Aoeuam', destino: 'Martlock', minutos: 90 };
+  const ruta = s.registrar(autor.id, [A, B], [[0, 1]]).rutas[0];
+
+  assert.throws(() => s.reemplazarConjunto(otro, [ruta.id], [A, B], [[0, 1]]), (e) => e.estado === 403);
+  assert.throws(() => s.reemplazarConjunto(autor, [999999], [A, B], [[0, 1]]), (e) => e.estado === 404);
+  assert.throws(() => s.reemplazarConjunto(autor, [], [A, B], [[0, 1]]), /no es válido/);
+  assert.throws(() => s.reemplazarConjunto(autor, ['1'], [A, B], [[0, 1]]), /no es válido/);
+
+  // Un administrador puede corregirlo, y la ruta sigue a nombre de su autor.
+  const corregida = s.reemplazarConjunto(admin, [ruta.id], [A, { ...B, minutos: 30 }], [[0, 1]]);
+  assert.equal(corregida.rutas[0].usuarioId, autor.id);
+  assert.equal(corregida.conexiones.every((c) => c.usuarioId === autor.id), true);
+});

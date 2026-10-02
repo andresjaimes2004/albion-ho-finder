@@ -1129,8 +1129,41 @@ export class PanelCaminos {
         await retirar();
         await this.refrescar();
       },
-      alEditar: this.alEditarRuta,
+      // Además de la ruta, su conjunto: para editarlo desde la raíz.
+      alEditar: this.alEditarRuta ? (r) => this.alEditarRuta(r, this.conjuntoDe(r)) : null,
     });
+  }
+
+  /**
+   * El conjunto de una ruta: las rutas de su misma red (comparten alguna
+   * conexión, directa o indirectamente), del mismo sitio (público o el
+   * mismo espacio) y que este usuario puede editar. Es lo que se edita
+   * "desde la raíz", como cuando se registraron juntas.
+   */
+  /** Una ruta de las que se ven ahora (abierta o cerrada hace poco), por su id. */
+  rutaPorId(id) {
+    const todas = [...((this.datos && this.datos.rutas) || []), ...((this.datos && this.datos.rutasCerradas) || [])];
+    return todas.find((r) => r.id === id) || null;
+  }
+
+  conjuntoDe(ruta) {
+    const todas = [...((this.datos && this.datos.rutas) || []), ...((this.datos && this.datos.rutasCerradas) || [])];
+    const espacioDe = (r) => (r.espacio ? r.espacio.id : null);
+    const editable = (r) => this.usuario && (this.usuario.id === r.reportadoPorId || this.usuario.rol === 'ADMIN');
+    const candidatas = todas.filter((r) => espacioDe(r) === espacioDe(ruta) && editable(r));
+    const conjunto = new Map([[ruta.id, ruta]]);
+    const conexiones = new Set(ruta.tramos.map((t) => t.reporteId));
+    let crecio = true;
+    while (crecio) {
+      crecio = false;
+      for (const r of candidatas) {
+        if (conjunto.has(r.id) || !r.tramos.some((t) => conexiones.has(t.reporteId))) continue;
+        conjunto.set(r.id, r);
+        for (const t of r.tramos) conexiones.add(t.reporteId);
+        crecio = true;
+      }
+    }
+    return [...conjunto.values()];
   }
 
   /** Chips "Todas / Públicas / 🔒 espacio" sobre la lista de rutas. */

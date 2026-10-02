@@ -428,11 +428,16 @@
 
           <div id="registro-con-sesion">
             <div id="registro-edicion" class="registro__edicion" hidden>
-              <p>
+              <p class="registro__edicion-ruta">
                 <strong>{{Editando la ruta}}</strong> <span id="registro-edicion-ruta"></span><br />
                 {{Pega capturas nuevas (se colocan solas en su sitio), quita las conexiones que sobran, cambia el orden con ↑ ↓ o corrige los tiempos. Sin ninguna conexión, guardar borra la ruta. Las capturas que tenías pendientes vuelven al terminar.}}
               </p>
+              <p class="registro__edicion-conjunto">
+                <strong>{{Editando desde la raíz}}</strong> <span id="registro-edicion-conjunto"></span><br />
+                {{Están todas las conexiones del conjunto, como cuando se registraron: pega las capturas que faltaron, quita o corrige las que sobran, y las rutas se vuelven a proponer solas. Al guardar se reemplaza el conjunto sin duplicar rutas; sin ninguna conexión, se borra entero.}}
+              </p>
               <div class="registro__edicion-acciones">
+                <button id="registro-edicion-raiz" type="button" class="boton boton--pequeno">{{Editar desde la raíz}}</button>
                 <button id="registro-edicion-invertir" type="button" class="boton boton--pequeno boton--sutil">{{Invertir sentido}}</button>
                 <button id="registro-edicion-cancelar" type="button" class="boton boton--pequeno boton--sutil">{{Cancelar edición}}</button>
               </div>
@@ -466,7 +471,7 @@
               <select id="registro-destino">
                 <option value="">{{Público: lo ven todos}}</option>
               </select>
-              <span class="registro__destino-ayuda">{{Al editar, cambiarlo mueve la ruta (no se duplica).}}</span>
+              <span class="registro__destino-ayuda">{{Al editar, cambiarlo mueve lo que editas (no se duplica).}}</span>
             </label>
             <div id="registro-acciones" class="registro__acciones" hidden>
               <button id="registro-guardar" type="button" class="boton con-icono icono-guardar">{{Guardar conexiones}}</button>

@@ -483,6 +483,22 @@ export const EN = {
   // --- v13.6: mover rutas ---
   'Ruta actualizada y movida a público: ahora la ven todos.': 'Route updated and moved to public: everyone can see it now.',
   'Ruta actualizada y movida a «{espacio}».': 'Route updated and moved to «{espacio}».',
+  // --- v13.6: editar desde la raíz ---
+  '({n} ruta)': '({n} route)',
+  '({n} rutas)': '({n} routes)',
+  'Borrar el conjunto': 'Delete the set',
+  'Guardar el conjunto': 'Save the set',
+  '¿Borrar el conjunto entero?': 'Delete the whole set?',
+  'Quitaste todas sus conexiones: al guardar se borra {n} ruta.': 'You removed all its connections: saving deletes {n} route.',
+  'Quitaste todas sus conexiones: al guardar se borran sus {n} rutas.': 'You removed all its connections: saving deletes its {n} routes.',
+  'Conjunto borrado.': 'Set deleted.',
+  '{n} ruta quitada': '{n} route removed',
+  '{n} rutas quitadas': '{n} routes removed',
+  'Conjunto actualizado: {resumen}. ¡Gracias!': 'Set updated: {resumen}. Thanks!',
+  'Alguna ruta del conjunto ya no existe. Actualiza la página.': 'A route in the set no longer exists. Refresh the page.',
+  'El conjunto de rutas no es válido.': 'The set of routes is not valid.',
+  'Las rutas del conjunto tienen que estar en el mismo sitio (público o el mismo espacio).': 'The routes in the set must be in the same place (public or the same space).',
+  'Solo quien registró las rutas o un administrador puede editarlas.': 'Only whoever registered the routes or an administrator can edit them.',
 };
 
 const tiene = Object.prototype.hasOwnProperty;

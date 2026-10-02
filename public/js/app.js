@@ -80,7 +80,7 @@ class BuscadorUI {
         this.panelRegistro.establecerGremiosCaminos(datos.caminos);
       },
       // "Editar" en una ruta la abre en el panel de registro.
-      alEditarRuta: (ruta) => this.panelRegistro.editarRuta(ruta),
+      alEditarRuta: (ruta, conjunto) => this.panelRegistro.editarRuta(ruta, conjunto),
     });
 
     this.panelRegistro = new PanelRegistro({
@@ -159,6 +159,8 @@ class BuscadorUI {
       ventanaMapa: this.ventanaMapa.nombreAbierto(),
       caminos: this.panelCaminos.estado(),
       registro: Boolean(this.panelRegistro.abierto),
+      // Una ruta (o un conjunto) a medio editar se retoma tal cual.
+      edicion: this.panelRegistro.estadoEdicion(),
       espacios: Boolean(this.panelEspacios.abierto),
     };
   }
@@ -177,7 +179,10 @@ class BuscadorUI {
     if (estado.espacios) this.panelEspacios.abrir();
     const caminos = this.panelCaminos.restaurar(estado.caminos || {});
     // Los caminos solo se cargan con su pestaña a la vista.
-    if (this.vistaActual === 'caminos') pendientes.push(caminos);
+    if (this.vistaActual === 'caminos') {
+      pendientes.push(caminos);
+      if (estado.edicion) pendientes.push(this._retomarEdicion(estado.edicion, caminos));
+    }
     // Sin esperar de más si algo tarda (red lenta): como mucho 5 s.
     await Promise.race([Promise.allSettled(pendientes), new Promise((r) => setTimeout(r, 5000))]);
     // Tras pintar lo restaurado (y de nuevo al terminar las animaciones de
@@ -186,6 +191,24 @@ class BuscadorUI {
     setTimeout(volver, 0);
     setTimeout(volver, 400);
     if (typeof estado.ventanaMapa === 'string' && estado.ventanaMapa) this.ventanaMapa.abrir(estado.ventanaMapa);
+  }
+
+  /**
+   * Retoma la edición de rutas que estaba a medias en el otro idioma. Hace
+   * falta la sesión (solo el autor o un admin edita), las capturas
+   * pendientes ya recuperadas (no se mezclan con las de la edición) y las
+   * rutas cargadas con la sesión puesta (también las de sus espacios).
+   */
+  async _retomarEdicion(edicion, caminos) {
+    await caminos;
+    await this._sesion.catch(() => {});
+    if (!this.usuario) return;
+    await this.panelCaminos.refrescar();
+    await this.panelRegistro.listo();
+    await this.panelRegistro.restaurarEdicion(edicion, {
+      buscar: (id) => this.panelCaminos.rutaPorId(id),
+      conjuntoDe: (ruta) => this.panelCaminos.conjuntoDe(ruta),
+    });
   }
 
   /**
@@ -218,7 +241,10 @@ class BuscadorUI {
   }
 
   async _iniciar() {
-    await this.panelSesion.refrescar();
+    // Guardada para quien necesite esperar a saber quién mira (al cambiar
+    // de idioma con una edición a medias).
+    this._sesion = this.panelSesion.refrescar();
+    await this._sesion;
     try {
       const mundo = await this.mapaMundial.cargar();
       this._mostrarCifras(mundo);

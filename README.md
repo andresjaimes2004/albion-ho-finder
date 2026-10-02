@@ -8,8 +8,23 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
-### v13.6 — Mover rutas al editarlas y nombres de gremio sin filtro
+### v13.6 — Editar rutas desde la raíz, moverlas y nombres de gremio sin filtro
 
+- **Editar desde la raíz**: al editar una ruta, el botón "Editar desde la
+  raíz" abre su conjunto entero (las rutas de su misma red, que comparten
+  conexiones, del mismo sitio y que puedes editar) con todas sus conexiones
+  como filas, igual que al registrarlas: se pega la captura que faltó, se
+  quitan o corrigen las que sobran y las rutas se vuelven a proponer solas,
+  incluso ramales nuevos. Al guardar (`PUT /api/tracking/conjuntos`, en una
+  transacción) las rutas con el mismo recorrido conservan su id, las nuevas
+  se crean, las que ya no salen se borran y las conexiones viejas que no usa
+  nadie también; nada se duplica. Sin ninguna conexión, se borra el
+  conjunto (con confirmación). Solo el autor o un admin, y las rutas siguen a
+  nombre de su autor.
+- Una edición a medias (de una ruta o de un conjunto) **se conserva al
+  cambiar de idioma**, con lo que se había escrito en cada fila.
+- Prueba nueva: cada texto de `t()`/`tn()` del JavaScript tiene su
+  traducción al inglés.
 - **Editar una ruta permite cambiar dónde se guarda**: "Guardar en" aparece
   también al editar, con el destino actual de la ruta; cambiarlo la mueve
   (de público a un espacio privado o al revés, o entre espacios propios) sin

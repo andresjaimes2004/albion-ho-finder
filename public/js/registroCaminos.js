@@ -96,6 +96,7 @@ export class PanelRegistro {
     this.alternar = document.getElementById('registro-alternar');
     this.avisoEdicion = document.getElementById('registro-edicion');
     this.rutaEdicion = document.getElementById('registro-edicion-ruta');
+    this.conjuntoEdicion = document.getElementById('registro-edicion-conjunto');
     this.cuerpo = document.getElementById('registro-cuerpo');
     this.sinSesion = document.getElementById('registro-sin-sesion');
     this.conSesion = document.getElementById('registro-con-sesion');
@@ -150,7 +151,16 @@ export class PanelRegistro {
       // Otro usuario (o sin sesión): sus capturas pendientes no se mezclan.
       if (this.edicion) this._salirDeEdicion({ restaurar: false });
       this._limpiarLista();
-      if (ahora !== null) this._restaurar(ahora);
+      if (ahora !== null) this._restaurando = this._restaurar(ahora);
+    }
+  }
+
+  /** Espera a que se recuperen las capturas pendientes (si se estaba haciendo). */
+  async listo() {
+    try {
+      await this._restaurando;
+    } catch (error) {
+      // Sin borrador no hay nada que esperar.
     }
   }
 
@@ -251,16 +261,118 @@ export class PanelRegistro {
    * capturas nuevas. Las capturas pendientes del panel se apartan y
    * vuelven al terminar. En edición las filas no van al borrador.
    */
-  async editarRuta(ruta) {
+  async editarRuta(ruta, conjunto = [ruta], { filas = null } = {}) {
     if (!this.usuario) return;
+    await this._empezarEdicion({ tipo: 'ruta', ruta, conjunto });
+    const ahora = Date.now();
+    if (filas) this._filasEscritas(filas, ahora);
+    else ruta.tramos.forEach((tramo, k) => this._filaDeTramo(ruta.zonas[k].nombre, ruta.zonas[k + 1].nombre, tramo.cierraEn, ahora));
+
+    this.rutaEdicion.textContent = `${ruta.zonas[0].nombre} → ${ruta.zonas[ruta.zonas.length - 1].nombre}`;
+    this._terminarDeEmpezarEdicion();
+  }
+
+  /**
+   * Edita "desde la raíz" el conjunto de una ruta (las rutas de su misma
+   * red): carga todas sus conexiones como filas, igual que al registrarlas,
+   * y las rutas se vuelven a proponer solas. Así se puede pegar la captura
+   * que faltó, aunque cree un ramal nuevo. Al guardar se reemplaza el
+   * conjunto en el servidor, sin duplicar rutas.
+   */
+  async editarConjunto(conjunto, { filas = null } = {}) {
+    if (!this.usuario || !conjunto || !conjunto.length) return;
+    await this._empezarEdicion({ tipo: 'conjunto', ruta: conjunto[0], conjunto });
+    const ahora = Date.now();
+    const vistas = new Set();
+    for (const ruta of conjunto) {
+      ruta.tramos.forEach((tramo, k) => {
+        if (vistas.has(tramo.reporteId)) return; // una conexión compartida, una sola fila
+        vistas.add(tramo.reporteId);
+        if (!filas) this._filaDeTramo(ruta.zonas[k].nombre, ruta.zonas[k + 1].nombre, tramo.cierraEn, ahora);
+      });
+    }
+    if (filas) this._filasEscritas(filas, ahora);
+    // Esas conexiones ya están como filas: no se ofrecen además como guardadas.
+    this.edicion.idsConexiones = vistas;
+    this.conjuntoEdicion.textContent = tn(conjunto.length, '({n} ruta)', '({n} rutas)');
+    this._terminarDeEmpezarEdicion();
+  }
+
+  /**
+   * La edición en curso, para conservarla al cambiar de idioma (la página
+   * se carga de nuevo): qué se edita y lo escrito en cada fila. Las
+   * imágenes de las capturas no se guardan, solo sus datos.
+   */
+  estadoEdicion() {
+    if (!this.edicion) return null;
+    return {
+      tipo: this.edicion.tipo,
+      rutaId: this.edicion.ruta.id,
+      rutaIds: this.edicion.conjunto.map((r) => r.id),
+      filas: this.filas.map((f) => f.valores()),
+    };
+  }
+
+  /**
+   * Retoma una edición guardada con estadoEdicion(), con las rutas que hay
+   * ahora: si la ruta ya no existe (se borró o caducó), no se retoma.
+   * `buscar(id)` da una ruta por su id y `conjuntoDe(ruta)`, su conjunto.
+   */
+  async restaurarEdicion(estado, { buscar, conjuntoDe }) {
+    if (!estado || typeof estado !== 'object') return;
+    const ruta = Number.isInteger(estado.rutaId) ? buscar(estado.rutaId) : null;
+    if (!ruta) return;
+    const texto = (v) => (typeof v === 'string' ? v.slice(0, 80) : '');
+    const filas = (Array.isArray(estado.filas) ? estado.filas : [])
+      .slice(0, 60)
+      .filter((v) => v && typeof v === 'object')
+      .map((v) => ({ origen: texto(v.origen), destino: texto(v.destino), horas: texto(v.horas), minutos: texto(v.minutos) }));
+    const conjunto = conjuntoDe(ruta);
+    if (estado.tipo === 'conjunto') {
+      const ids = new Set(Array.isArray(estado.rutaIds) ? estado.rutaIds : []);
+      const rutas = conjunto.filter((r) => ids.has(r.id));
+      await this.editarConjunto(rutas.length ? rutas : conjunto, { filas });
+    } else {
+      await this.editarRuta(ruta, conjunto, { filas });
+    }
+  }
+
+  /** Filas con lo que se había escrito (al retomar una edición). */
+  _filasEscritas(filas, ahora) {
+    for (const valores of filas) this._crearFila(ahora).restaurar({ valores });
+  }
+
+  /** ¿Se está editando una sola ruta (filas en orden, una cadena)? */
+  _editandoRuta() {
+    return Boolean(this.edicion && this.edicion.tipo === 'ruta');
+  }
+
+  /** Una fila para un tramo ya guardado (un portal cerrado queda marcado). */
+  _filaDeTramo(origen, destino, cierraEn, ahora) {
+    const fila = this._crearFila(ahora);
+    const restantes = Math.max(0, Math.floor((cierraEn - ahora) / 60_000));
+    fila.restaurar({
+      valores: {
+        origen,
+        destino,
+        horas: restantes ? String(Math.floor(restantes / 60)) : '',
+        minutos: restantes ? String(restantes % 60) : '',
+      },
+    });
+    // Un portal que ya cerró hay que reemplazarlo (o quitarlo).
+    if (!restantes) fila.poner('error', t('Este portal ya cerró: reemplázalo por el nuevo o quítalo.'));
+    return fila;
+  }
+
+  /** Aparta las capturas pendientes y deja el panel listo para editar. */
+  async _empezarEdicion({ tipo, ruta, conjunto }) {
     if (this.edicion) this._salirDeEdicion();
     try {
       await this._cargarZonas();
     } catch (error) {
       // Sin zonas se edita igual; se validarán al escribir.
     }
-
-    this.edicion = { ruta, previas: this.filas, preferencias: new Map(this.preferencias), destinoPrevio: this.destino.value };
+    this.edicion = { tipo, ruta, conjunto, previas: this.filas, preferencias: new Map(this.preferencias), destinoPrevio: this.destino.value };
     // "Guardar en" empieza en el destino actual de la ruta; cambiarlo la mueve.
     const espacioRuta = ruta.espacio ? String(ruta.espacio.id) : '';
     this.destino.value = [...this.destino.options].some((o) => o.value === espacioRuta) ? espacioRuta : '';
@@ -268,26 +380,15 @@ export class PanelRegistro {
     for (const fila of this.filas) fila.item.remove();
     this.filas = [];
     this.preferencias.clear();
+  }
 
-    const ahora = Date.now();
-    ruta.tramos.forEach((tramo, k) => {
-      const fila = this._crearFila(ahora);
-      const restantes = Math.max(0, Math.floor((tramo.cierraEn - ahora) / 60_000));
-      fila.restaurar({
-        valores: {
-          origen: ruta.zonas[k].nombre,
-          destino: ruta.zonas[k + 1].nombre,
-          horas: restantes ? String(Math.floor(restantes / 60)) : '',
-          minutos: restantes ? String(restantes % 60) : '',
-        },
-      });
-      // Un portal que ya cerró hay que reemplazarlo (o quitarlo).
-      if (!restantes) fila.poner('error', t('Este portal ya cerró: reemplázalo por el nuevo o quítalo.'));
-    });
-
-    this.rutaEdicion.textContent = `${ruta.zonas[0].nombre} → ${ruta.zonas[ruta.zonas.length - 1].nombre}`;
+  _terminarDeEmpezarEdicion() {
+    const registro = this.cuerpo.closest('.registro');
+    // registro--edicion: una ruta (filas en orden con ↑ ↓); registro--conjunto:
+    // el conjunto, que funciona como al registrar.
+    registro.classList.toggle('registro--edicion', this._editandoRuta());
+    registro.classList.toggle('registro--conjunto', !this._editandoRuta());
     this.avisoEdicion.hidden = false;
-    this.cuerpo.closest('.registro').classList.add('registro--edicion');
     this.estado.textContent = '';
     if (!this.abierto) this._abrir();
     this._actualizarAcciones();
@@ -302,7 +403,7 @@ export class PanelRegistro {
     this.destino.value = [...this.destino.options].some((o) => o.value === edicion.destinoPrevio) ? edicion.destinoPrevio : '';
     this._mostrarDestino();
     this.avisoEdicion.hidden = true;
-    this.cuerpo.closest('.registro').classList.remove('registro--edicion');
+    this.cuerpo.closest('.registro').classList.remove('registro--edicion', 'registro--conjunto');
     this.lista.replaceChildren();
     this.filas = [];
     this.preferencias.clear();
@@ -316,7 +417,7 @@ export class PanelRegistro {
 
   /** Invierte el sentido de la ruta que se edita: el orden y cada conexión. */
   _invertirEdicion() {
-    if (!this.edicion) return;
+    if (!this._editandoRuta()) return;
     this.filas.reverse();
     for (const fila of this.filas) fila.invertir();
     this.lista.replaceChildren(...this.filas.map((f) => f.item));
@@ -330,7 +431,7 @@ export class PanelRegistro {
    * vista previa dice qué falla.
    */
   _ordenarEdicion() {
-    if (!this.edicion) return;
+    if (!this._editandoRuta()) return;
     const conZonas = this.filas.filter((f) => f.estadoActual !== 'leyendo' && f.zonas());
     const inicio = this.edicion.ruta.zonas[0].nombre;
     const resultado = ordenarCadena(conZonas.map((f) => f.zonas()), inicio);
@@ -451,6 +552,10 @@ export class PanelRegistro {
       if (usuario !== null && !this.edicion) borrador.vaciar(usuario);
     });
     document.getElementById('registro-edicion-invertir').addEventListener('click', () => this._invertirEdicion());
+    // De editar una ruta a editar todo su conjunto desde la raíz.
+    document.getElementById('registro-edicion-raiz').addEventListener('click', () => {
+      if (this.edicion) this.editarConjunto(this.edicion.conjunto);
+    });
     document.getElementById('registro-edicion-cancelar').addEventListener('click', () => {
       this._salirDeEdicion();
       this.estado.textContent = t('Edición cancelada: la ruta no cambió.');
@@ -567,7 +672,7 @@ export class PanelRegistro {
       else if (fila.valida()) fila.poner('lista', t('Revisa los datos y guarda.'));
       else fila.poner('revisar', t('Completa los campos resaltados.'));
       // Editando una ruta, la captura nueva se coloca sola en la cadena.
-      if (this.edicion) this._ordenarEdicion();
+      if (this._editandoRuta()) this._ordenarEdicion();
       borrador.actualizar(fila.id, {
         leida: true,
         valores: fila.valores(),
@@ -773,7 +878,7 @@ export class PanelRegistro {
     // Al terminar de escribir una zona en edición, la fila se coloca sola.
     for (const input of [origen, destino]) {
       input.addEventListener('change', () => {
-        if (!this.edicion) return;
+        if (!this._editandoRuta()) return;
         this._ordenarEdicion();
         this._actualizarAcciones();
       });
@@ -808,7 +913,7 @@ export class PanelRegistro {
    * solo se proponen las rutas que usan alguna captura nueva.
    */
   _actualizarRutas() {
-    if (this.edicion) {
+    if (this._editandoRuta()) {
       this._actualizarRutaEditada();
       return;
     }
@@ -818,7 +923,10 @@ export class PanelRegistro {
     // Solo se encadena con conexiones guardadas del mismo destino (público
     // o el mismo espacio): el servidor no deja mezclarlas.
     const destino = this._espacioDestino();
-    this.guardadasEnRutas = nuevas ? this.guardadas.filter((g) => g.cierraEn > limite && g.espacioId === destino) : [];
+    const delConjunto = (this.edicion && this.edicion.idsConexiones) || new Set();
+    this.guardadasEnRutas = nuevas
+      ? this.guardadas.filter((g) => g.cierraEn > limite && g.espacioId === destino && !delConjunto.has(g.id))
+      : [];
     for (const g of this.guardadasEnRutas) tramos.push({ origen: g.origen, destino: g.destino });
 
     const grupoDe = (zona) => {
@@ -1032,7 +1140,7 @@ export class PanelRegistro {
   }
 
   _actualizarAcciones() {
-    if (this.edicion) {
+    if (this._editandoRuta()) {
       // Se guarda la ruta entera, y solo si se encadena bien. Sin ninguna
       // conexión (quitadas a mano o con "Vaciar"), guardar la borra.
       const resultado = this._actualizarRutaEditada();
@@ -1047,6 +1155,15 @@ export class PanelRegistro {
     this._actualizarRutas();
     const listas = this.filas.filter((f) => f.estadoActual !== 'leyendo' && f.valida()).length;
     const leyendo = this.filas.some((f) => f.estadoActual === 'leyendo');
+    if (this.edicion) {
+      // Conjunto: se guarda entero; sin ninguna conexión, guardar lo borra.
+      const vacio = !listas && !leyendo;
+      this.acciones.hidden = false;
+      this.guardar.disabled = leyendo;
+      this.guardar.classList.toggle('boton--peligro', vacio);
+      this.guardar.textContent = vacio ? t('Borrar el conjunto') : t('Guardar el conjunto');
+      return;
+    }
     this.acciones.hidden = !this.filas.length;
     this.guardar.disabled = !listas || leyendo;
     this.guardar.textContent = listas ? tn(listas, 'Guardar {n} conexión', 'Guardar {n} conexiones') : t('Guardar conexiones');
@@ -1088,23 +1205,72 @@ export class PanelRegistro {
     }
   }
 
-  async _guardar() {
-    if (this.edicion) {
-      await this._guardarEdicion();
-      return;
-    }
-    const listas = this.filas.filter((f) => f.valida());
-    if (!listas.length) return;
-
-    // Las rutas se envían como listas de posiciones dentro de `conexiones`
-    // o, para las conexiones ya guardadas, como { id }.
+  /**
+   * Rutas propuestas listas para enviar: listas de posiciones dentro de
+   * `listas` (las filas válidas) o, para conexiones ya guardadas, { id }.
+   */
+  _rutasParaEnviar(listas) {
     const nuevas = this.filas.length;
     const posicion = new Map(listas.map((f, i) => [this.filas.indexOf(f), i]));
-    const rutas = this.rutasDetectadas
+    return this.rutasDetectadas
       .filter((ruta) => !ruta.separada && ruta.indices.every((i) => i >= nuevas || posicion.has(i)))
       .map((ruta) =>
         ruta.indices.map((i) => (i < nuevas ? posicion.get(i) : { id: this.guardadasEnRutas[i - nuevas].id }))
       );
+  }
+
+  /** Guarda el conjunto editado desde la raíz: lo reemplaza en el servidor. */
+  async _guardarConjunto() {
+    const { conjunto } = this.edicion;
+    const listas = this.filas.filter((f) => f.valida());
+    if (!listas.length) {
+      const ok = await confirmar({
+        titulo: t('¿Borrar el conjunto entero?'),
+        mensaje: tn(conjunto.length, 'Quitaste todas sus conexiones: al guardar se borra {n} ruta.', 'Quitaste todas sus conexiones: al guardar se borran sus {n} rutas.'),
+        aceptar: t('Borrar el conjunto'),
+        peligro: true,
+      });
+      if (!ok) return;
+    }
+    const rutas = listas.length ? this._rutasParaEnviar(listas) : [];
+    const caminos = new Set(this.rutasDetectadas.filter((r) => !r.separada).flatMap((r) => this._caminosHideout(r.zonas)));
+    const destino = this._destinoEdicion();
+    this.guardar.disabled = true;
+    this.estado.textContent = t('Guardando…');
+    try {
+      const r = await api.editarConjunto(conjunto.map((ruta) => ruta.id), listas.map((f) => f.datos()), rutas, destino);
+      const gremios = listas.length ? await this._anotarGremios([...caminos]) : { anotados: 0, errores: [] };
+      this._salirDeEdicion();
+      if (!listas.length) {
+        this.estado.textContent = t('Conjunto borrado.');
+      } else {
+        const partes = [tn(r.rutas.length, '{n} ruta', '{n} rutas')];
+        if (r.borradas) partes.push(tn(r.borradas, '{n} ruta quitada', '{n} rutas quitadas'));
+        if (gremios.anotados) partes.push(tn(gremios.anotados, '{n} gremio anotado', '{n} gremios anotados'));
+        this.estado.textContent = t('Conjunto actualizado: {resumen}. ¡Gracias!', { resumen: partes.join(t(' y ')) });
+        if (gremios.errores.length) {
+          this.estado.textContent += ` ${t('Gremios sin anotar: {errores}', { errores: gremios.errores.join('; ') })}`;
+        }
+      }
+      if (this.alGuardar) this.alGuardar();
+    } catch (error) {
+      this.estado.textContent = error.message || t('No se pudo guardar.');
+      this._actualizarAcciones();
+    }
+  }
+
+  async _guardar() {
+    if (this._editandoRuta()) {
+      await this._guardarEdicion();
+      return;
+    }
+    if (this.edicion) {
+      await this._guardarConjunto();
+      return;
+    }
+    const listas = this.filas.filter((f) => f.valida());
+    if (!listas.length) return;
+    const rutas = this._rutasParaEnviar(listas);
 
     this.guardar.disabled = true;
     this.estado.textContent = t('Guardando…');

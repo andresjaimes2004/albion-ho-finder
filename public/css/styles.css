@@ -3297,7 +3297,12 @@ html:has(dialog[open]) { overflow: hidden; }
 .registro__edicion p { margin: 0; flex: 1 1 280px; }
 .registro__edicion strong { color: var(--color-oro-claro); }
 /* En edición no hacen falta los pasos para sacar capturas. */
-.registro--edicion .registro__pasos { display: none; }
+.registro:is(.registro--edicion, .registro--conjunto) .registro__pasos { display: none; }
+/* Editar desde la raíz (el conjunto): su propio aviso; sin ↑ ↓ ni invertir,
+   las rutas se proponen solas como al registrar. */
+.registro__edicion-conjunto { display: none; }
+.registro--conjunto .registro__edicion-conjunto { display: block; }
+.registro--conjunto :is(.registro__edicion-ruta, #registro-edicion-raiz, #registro-edicion-invertir) { display: none; }
 
 .registro__mover { display: none; grid-area: mover; justify-self: end; gap: 4px; }
 .registro--edicion .registro__mover { display: inline-flex; }
@@ -4110,8 +4115,8 @@ button.conexion__nombre:hover { text-decoration: none; }
 .registro__destino-etiqueta { font-weight: 600; color: var(--color-texto-suave); }
 .registro__destino select { transition: border-color var(--duracion-rapida) var(--curva), background-color var(--duracion-rapida) var(--curva); }
 .registro__destino-ayuda { display: none; flex-basis: 100%; font-size: 0.78rem; color: var(--color-texto-tenue); }
-.registro--edicion .registro__destino { border-color: rgba(var(--acento-rgb), 0.35); }
-.registro--edicion .registro__destino-ayuda { display: block; }
+.registro:is(.registro--edicion, .registro--conjunto) .registro__destino { border-color: rgba(var(--acento-rgb), 0.35); }
+.registro:is(.registro--edicion, .registro--conjunto) .registro__destino-ayuda { display: block; }
 @media (max-width: 600px) {
   .registro__destino select { flex: 1 1 100%; min-width: 0; }
 }

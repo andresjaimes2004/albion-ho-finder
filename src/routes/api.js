@@ -50,6 +50,7 @@ router.get('/tracking/:nombre', tracking.detalle);
 router.post('/tracking/reportes', exigirAutenticacion, tracking.registrar);
 router.delete('/tracking/reportes/:id', exigirAutenticacion, tracking.eliminar);
 router.put('/tracking/rutas/:id', exigirAutenticacion, tracking.editarRuta);
+router.put('/tracking/conjuntos', exigirAutenticacion, tracking.editarConjunto);
 router.delete('/tracking/rutas/:id', exigirAutenticacion, tracking.eliminarRuta);
 router.delete('/tracking/rutas', exigirAdmin, tracking.borrarRutasEnBloque);
 router.post('/tracking/hideouts', exigirAutenticacion, tracking.agregarHideoutCamino);
