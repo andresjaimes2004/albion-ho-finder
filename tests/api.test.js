@@ -826,3 +826,29 @@ test('el borrado masivo del administrador borra lo que ve (también sus espacios
   const auditoria = await jefe.peticion('/api/admin/auditoria');
   assert.equal(auditoria.json.auditoria[0].accion, 'BORRAR_RUTAS');
 });
+
+test('las sugerencias del buscador están siempre al día: 304 si nada cambió y el gremio nuevo aparece enseguida', async () => {
+  const cliente = crearCliente();
+  const primera = await cliente.peticion('/api/buscar/sugerencias');
+  assert.equal(primera.estado, 200);
+  assert.equal(primera.cabeceras.get('cache-control'), 'no-cache', 'el navegador no puede guardarlas sin preguntar');
+  const etiqueta = primera.cabeceras.get('etag');
+  assert.ok(etiqueta);
+
+  const igual = await cliente.peticion('/api/buscar/sugerencias', { cabeceras: { 'if-none-match': etiqueta } });
+  assert.equal(igual.estado, 304);
+
+  // Un gremio nuevo (como el que trae la sincronización del Excel).
+  const HideoutCaminoRepository = require('../src/repositories/HideoutCaminoRepository');
+  new HideoutCaminoRepository().guardar({
+    camino: 'Qiient-Al-Odetum',
+    gremio: 'Recien Sincronizado',
+    gremioNormalizado: 'recien sincronizado',
+    usuarioId: null,
+    origen: 'excel',
+  });
+  const nueva = await cliente.peticion('/api/buscar/sugerencias', { cabeceras: { 'if-none-match': etiqueta } });
+  assert.equal(nueva.estado, 200);
+  assert.ok(nueva.json.gremios.includes('Recien Sincronizado'));
+  assert.notEqual(nueva.cabeceras.get('etag'), etiqueta);
+});

@@ -31,6 +31,8 @@ import { conectarSugerencias, agregarBotonBorrar } from './sugerencias.js';
  * ----------------------------------------------------------------------
  */
 const sinMovimiento = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Cada cuánto, como mucho, se vuelven a pedir las sugerencias del buscador.
+const VIGENCIA_SUGERENCIAS_MS = 15_000;
 
 class BuscadorUI {
   constructor() {
@@ -117,6 +119,15 @@ class BuscadorUI {
         if (this.vistaActual === 'hideouts') this._repetirBusqueda();
       },
       verEspacio: (id) => this._irA('caminos', { alTerminar: () => this.panelEspacios.mostrar(id) }),
+    });
+
+    // Tras sincronizar el Excel desde el panel de administración, todo lo que
+    // depende de los gremios se pone al día sin recargar: sugerencias,
+    // búsqueda actual y caminos de Avalon.
+    window.addEventListener('albion:datos-sincronizados', () => {
+      this._cargarSugerencias({ forzar: true });
+      if (this.vistaActual === 'hideouts') this._repetirBusqueda();
+      if (this.panelCaminos.datos) this.panelCaminos.refrescar();
     });
 
     this.panelSesion = new PanelSesion({
@@ -278,12 +289,17 @@ class BuscadorUI {
    * desplegable propio (sugerencias.js), que también encuentra los nombres
    * escritos con espacios ("requiem" → "R E Q U I E M").
    */
-  _cargarSugerencias() {
-    if (this._sugerenciasCargadas) return;
-    this._sugerenciasCargadas = true;
+  _cargarSugerencias({ forzar = false } = {}) {
+    // Se vuelven a pedir al usar el buscador si pasó un rato (o al
+    // sincronizar el Excel): así un gremio nuevo sale en las sugerencias
+    // sin recargar la página. Si nada cambió, el servidor responde 304.
+    if (this._pidiendoSugerencias) return;
+    if (!forzar && this._sugerenciasEn && Date.now() - this._sugerenciasEn < VIGENCIA_SUGERENCIAS_MS) return;
+    this._pidiendoSugerencias = true;
     api
       .sugerencias()
       .then(({ gremios = [], mapas = [] }) => {
+        this._sugerenciasEn = Date.now();
         this.opcionesBusqueda = [
           ...gremios.map((valor) => ({ valor, tipo: t('Gremio') })),
           ...mapas.map((valor) => ({ valor, tipo: t('Mapa') })),
@@ -291,7 +307,10 @@ class BuscadorUI {
         this.sugerenciasBusqueda.actualizar();
       })
       .catch(() => {
-        this._sugerenciasCargadas = false;
+        // Sin red: se reintenta la próxima vez que se use el buscador.
+      })
+      .finally(() => {
+        this._pidiendoSugerencias = false;
       });
   }
 
@@ -468,6 +487,9 @@ class BuscadorUI {
       }
 
       this._renderizarResultados(datos);
+      // Si los datos cambiaron (por ejemplo, tras sincronizar el Excel), las
+      // sugerencias se ponen al día.
+      this._cargarSugerencias();
       const nombres = [...new Set([...porNombre, ...datos.resultados].map((r) => r.mapa))];
       this._cargarRutas(nombres, this.controladorActual.signal);
       this.mapaMundial.destacar(nombres);

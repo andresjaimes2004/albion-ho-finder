@@ -8,6 +8,32 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v14.1 — Sugerencias al día, hideouts con su color y ajustes de Caminos
+
+- **Sugerencias del buscador siempre al día**: un gremio nuevo o cambiado en
+  el Excel sale en las sugerencias en cuanto se sincroniza, sin recargar. El
+  servidor ya no deja que el navegador las guarde 5 minutos: responde con
+  `ETag` y `no-cache` (304 vacío si nada cambió). La página las vuelve a pedir
+  al usar el buscador si pasaron más de 15 s, después de cada búsqueda y justo
+  después de sincronizar desde el panel de administración (que también
+  actualiza la búsqueda abierta y Caminos de Avalon). En Caminos de Avalon,
+  las sugerencias (caminos y gremios con hideout) se ponían al día cada
+  minuto; ahora también al enfocar el buscador.
+- **Caminos de Avalon**: la ficha de un camino ya no muestra el código interno
+  (`TNL-…`), solo el tier y el tipo.
+- **"Tus últimas búsquedas"**: encima de la flecha o entre ella y "Limpiar" la
+  tarjeta perdía el hover y parpadeaba (la caja de acciones tapaba la
+  cabecera). Ahora solo "Limpiar" queda por encima; la flecha abre y cierra, y
+  una franja en el borde de abajo evita el parpadeo al elevarse.
+- **Hideouts con los colores de "Tus últimas búsquedas"**: botones, buscador,
+  tarjetas de resultados, "Ver rutas", nombres enlazados, foco con teclado y la
+  ventana del mapa abierta desde hideouts usan el verde azulado del apartado
+  en lugar del dorado. Caminos de Avalon conserva su dorado. También el mapa
+  de la Zona Negra (punto y etiqueta al pasar el ratón, aro de los mapas con
+  hideouts y halo de los del gremio buscado) y las listas desplegables del
+  panel de administración y de la ventana del mapa (flecha, borde y menú de
+  opciones). Los botones de peligro se ponen rojos al pasar el ratón.
+
 ### v14.0 — Pie con Discord y páginas de Soporte
 
 - **Discord en el pie**: un botón cuadrado con el icono (como en

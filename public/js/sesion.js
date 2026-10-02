@@ -70,10 +70,16 @@ export class PanelSesion {
 
     // "Tus últimas búsquedas" se pliega y despliega con su flecha, con la
     // misma animación suave que las demás secciones (se recuerda).
-    conectarDesplegable(document.getElementById('historial-alternar'), this.historialLista, {
+    const alternarHistorial = document.getElementById('historial-alternar');
+    conectarDesplegable(alternarHistorial, this.historialLista, {
       clave: 'historial-abierto',
       abierto: true,
       alCambiar: (abierto) => this.historialPanel.classList.toggle('panel-historial--plegado', !abierto),
+    });
+    // La franja de la cabecera que no cubre el botón (su borde de abajo)
+    // también abre y cierra.
+    alternarHistorial.closest('.panel-historial__cabecera').addEventListener('click', (evento) => {
+      if (evento.target === evento.currentTarget) alternarHistorial.click();
     });
 
     document.getElementById('historial-limpiar').addEventListener('click', async () => {

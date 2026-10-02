@@ -4100,11 +4100,29 @@ button.conexion__nombre:hover { text-decoration: none; }
 }
 .panel-historial__alternar:focus-visible { outline: none; }
 .panel-historial__acciones { position: relative; z-index: 2; display: flex; align-items: center; gap: 10px; }
-.panel-historial__acciones .desplegable__flecha { pointer-events: none; }
-.panel-historial .historial { margin: 0; padding: 0 20px 16px; }
+/* Solo "Limpiar" queda por encima: la flecha y los huecos de alrededor son
+   parte de la cabecera (abren y cierran, y no le quitan el hover). */
+.panel-historial__acciones { pointer-events: none; }
+.panel-historial__acciones > .boton { pointer-events: auto; }
+/* La tarjeta sube 3 px al pasar el ratón: esta franja bajo la cabecera
+   mantiene el hover en el borde de abajo (si no, sube, pierde el hover,
+   baja, lo recupera… y parpadea). Cae sobre el margen de arriba de la
+   lista, sin tapar ninguna búsqueda. */
+.panel-historial__cabecera::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 4px;
+  z-index: 3;
+}
+.panel-historial .historial { margin: 0; padding: 4px 20px 16px; }
 .panel-historial:has(.panel-historial__alternar[aria-expanded='true']) .desplegable__flecha { transform: rotate(180deg); }
 
-.panel-historial:has(.panel-historial__alternar:hover),
+/* Se eleva mientras el ratón esté en cualquier punto de la cabecera (también
+   sobre "Limpiar"): pasar de uno a otro no la mueve y no hay parpadeo. */
+.panel-historial:has(.panel-historial__cabecera:hover),
 .panel-historial:has(.panel-historial__alternar:focus-visible) {
   transform: translateY(-3px);
   border-color: rgba(var(--acento-rgb), 0.5);
@@ -4122,7 +4140,7 @@ button.conexion__nombre:hover { text-decoration: none; }
 @media (prefers-reduced-motion: reduce) {
   .panel-historial,
   .panel-historial h2 { transition: none; }
-  .panel-historial:has(.panel-historial__alternar:hover) { transform: none; }
+  .panel-historial:has(.panel-historial__cabecera:hover) { transform: none; }
 }
 
 /* ---- "Guardar en": un control enmarcado como los demás del apartado, con
@@ -4176,3 +4194,141 @@ button.conexion__nombre:hover { text-decoration: none; }
 /* ---- "Editar" en el mapa raíz de un grupo de rutas: abre el conjunto desde
         la raíz. Va en la cabecera, junto al número de rutas. ---- */
 .rutas-entrada__editar { padding: 3px 10px; font-size: 0.78rem; align-self: center; }
+
+/* ============================================================================
+   Hideouts con los colores de "Tus últimas búsquedas" (v14.1)
+   En la vista de hideouts (y en la ventana del mapa abierta desde ella) los
+   estados al pasar el ratón, al enfocar y al elegir usan el color del
+   apartado (--acento-rgb, verde azulado) en lugar del dorado: borde y fondo
+   teñidos, texto del color del apartado y transiciones suaves. Lo que no se
+   pulsa (insignias, títulos) conserva su color.
+   ============================================================================ */
+:is(#vista-hideouts, body[data-vista='hideouts'] #ventana-mapa) {
+  --hideouts-borde: rgba(var(--acento-rgb), 0.55);
+  --hideouts-fondo: rgba(var(--acento-rgb), 0.1);
+  --hideouts-texto: rgb(var(--acento-rgb));
+  --hideouts-foco: rgba(var(--acento-rgb), 0.9);
+}
+
+/* Foco con teclado: el anillo, del color del apartado. */
+:is(#vista-hideouts, body[data-vista='hideouts'] #ventana-mapa) :is(a, button, input, select, summary, [tabindex]):focus-visible,
+:is(#vista-hideouts, body[data-vista='hideouts'] #ventana-mapa) :is(
+    .tarjeta-mapa:has(.tarjeta-mapa__encabezado:focus-visible),
+    .historial__tarjeta:has(.historial__item:focus-visible),
+    .panel-historial:has(.panel-historial__alternar:focus-visible)
+  ) { outline-color: var(--hideouts-foco); }
+
+/* Buscador: el recuadro al escribir. */
+#vista-hideouts .panel-busqueda__caja:focus-within {
+  border-color: rgba(var(--acento-rgb), 0.7);
+  box-shadow: 0 0 0 3px rgba(var(--acento-rgb), 0.16);
+}
+
+/* Botones ("Ver mapa de la Zona Negra", "Limpiar", los del mapa y del
+   panel de administración): borde, fondo y texto del apartado. */
+:is(#vista-hideouts, body[data-vista='hideouts'] #ventana-mapa) .boton:not(.boton--primario):not(.boton--peligro):not(:disabled):hover {
+  border-color: var(--hideouts-borde);
+  background-color: var(--hideouts-fondo);
+  color: var(--hideouts-texto);
+}
+
+/* Tarjetas de resultados: nombre y flecha de la esquina. */
+#vista-hideouts .tarjeta-mapa:hover .tarjeta-mapa__nombre,
+#vista-hideouts .tarjeta-mapa__encabezado:hover .tarjeta-mapa__nombre { color: var(--hideouts-texto); }
+#vista-hideouts .tarjeta-mapa__ir { color: var(--hideouts-texto); border-color: rgba(var(--acento-rgb), 0.35); }
+#vista-hideouts .tarjeta-mapa:hover .tarjeta-mapa__ir,
+#vista-hideouts .tarjeta-mapa:has(.tarjeta-mapa__encabezado:focus-visible) .tarjeta-mapa__ir {
+  background: rgb(var(--acento-rgb));
+  border-color: rgb(var(--acento-rgb));
+  color: #0c1a16;
+}
+
+/* "Ver rutas" de cada resultado. */
+#vista-hideouts .rutas-hideout__alternar {
+  border-color: rgba(var(--acento-rgb), 0.6);
+  background: rgba(var(--acento-rgb), 0.08);
+  color: var(--hideouts-texto);
+  transition:
+    background-color var(--duracion-rapida) var(--curva),
+    border-color var(--duracion-rapida) var(--curva),
+    color var(--duracion-rapida) var(--curva);
+}
+#vista-hideouts .rutas-hideout__alternar:hover,
+#vista-hideouts .rutas-hideout__alternar[aria-expanded='true'] {
+  border-color: rgb(var(--acento-rgb));
+  background: rgba(var(--acento-rgb), 0.16);
+}
+
+/* Rutas y conexiones dentro de los resultados: nombres enlazados. */
+#vista-hideouts :is(button.ruta__nombre, button.conexion__nombre, .ruta__anotar):hover { color: var(--hideouts-texto); }
+
+/* Ventana del mapa: filas de hideouts, salidas, chinchetas y fondos. */
+body[data-vista='hideouts'] #ventana-mapa .hideout-fila:hover {
+  border-color: var(--hideouts-borde);
+  background-color: var(--hideouts-fondo);
+}
+body[data-vista='hideouts'] #ventana-mapa .mapa__salida:not(.mapa__salida--fija):hover circle { fill: rgba(var(--acento-rgb), 0.35); }
+body[data-vista='hideouts'] #ventana-mapa :is(.mapa__pin:hover, .mapa__pin:focus-visible) .mapa__pin-cuerpo {
+  filter: brightness(1.2) drop-shadow(0 0 4px rgba(var(--acento-rgb), 0.65));
+}
+body[data-vista='hideouts'] #ventana-mapa .selector-fondo__boton[aria-pressed='true'] {
+  background: rgba(var(--acento-rgb), 0.16);
+  color: var(--hideouts-texto);
+}
+:is(#vista-hideouts, body[data-vista='hideouts'] #ventana-mapa) .zoom-controles__boton:hover {
+  border-color: rgba(var(--acento-rgb), 0.7);
+  background: rgba(12, 26, 22, 0.92);
+}
+
+/* Panel de administración (está en esta vista): casillas y listas. */
+#vista-hideouts :is(.casilla:hover, .admin-fila select:hover) { border-color: rgba(var(--acento-rgb), 0.5); }
+
+/* Botones de peligro ("Aplicar de todos modos"...): rojo al pasar el ratón,
+   ni dorado ni del color del apartado, para que sigan avisando. */
+:is(#vista-hideouts, body[data-vista='hideouts'] #ventana-mapa) .boton--peligro:not(:disabled):hover {
+  border-color: rgba(201, 79, 79, 0.85);
+  background-color: rgba(201, 79, 79, 0.12);
+}
+
+/* Mapa de la Zona Negra: el punto y la etiqueta al pasar el ratón o con el
+   teclado, el aro de los mapas con hideouts y el halo de los mapas del
+   gremio buscado, con el color del apartado. */
+#vista-hideouts {
+  --hideouts-claro: rgb(196, 246, 230);
+}
+#vista-hideouts .mundo__nodo--ocupado .mundo__punto { stroke: rgb(var(--acento-rgb)); }
+#vista-hideouts .mundo__halo { stroke: rgb(var(--acento-rgb)); }
+#vista-hideouts :is(.mundo__nodo:hover, .mundo__nodo:focus-visible) .mundo__punto { fill: var(--hideouts-claro); }
+#vista-hideouts :is(.mundo__nodo:hover, .mundo__nodo:focus-visible) .mundo__chip rect { stroke: var(--hideouts-claro); }
+#vista-hideouts .mundo__nodo--destacado .mundo__punto { stroke: var(--hideouts-claro); }
+body[data-vista='hideouts'] #ventana-mapa .mapa__pin--destacado .mapa__pin-cuerpo { stroke: rgb(196, 246, 230); }
+
+/* Listas desplegables de esta vista (panel de administración y ajustes de la
+   ventana del mapa): flecha, borde y menú de opciones con el color del
+   apartado en lugar del dorado. */
+:is(#vista-hideouts, body[data-vista='hideouts'] #ventana-mapa) {
+  --flecha-select: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'%2360ccb0'%20stroke-width%3D'2.4'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Cpath%20d%3D'm6%209%206%206%206-6'%2F%3E%3C%2Fsvg%3E");
+}
+:is(#vista-hideouts, body[data-vista='hideouts'] #ventana-mapa) :is(.admin-fila, .ajuste-imagen__fila, .formulario-linea) select:hover {
+  border-color: rgba(var(--acento-rgb), 0.55);
+}
+@supports (appearance: base-select) {
+  :is(#vista-hideouts, body[data-vista='hideouts'] #ventana-mapa) :is(.admin-fila, .ajuste-imagen__fila, .formulario-linea) select:open {
+    border-color: rgba(var(--acento-rgb), 0.6);
+  }
+  :is(#vista-hideouts, body[data-vista='hideouts'] #ventana-mapa) :is(.admin-fila, .ajuste-imagen__fila, .formulario-linea) select::picker(select) {
+    border-color: rgba(var(--acento-rgb), 0.35);
+  }
+  :is(#vista-hideouts, body[data-vista='hideouts'] #ventana-mapa) :is(.admin-fila, .ajuste-imagen__fila, .formulario-linea) select option:is(:hover, :focus-visible) {
+    background: rgba(var(--acento-rgb), 0.16);
+    color: rgb(var(--acento-rgb));
+  }
+  :is(#vista-hideouts, body[data-vista='hideouts'] #ventana-mapa) :is(.admin-fila, .ajuste-imagen__fila, .formulario-linea) select option:checked {
+    background: rgba(var(--acento-rgb), 0.24);
+    color: rgb(var(--acento-rgb));
+  }
+  :is(#vista-hideouts, body[data-vista='hideouts'] #ventana-mapa) :is(.admin-fila, .ajuste-imagen__fila, .formulario-linea) select option::checkmark {
+    color: rgb(var(--acento-rgb));
+  }
+}
+
