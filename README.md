@@ -15,7 +15,10 @@ Avalon abiertas que registra la comunidad.
   imágenes nuevas en 2K: `fondo-caminos-v2.webp` y `fondo-hideouts-v2.webp`
   (2560 px, con versión `-movil` de 1600 px) y `tarjeta-*-v2.webp`
   (1400 px). El fondo del inicio también pasa a su versión 2K
-  (`fondo-inicio-v3.webp`, 2560 px, y `-movil` de 1600 px). Los nombres nuevos evitan que los
+  (`fondo-inicio-v3.webp`, 2560 px, y `-movil` de 1600 px).
+- Las páginas de soporte (Contáctanos, Privacidad, Términos) también con sus
+  fondos en 2K (`fondo-*-v2.webp` y `-v2-movil.webp`); ya no necesitan el
+  leve desenfoque que se les puso por su baja resolución. Los nombres nuevos evitan que los
   navegadores sigan mostrando las versiones anteriores guardadas en caché.
 
 ### v14.1 — Sugerencias al día, hideouts con su color y ajustes de Caminos
