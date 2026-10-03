@@ -31,7 +31,7 @@ const INTERVALO_REFRESCO_MS = 60_000;
 const POR_TANDA = 9;
 // Al enfocar el buscador, datos con más de esto se vuelven a pedir.
 const VIGENCIA_SUGERENCIAS_MS = 15_000;
-// Cuánto se resalta una ruta recién editada en "Rutas del gremio".
+// Cuánto se resalta una ruta recién editada en "Rutas registradas".
 const RESALTE_MS = 3200;
 const CURVA = 'cubic-bezier(0.4, 0, 0.2, 1)';
 
@@ -841,7 +841,7 @@ export class PanelCaminos {
   // ----------------------------------------------------------------- rutas --
 
   /**
-   * Lista general "Rutas del gremio", organizada para leerla rápido:
+   * Lista general "Rutas registradas", organizada para leerla rápido:
    *
    *  1. Un filtro por portal de ciudad (Lymhurst, Martlock...): cada ruta
    *     cuenta para el portal más cercano a uno de sus extremos.
@@ -876,7 +876,7 @@ export class PanelCaminos {
 
     // Un administrador ve siempre el bloque, con su barra de borrado (y el
     // resultado de la última acción) aunque ya no quede ninguna ruta.
-    // La tarjeta "Rutas del gremio" (su cuerpo se pliega aparte).
+    // La tarjeta "Rutas registradas" (su cuerpo se pliega aparte).
     this.rutasTarjeta.hidden = !todasAbiertas.length && !todasCerradas.length && !esAdmin && !espacios.size;
     this.rutasCantidad.textContent = `(${todasAbiertas.length})`;
     if (this.rutasTarjeta.hidden) {
@@ -1227,7 +1227,7 @@ export class PanelCaminos {
    * "desde la raíz", como cuando se registraron juntas.
    */
   /**
-   * Muestra en "Rutas del gremio" las rutas recién editadas: si el filtro
+   * Muestra en "Rutas registradas" las rutas recién editadas: si el filtro
    * de espacio o de portal las ocultaba (por ejemplo, se movieron de
    * público a un espacio), pasa al apartado donde quedaron; abre su grupo
    * y la lista, y las resalta un momento.

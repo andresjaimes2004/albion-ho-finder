@@ -8,6 +8,17 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v14.3 — Correo de contacto con Gmail y "Rutas registradas"
+
+- **Correo de contacto**: el enlace `mailto:` dependía de tener una app de
+  correo configurada (si no, solo abría una ventana vacía). Ahora el botón
+  "Escribir con Gmail" abre un borrador en Gmail con el destinatario y el
+  asunto puestos; debajo está la dirección con "Copiar" y, para otras apps,
+  el enlace "Otra app de correo". El correo en el texto de Privacidad y
+  Términos también abre Gmail.
+- En Caminos de Avalon, "Rutas del gremio" pasa a llamarse **"Rutas
+  registradas"** (las rutas del gremio serán otra sección).
+
 ### v14.2 — Fondos y tarjetas en 2K
 
 - Fondos de Hideouts y Caminos de Avalon y las tres tarjetas de la portada

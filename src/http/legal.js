@@ -53,6 +53,17 @@ function enlaceExterno(href, texto, clase = '') {
 }
 
 /**
+ * Enlace para escribir el correo de contacto. Un enlace mailto: depende de
+ * que el equipo tenga una app de correo configurada (si no, solo abre una
+ * ventana vacía), así que se abre directamente un borrador en Gmail, con el
+ * destinatario y el asunto ya puestos. Para otras apps queda mailto: aparte.
+ */
+function urlGmail(correo, idioma) {
+  const asunto = idioma === 'es' ? 'Contacto desde Albion Navigator' : 'Contact from Albion Navigator';
+  return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(correo)}&su=${encodeURIComponent(asunto)}`;
+}
+
+/**
  * Texto con formato mínimo: se escapa todo, y luego **negrita** y las
  * marcas {correo}, {discord}, {contacto}, {privacidad}, {terminos}.
  */
@@ -62,7 +73,7 @@ function enLinea(texto, idioma, config) {
   return escaparHtml(texto)
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\{correo\}/g, () =>
-      config.correo ? `<a href="mailto:${escaparHtml(config.correo)}">${escaparHtml(config.correo)}</a>` : pendiente
+      config.correo ? enlaceExterno(urlGmail(config.correo, idioma), escaparHtml(config.correo)) : pendiente
     )
     .replace(/\{discord\}/g, () => (config.discord ? enlaceExterno(config.discord, 'Discord') : pendiente))
     .replace(/\{(contacto|privacidad|terminos)\}/g, (_, pagina) => {
@@ -75,7 +86,18 @@ function enLinea(texto, idioma, config) {
 function accionTarjeta(accion, idioma, config) {
   const comun = TEXTOS[idioma].comun;
   if (accion === 'correo' && config.correo) {
-    return `<a class="boton boton--primario legal__accion" href="mailto:${escaparHtml(config.correo)}">${escaparHtml(config.correo)}</a>`;
+    const es = idioma === 'es';
+    const correo = escaparHtml(config.correo);
+    // Botón principal: borrador en Gmail. Debajo, la dirección para copiarla
+    // y, para quien use otra app de correo, el enlace mailto: de siempre.
+    return `<div class="legal__correo">
+              ${enlaceExterno(urlGmail(config.correo, idioma), escaparHtml(es ? 'Escribir con Gmail' : 'Write with Gmail'), 'boton boton--primario legal__accion')}
+              <div class="legal__correo-direccion">
+                <code id="correo-contacto">${correo}</code>
+                <button type="button" class="boton boton--pequeno" data-copiar="correo-contacto" data-copiado="${es ? '¡Copiado!' : 'Copied!'}">${es ? 'Copiar' : 'Copy'}</button>
+              </div>
+              <a class="legal__correo-otra" href="mailto:${correo}">${es ? 'Otra app de correo' : 'Other email app'}</a>
+            </div>`;
   }
   if (accion === 'discord' && config.discord) {
     const texto = idioma === 'es' ? 'Unirme al grupo' : 'Join the community';

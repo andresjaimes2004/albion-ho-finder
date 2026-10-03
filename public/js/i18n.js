@@ -98,7 +98,7 @@ export const EN = {
   'Dungeons': 'Dungeons',
   '{solo} solo · {grupo} grupo · {elite} élite': '{solo} solo · {grupo} group · {elite} elite',
   'Recursos': 'Resources',
-  'Rutas del gremio': 'Guild routes',
+  'Rutas registradas': 'Registered routes',
   'Rutas que pasan por aquí': 'Routes through here',
 
   // Etiquetas que envía el servidor (tipos de camino y de zona)
