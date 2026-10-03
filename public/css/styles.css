@@ -93,6 +93,7 @@ body {
 @media (max-width: 960px) {
   .fondo__capa--inicio { background-image: url('../assets/fondo-inicio-v2-movil.webp'); }
   .fondo__capa--caminos { background-image: url('../assets/fondo-caminos-v2-movil.webp'); }
+  .fondo__capa--hideouts { background-image: url('../assets/fondo-hideouts-v2-movil.webp'); }
 }
 
 /* Sin JavaScript (o antes de que cargue) se ve el fondo del inicio. */
