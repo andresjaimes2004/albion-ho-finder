@@ -8,6 +8,15 @@ Avalon abiertas que registra la comunidad.
 
 ## Cambios recientes
 
+### v14.2 — Fondos y tarjetas en alta calidad
+
+- Fondos de Hideouts y Caminos de Avalon y las tres tarjetas de la portada
+  (Busca hideouts, Sigue las rutas de Avalon, Registra conexiones) con las
+  imágenes nuevas en alta resolución: `fondo-caminos-v2.webp` (2560 px, y
+  1600 px para móvil), `fondo-hideouts-v2.webp` (1376 px, su tamaño real) y
+  `tarjeta-*-v2.webp` (1400 px). Los nombres nuevos evitan que los
+  navegadores sigan mostrando las versiones anteriores guardadas en caché.
+
 ### v14.1 — Sugerencias al día, hideouts con su color y ajustes de Caminos
 
 - **Sugerencias del buscador siempre al día**: un gremio nuevo o cambiado en
