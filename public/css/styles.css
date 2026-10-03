@@ -86,12 +86,14 @@ body {
   transition: opacity 0.6s ease;
 }
 
-.fondo__capa--inicio { background-image: url('../assets/fondo-inicio-v2.webp'); background-position: 35% 30%; }
-.fondo__capa--hideouts { background-image: url('../assets/fondo-hideouts.webp'); background-position: 50% 45%; }
-.fondo__capa--caminos { background-image: url('../assets/fondo-caminos.webp'); background-position: 40% 35%; }
+.fondo__capa--inicio { background-image: url('../assets/fondo-inicio-v3.webp'); background-position: 35% 30%; }
+.fondo__capa--hideouts { background-image: url('../assets/fondo-hideouts-v2.webp'); background-position: 50% 45%; }
+.fondo__capa--caminos { background-image: url('../assets/fondo-caminos-v2.webp'); background-position: 40% 35%; }
 
 @media (max-width: 960px) {
-  .fondo__capa--inicio { background-image: url('../assets/fondo-inicio-v2-movil.webp'); }
+  .fondo__capa--inicio { background-image: url('../assets/fondo-inicio-v3-movil.webp'); }
+  .fondo__capa--caminos { background-image: url('../assets/fondo-caminos-v2-movil.webp'); }
+  .fondo__capa--hideouts { background-image: url('../assets/fondo-hideouts-v2-movil.webp'); }
 }
 
 /* Sin JavaScript (o antes de que cargue) se ve el fondo del inicio. */
@@ -2030,7 +2032,7 @@ button.ruta__nombre:hover { color: var(--color-oro-claro); text-decoration: unde
   background:
     radial-gradient(ellipse at 50% 0%, rgba(167, 123, 255, 0.22), transparent 60%),
     linear-gradient(180deg, rgba(12, 10, 16, 0.55), rgba(12, 10, 16, 0.9)),
-    url('../assets/fondo-inicio-v2.webp') 35% 15% / auto 135% no-repeat,
+    url('../assets/fondo-inicio-v3.webp') 35% 15% / auto 135% no-repeat,
     var(--color-fondo);
   box-shadow: var(--sombra);
 }
@@ -2185,9 +2187,9 @@ button.ruta__nombre:hover { color: var(--color-oro-claro); text-decoration: unde
 .funcion:hover::before,
 .funcion:focus-within::before { opacity: 0.82; }
 
-.funcion--hideouts { background-image: url('../assets/tarjeta-hideouts.webp'); background-position: 68% 40%; }
-.funcion--caminos { background-image: url('../assets/tarjeta-rutas.webp'); background-position: 42% 20%; }
-.funcion--registro { background-image: url('../assets/tarjeta-registro.webp'); background-position: 18% 40%; }
+.funcion--hideouts { background-image: url('../assets/tarjeta-hideouts-v2.webp'); background-position: 68% 40%; }
+.funcion--caminos { background-image: url('../assets/tarjeta-rutas-v2.webp'); background-position: 42% 20%; }
+.funcion--registro { background-image: url('../assets/tarjeta-registro-v2.webp'); background-position: 18% 40%; }
 
 .funcion__contenido { position: relative; padding: 22px; }
 .funcion__titulo { font-family: var(--fuente-titulos); font-size: 1.2rem; margin: 0 0 8px; color: var(--color-oro-claro); }
@@ -3128,7 +3130,7 @@ html:has(dialog[open]) { overflow: hidden; }
 #ventana-mapa .lienzo--mapa {
   background:
     linear-gradient(180deg, rgba(12, 10, 16, 0.2) 0%, rgba(12, 10, 16, 0.45) 100%),
-    url('../assets/fondo-hideouts.webp') 50% 45% / cover no-repeat,
+    url('../assets/fondo-hideouts-v2.webp') 50% 45% / cover no-repeat,
     var(--color-fondo);
   border-color: rgba(var(--acento-rgb), 0.28);
 }
