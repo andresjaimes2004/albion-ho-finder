@@ -163,7 +163,7 @@ const EN = {
   'Vaciar': 'Clear all',
   'Las capturas se leen en tu navegador y no se suben: solo se guarda lo que confirmas.':
     'Screenshots are read in your browser and never uploaded: only what you confirm is saved.',
-  'Rutas del gremio': 'Guild routes',
+  'Rutas registradas': 'Registered routes',
   'Cargando caminos de Avalon...': 'Loading Avalonian roads...',
   'Mostrar más': 'Show more',
   'Catálogo de caminos: dumps oficiales del cliente de Albion Online (Sandbox Interactive).':

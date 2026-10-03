@@ -124,7 +124,19 @@ test('el correo y la invitación al grupo de Discord se validan: lo inválido qu
 test('con contacto configurado: enlaces correctos y seguros; sin él, "muy pronto" y sin icono de Discord', () => {
   const config = { discord: 'https://discord.gg/AbC123', correo: 'soporte@albionnavigator.com' };
   const contacto = legal.htmlContenido('contacto', 'es', config);
-  assert.match(contacto, /href="mailto:soporte@albionnavigator\.com"/);
+  // El correo abre un borrador en Gmail (un mailto: solo funciona con una app
+  // de correo configurada); queda la dirección para copiar y mailto: aparte.
+  assert.match(
+    contacto,
+    /href="https:\/\/mail\.google\.com\/mail\/\?view=cm&amp;fs=1&amp;to=soporte%40albionnavigator\.com&amp;su=Contacto%20desde%20Albion%20Navigator" target="_blank" rel="noopener noreferrer">Escribir con Gmail</
+  );
+  assert.match(contacto, /<code id="correo-contacto">soporte@albionnavigator\.com<\/code>/);
+  assert.match(contacto, /data-copiar="correo-contacto"/);
+  assert.match(contacto, /href="mailto:soporte@albionnavigator\.com">Otra app de correo</);
+  // En el texto de la política, el correo también abre Gmail.
+  const politica = legal.htmlContenido('privacidad', 'en', config);
+  assert.match(politica, /href="https:\/\/mail\.google\.com\/mail\/\?view=cm[^"]*su=Contact%20from%20Albion%20Navigator" target="_blank" rel="noopener noreferrer">soporte@albionnavigator\.com</);
+  assert.doesNotMatch(politica, /mailto:/);
   assert.match(contacto, /href="https:\/\/discord\.gg\/AbC123" target="_blank" rel="noopener noreferrer"/);
   assert.match(legal.htmlDiscordPie('es', config), /aria-label="Únete a nuestro grupo de Discord"/);
   assert.match(legal.htmlDiscordPie('en', config), /aria-label="Join our Discord community"/);
